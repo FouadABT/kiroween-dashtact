@@ -120,7 +120,7 @@ export interface UsersListResponse {
 /**
  * User query parameters for filtering/pagination
  */
-export interface UserQueryParams {
+export interface UserQueryParams extends Record<string, unknown> {
   page?: number;
   limit?: number;
   roleId?: string; // Filter by role ID

@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 // Mock bcrypt at module level
@@ -177,7 +181,9 @@ describe('UsersService - Role Management', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
       mockPrismaService.userRole.findUnique.mockResolvedValue(null);
 
-      await expect(service.create(createDto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(createDto)).rejects.toThrow(
+        BadRequestException,
+      );
       expect(mockPrismaService.user.create).not.toHaveBeenCalled();
     });
   });

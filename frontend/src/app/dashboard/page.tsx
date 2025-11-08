@@ -129,10 +129,10 @@ export default function DashboardPage() {
     >
       {/* Header Section */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Dashboard Overview
         </h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Welcome to your dashboard. Here&apos;s what&apos;s happening with your business today.
         </p>
       </motion.div>
@@ -159,19 +159,19 @@ export default function DashboardPage() {
             >
               <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 lg:p-6">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
                     {stat.title}
                   </CardTitle>
                   <motion.div
                     whileHover={{ rotate: 360 }}
                     transition={{ duration: 0.5 }}
                   >
-                    <Icon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 flex-shrink-0" />
+                    <Icon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                   </motion.div>
                 </CardHeader>
                 <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
-                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{stat.value}</div>
-                  <div className="flex items-center text-xs text-gray-600 mt-1">
+                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">{stat.value}</div>
+                  <div className="flex items-center text-xs text-muted-foreground mt-1">
                     <motion.div
                       animate={{ 
                         y: stat.trend === "up" ? [-1, 1, -1] : [1, -1, 1]
@@ -228,7 +228,7 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[200px] sm:h-[250px] lg:h-[300px] flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+              <div className="h-[200px] sm:h-[250px] lg:h-[300px] flex items-center justify-center bg-muted/50 rounded-lg border-2 border-dashed border-border">
                 <motion.div 
                   className="text-center"
                   initial={{ opacity: 0 }}
@@ -239,10 +239,10 @@ export default function DashboardPage() {
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                    <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
                   </motion.div>
-                  <p className="text-gray-500 font-medium">Chart Placeholder</p>
-                  <p className="text-sm text-gray-400">Revenue chart will be displayed here</p>
+                  <p className="text-muted-foreground font-medium">Chart Placeholder</p>
+                  <p className="text-sm text-muted-foreground/60">Revenue chart will be displayed here</p>
                 </motion.div>
               </div>
             </CardContent>
@@ -290,10 +290,10 @@ export default function DashboardPage() {
                       transition={{ duration: 2, repeat: Infinity, delay: index * 0.2 }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 leading-tight">
+                      <p className="text-sm text-foreground leading-tight">
                         {activity.message}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -317,11 +317,11 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[200px] sm:h-[225px] lg:h-[250px] flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+            <div className="h-[200px] sm:h-[225px] lg:h-[250px] flex items-center justify-center bg-muted/50 rounded-lg border-2 border-dashed border-border">
               <div className="text-center">
-                <PieChart className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-500 font-medium">Pie Chart Placeholder</p>
-                <p className="text-sm text-gray-400">Sales distribution chart</p>
+                <PieChart className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground font-medium">Pie Chart Placeholder</p>
+                <p className="text-sm text-muted-foreground/60">Sales distribution chart</p>
               </div>
             </div>
           </CardContent>
@@ -343,12 +343,12 @@ export default function DashboardPage() {
                   <Button
                     key={index}
                     variant="outline"
-                    className="justify-start h-auto p-4 hover:bg-gray-50"
+                    className="justify-start h-auto p-4 hover:bg-accent"
                   >
-                    <Icon className="h-5 w-5 mr-3 text-gray-600" />
+                    <Icon className="h-5 w-5 mr-3 text-muted-foreground" />
                     <div className="text-left">
-                      <div className="font-medium text-gray-900">{action.title}</div>
-                      <div className="text-sm text-gray-500">{action.description}</div>
+                      <div className="font-medium text-foreground">{action.title}</div>
+                      <div className="text-sm text-muted-foreground">{action.description}</div>
                     </div>
                   </Button>
                 );
@@ -370,35 +370,35 @@ export default function DashboardPage() {
           <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">Sales Target</span>
+                <span className="text-sm font-medium text-muted-foreground">Sales Target</span>
                 <Badge variant="secondary">75%</Badge>
               </div>
               <Progress value={75} className="h-2" />
-              <p className="text-xs text-gray-500">$75,000 of $100,000 goal</p>
+              <p className="text-xs text-muted-foreground">$75,000 of $100,000 goal</p>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">Customer Satisfaction</span>
+                <span className="text-sm font-medium text-muted-foreground">Customer Satisfaction</span>
                 <Badge variant="secondary">92%</Badge>
               </div>
               <Progress value={92} className="h-2" />
-              <p className="text-xs text-gray-500">4.6/5.0 average rating</p>
+              <p className="text-xs text-muted-foreground">4.6/5.0 average rating</p>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">Project Completion</span>
+                <span className="text-sm font-medium text-muted-foreground">Project Completion</span>
                 <Badge variant="secondary">68%</Badge>
               </div>
               <Progress value={68} className="h-2" />
-              <p className="text-xs text-gray-500">17 of 25 projects done</p>
+              <p className="text-xs text-muted-foreground">17 of 25 projects done</p>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">Team Productivity</span>
+                <span className="text-sm font-medium text-muted-foreground">Team Productivity</span>
                 <Badge variant="secondary">85%</Badge>
               </div>
               <Progress value={85} className="h-2" />
-              <p className="text-xs text-gray-500">Above average performance</p>
+              <p className="text-xs text-muted-foreground">Above average performance</p>
             </div>
           </div>
         </CardContent>

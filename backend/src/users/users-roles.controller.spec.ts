@@ -239,7 +239,10 @@ describe('UsersController - Roles Endpoint', () => {
       const result = await controller.update('user123', updateDto);
 
       expect(result.data.role.name).toBe('ADMIN');
-      expect(mockUsersService.update).toHaveBeenCalledWith('user123', updateDto);
+      expect(mockUsersService.update).toHaveBeenCalledWith(
+        'user123',
+        updateDto,
+      );
     });
   });
 });

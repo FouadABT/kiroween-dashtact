@@ -6,7 +6,6 @@
  */
 
 import { 
-  User, 
   UserRole,
   UserProfile, 
   CreateUserData, 
@@ -38,7 +37,7 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public statusCode: number,
-    public response?: any
+    public response?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -102,7 +101,7 @@ export class ApiClient {
   /**
    * Generic GET request
    */
-  static async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
+  static async get<T>(endpoint: string, params?: Record<string, unknown>): Promise<T> {
     const url = new URL(`${this.baseURL}${endpoint}`);
     
     if (params) {
@@ -124,7 +123,7 @@ export class ApiClient {
   /**
    * Generic POST request
    */
-  static async post<T>(endpoint: string, data?: any): Promise<T> {
+  static async post<T>(endpoint: string, data?: unknown): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: 'POST',
       headers: this.getHeaders(),
@@ -137,7 +136,7 @@ export class ApiClient {
   /**
    * Generic PUT request
    */
-  static async put<T>(endpoint: string, data?: any): Promise<T> {
+  static async put<T>(endpoint: string, data?: unknown): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: 'PUT',
       headers: this.getHeaders(),
@@ -260,6 +259,60 @@ export class UserApi {
   static async getRoles(): Promise<UserRole[]> {
     const response = await ApiClient.get<{ data: UserRole[] }>('/users/roles');
     return response.data;
+  }
+}
+
+/**
+ * Settings API endpoints
+ */
+export class SettingsApi {
+  /**
+   * Get all settings
+   */
+  static async getAll(): Promise<import('@/types/settings').Settings[]> {
+    return ApiClient.get<import('@/types/settings').Settings[]>('/settings');
+  }
+
+  /**
+   * Get settings by ID
+   */
+  static async getById(id: string): Promise<import('@/types/settings').Settings> {
+    return ApiClient.get<import('@/types/settings').Settings>(`/settings/${id}`);
+  }
+
+  /**
+   * Get global settings
+   */
+  static async getGlobal(): Promise<import('@/types/settings').Settings> {
+    return ApiClient.get<import('@/types/settings').Settings>('/settings/global');
+  }
+
+  /**
+   * Get settings by user ID
+   */
+  static async getByUserId(userId: string): Promise<import('@/types/settings').Settings> {
+    return ApiClient.get<import('@/types/settings').Settings>(`/settings/user/${userId}`);
+  }
+
+  /**
+   * Create new settings
+   */
+  static async create(data: import('@/types/settings').CreateSettingsDto): Promise<import('@/types/settings').Settings> {
+    return ApiClient.post<import('@/types/settings').Settings>('/settings', data);
+  }
+
+  /**
+   * Update settings
+   */
+  static async update(id: string, data: import('@/types/settings').UpdateSettingsDto): Promise<import('@/types/settings').Settings> {
+    return ApiClient.patch<import('@/types/settings').Settings>(`/settings/${id}`, data);
+  }
+
+  /**
+   * Delete settings
+   */
+  static async delete(id: string): Promise<void> {
+    return ApiClient.delete<void>(`/settings/${id}`);
   }
 }
 

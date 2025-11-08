@@ -25,7 +25,7 @@ export interface SidebarProps {
   onStateChange?: (collapsed: boolean) => void;
 }
 
-export function Sidebar(_props?: SidebarProps) {
+export function Sidebar() {
   const { 
     sidebarOpen, 
     setSidebarOpen, 
@@ -75,13 +75,28 @@ export function Sidebar(_props?: SidebarProps) {
 
   return (
     <>
+      {/* Mobile backdrop overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Desktop Sidebar */}
       <motion.div
         variants={contentVariants}
         animate={sidebarCollapsed ? "collapsed" : "expanded"}
         className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col"
       >
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-sidebar-border bg-sidebar-background px-6 pb-4">
           {/* Logo and collapse button */}
           <div className="flex h-14 sm:h-16 shrink-0 items-center justify-between px-1">
             <AnimatePresence mode="wait">
@@ -93,17 +108,17 @@ export function Sidebar(_props?: SidebarProps) {
                   transition={{ duration: 0.2 }}
                   className="flex items-center gap-2 min-w-0"
                 >
-                  <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold text-xs sm:text-sm">D</span>
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-sidebar-primary flex items-center justify-center flex-shrink-0">
+                    <span className="text-sidebar-primary-foreground font-bold text-xs sm:text-sm">D</span>
                   </div>
-                  <span className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Dashboard</span>
+                  <span className="text-lg sm:text-xl font-semibold text-sidebar-foreground truncate">Dashboard</span>
                 </motion.div>
               )}
             </AnimatePresence>
             
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="rounded-md p-1 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
+              className="rounded-md p-1 sm:p-1.5 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors flex-shrink-0"
               aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               aria-expanded={!sidebarCollapsed}
               type="button"
@@ -129,10 +144,10 @@ export function Sidebar(_props?: SidebarProps) {
                         <Link
                           href={item.href}
                           className={cn(
-                            "group flex gap-x-2 sm:gap-x-3 rounded-md p-1.5 sm:p-2 text-xs sm:text-sm leading-5 sm:leading-6 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                            "group flex gap-x-2 sm:gap-x-3 rounded-md p-1.5 sm:p-2 text-xs sm:text-sm leading-5 sm:leading-6 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2",
                             isActive
-                              ? "bg-blue-50 text-blue-700"
-                              : "text-gray-700 hover:text-blue-700 hover:bg-gray-50"
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                              : "text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent/50"
                           )}
                           aria-current={isActive ? "page" : undefined}
                           aria-label={sidebarCollapsed ? item.title : undefined}
@@ -141,7 +156,7 @@ export function Sidebar(_props?: SidebarProps) {
                           <item.icon
                             className={cn(
                               "h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors",
-                              isActive ? "text-blue-700" : "text-gray-400 group-hover:text-blue-700"
+                              isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
                             )}
                             aria-hidden="true"
                           />
@@ -163,7 +178,7 @@ export function Sidebar(_props?: SidebarProps) {
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
                               exit={{ opacity: 0, scale: 0.8 }}
-                              className="ml-auto rounded-full bg-blue-100 px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs text-blue-700 flex-shrink-0"
+                              className="ml-auto rounded-full bg-sidebar-primary/20 px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs text-sidebar-primary-foreground flex-shrink-0"
                               aria-label={`${item.badge} notifications`}
                             >
                               {item.badge}
@@ -186,18 +201,18 @@ export function Sidebar(_props?: SidebarProps) {
         animate={sidebarOpen ? "open" : "closed"}
         className="fixed inset-y-0 z-50 flex w-64 flex-col lg:hidden"
       >
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4 border-r border-gray-200">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-sidebar-background px-6 pb-4 border-r border-sidebar-border">
           {/* Mobile header with close button */}
           <div className="flex h-14 sm:h-16 shrink-0 items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xs sm:text-sm">D</span>
+              <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-sidebar-primary flex items-center justify-center flex-shrink-0">
+                <span className="text-sidebar-primary-foreground font-bold text-xs sm:text-sm">D</span>
               </div>
-              <span className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Dashboard</span>
+              <span className="text-lg sm:text-xl font-semibold text-sidebar-foreground truncate">Dashboard</span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="rounded-md p-1 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="rounded-md p-1 sm:p-1.5 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2"
               aria-label="Close sidebar"
               type="button"
             >
@@ -219,24 +234,24 @@ export function Sidebar(_props?: SidebarProps) {
                           href={item.href}
                           onClick={() => setSidebarOpen(false)}
                           className={cn(
-                            "group flex gap-x-2 sm:gap-x-3 rounded-md p-1.5 sm:p-2 text-xs sm:text-sm leading-5 sm:leading-6 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                            "group flex gap-x-2 sm:gap-x-3 rounded-md p-1.5 sm:p-2 text-xs sm:text-sm leading-5 sm:leading-6 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2",
                             isActive
-                              ? "bg-blue-50 text-blue-700"
-                              : "text-gray-700 hover:text-blue-700 hover:bg-gray-50"
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                              : "text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent/50"
                           )}
                           aria-current={isActive ? "page" : undefined}
                         >
                           <item.icon
                             className={cn(
                               "h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors",
-                              isActive ? "text-blue-700" : "text-gray-400 group-hover:text-blue-700"
+                              isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
                             )}
                             aria-hidden="true"
                           />
                           <span className="truncate">{item.title}</span>
                           {item.badge && (
                             <span 
-                              className="ml-auto rounded-full bg-blue-100 px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs text-blue-700 flex-shrink-0"
+                              className="ml-auto rounded-full bg-sidebar-primary/20 px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs text-sidebar-primary-foreground flex-shrink-0"
                               aria-label={`${item.badge} notifications`}
                             >
                               {item.badge}

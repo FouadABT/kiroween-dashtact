@@ -14,6 +14,10 @@ export * from './components';
 // User and authentication types
 export * from './user';
 
+// Settings and theming types
+export * from './settings';
+export * from './theme-context';
+
 // Re-export commonly used types for convenience
 export type {
   // Navigation
@@ -44,6 +48,23 @@ export type {
   // Form states
   FormState,
 } from './dashboard';
+
+export type {
+  // Settings types
+  ColorPalette,
+  TypographyConfig,
+  ThemeMode,
+  SettingsScope,
+  Settings,
+  CreateSettingsDto,
+  UpdateSettingsDto,
+} from './settings';
+
+export type {
+  // Theme context types
+  ThemeContextValue,
+  ThemeProviderProps,
+} from './theme-context';
 
 export type {
   // Authentication components

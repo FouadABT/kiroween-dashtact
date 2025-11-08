@@ -37,7 +37,9 @@ describe('Users Roles API (e2e)', () => {
   afterAll(async () => {
     // Clean up test user if created
     if (createdUserId) {
-      await prisma.user.delete({ where: { id: createdUserId } }).catch(() => {});
+      await prisma.user
+        .delete({ where: { id: createdUserId } })
+        .catch(() => {});
     }
     await app.close();
   });
@@ -126,7 +128,7 @@ describe('Users Roles API (e2e)', () => {
         .expect(201)
         .expect((res) => {
           expect(res.body.data.role.name).toBe('USER');
-          
+
           // Clean up
           const userId = res.body.data.id;
           prisma.user.delete({ where: { id: userId } }).catch(() => {});
@@ -156,7 +158,7 @@ describe('Users Roles API (e2e)', () => {
         .expect((res) => {
           expect(res.body.data.users).toBeDefined();
           const users = res.body.data.users;
-          
+
           if (users.length > 0) {
             users.forEach((user: any) => {
               expect(user.roleId).toBe(userRoleId);
@@ -173,7 +175,7 @@ describe('Users Roles API (e2e)', () => {
         .expect(200)
         .expect((res) => {
           const users = res.body.data.users;
-          
+
           if (users.length > 0) {
             users.forEach((user: any) => {
               expect(user.role.name).toBe('ADMIN');
@@ -188,7 +190,7 @@ describe('Users Roles API (e2e)', () => {
         .expect(200)
         .expect((res) => {
           const users = res.body.data.users;
-          
+
           if (users.length > 0) {
             const user = users[0];
             expect(user).toHaveProperty('role');

@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useState } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Palette, ChevronRight } from "lucide-react";
 
 // Form schemas
 const profileFormSchema = z.object({
@@ -35,6 +38,7 @@ type NotificationFormValues = z.infer<typeof notificationFormSchema>;
 export default function SettingsPage() {
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
+  const { resolvedTheme } = useTheme();
 
   // Profile form
   const profileForm = useForm<ProfileFormValues>({
@@ -86,6 +90,49 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Theme Settings */}
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Palette className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Theme & Appearance</CardTitle>
+                  <CardDescription>
+                    Customize colors, typography, and theme mode
+                  </CardDescription>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
+                <div>
+                  <p className="text-sm font-medium">Current Theme</p>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {resolvedTheme} Mode
+                  </p>
+                </div>
+                <div className={`h-8 w-8 rounded-full ${resolvedTheme === 'dark' ? 'bg-slate-900' : 'bg-white'} border-2 border-border`} />
+              </div>
+              
+              <Link href="/dashboard/settings/theme">
+                <Button className="w-full" variant="default">
+                  Customize Theme
+                </Button>
+              </Link>
+              
+              <p className="text-xs text-muted-foreground text-center">
+                Configure color palettes, typography, and more
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Profile Settings */}
         <Card>
           <CardHeader>

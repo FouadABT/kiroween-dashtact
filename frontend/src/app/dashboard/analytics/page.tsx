@@ -87,10 +87,10 @@ export default function AnalyticsPage() {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Analytics
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Detailed analytics and insights for your business performance.
           </p>
         </div>
@@ -281,25 +281,25 @@ export default function AnalyticsPage() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Active Users</span>
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                <span className="text-sm text-muted-foreground">Active Users</span>
+                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-100">
                   1,247 online
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Page Views/min</span>
+                <span className="text-sm text-muted-foreground">Page Views/min</span>
                 <Badge variant="secondary">
                   342
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Bounce Rate</span>
+                <span className="text-sm text-muted-foreground">Bounce Rate</span>
                 <Badge variant="secondary">
                   23.4%
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Avg. Session</span>
+                <span className="text-sm text-muted-foreground">Avg. Session</span>
                 <Badge variant="secondary">
                   4m 32s
                 </Badge>
@@ -333,7 +333,7 @@ export default function AnalyticsPage() {
                 <TableRow key={index}>
                   <TableCell className="font-medium">{metric.metric}</TableCell>
                   <TableCell>{metric.current}</TableCell>
-                  <TableCell className="text-gray-500">{metric.previous}</TableCell>
+                  <TableCell className="text-muted-foreground">{metric.previous}</TableCell>
                   <TableCell>
                     <span className={`flex items-center gap-1 ${
                       metric.trend === 'up' ? 'text-green-600' : 'text-red-600'

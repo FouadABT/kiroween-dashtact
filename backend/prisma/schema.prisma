@@ -40,3 +40,20 @@ model UserRole {
 
   @@map("user_roles")
 }
+
+model Settings {
+  id           String   @id @default(cuid())
+  userId       String?  @unique @map("user_id")
+  scope        String   @default("global")
+  themeMode    String   @default("system") @map("theme_mode")
+  activeTheme  String   @default("default") @map("active_theme")
+  lightPalette Json     @map("light_palette")
+  darkPalette  Json     @map("dark_palette")
+  typography   Json
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([scope])
+  @@map("settings")
+}
