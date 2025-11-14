@@ -1,6 +1,10 @@
-import { Metadata } from "next";
+"use client";
+
+import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { useMetadata } from "@/contexts/MetadataContext";
 import { Badge } from "@/components/ui/badge";
 import { 
   Select,
@@ -29,11 +33,6 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from "lucide-react";
-
-export const metadata: Metadata = {
-  title: "Analytics - Dashboard",
-  description: "Analytics and reporting dashboard",
-};
 
 // Sample metrics comparison data
 const metricsComparison = [
@@ -82,18 +81,25 @@ const metricsComparison = [
 ];
 
 export default function AnalyticsPage() {
+  const { updateMetadata } = useMetadata();
+
+  // Set page metadata on mount
+  useEffect(() => {
+    updateMetadata({
+      title: "Analytics",
+      description: "View detailed analytics and insights",
+      keywords: ["analytics", "insights", "metrics", "reports"],
+    });
+  }, [updateMetadata]);
+
   return (
     <div className="space-y-6">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Analytics
-          </h1>
-          <p className="text-muted-foreground">
-            Detailed analytics and insights for your business performance.
-          </p>
-        </div>
+        <PageHeader
+          title="Analytics"
+          description="Detailed analytics and insights for your business performance."
+        />
         
         {/* Controls */}
         <div className="flex items-center gap-3">

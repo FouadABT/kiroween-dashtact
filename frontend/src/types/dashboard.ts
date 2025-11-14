@@ -8,6 +8,8 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   badge?: string;
+  permission?: string; // Optional permission required to view this nav item
+  children?: NavItem[]; // Optional nested navigation items for grouped menus
 }
 
 /**

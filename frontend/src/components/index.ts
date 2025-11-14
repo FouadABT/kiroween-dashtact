@@ -20,5 +20,11 @@ export * from './dashboard';
 // UI Components
 export * from './ui';
 
+// Layout Components
+export * from './layout';
+
+// Navigation Components
+export * from './navigation';
+
 // Development Components (optional)
 export * from './dev';

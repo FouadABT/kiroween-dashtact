@@ -9,6 +9,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import * as bcrypt from 'bcrypt';
+import { NotificationsService } from '../notifications/notifications.service';
+import { createSecurityAlertNotification, createUserActionNotification } from '../notifications/notification-helpers';
 
 // Default role IDs from migration
 const DEFAULT_ROLE_IDS = {
@@ -19,7 +21,10 @@ const DEFAULT_ROLE_IDS = {
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   /**
    * Create a new user
@@ -213,9 +218,14 @@ export class UsersService {
     }
 
     // Hash new password if provided
+    const passwordChanged = !!password;
     if (password) {
       dataToUpdate.password = await bcrypt.hash(password, 10);
     }
+
+    // Check if role is changing
+    const roleChanged = roleId && roleId !== existingUser.roleId;
+    const oldRole = roleChanged ? await this.prisma.userRole.findUnique({ where: { id: existingUser.roleId } }) : null;
 
     // Update user
     const user = await this.prisma.user.update({
@@ -225,6 +235,67 @@ export class UsersService {
         role: true, // Include role data
       },
     });
+
+    // Send password change notification
+    if (passwordChanged) {
+      try {
+        const passwordNotification = createSecurityAlertNotification({
+          userId: user.id,
+          title: 'Password Changed',
+          message: 'Your password has been successfully changed. If you did not make this change, please contact support immediately.',
+          actionUrl: '/dashboard/settings/security',
+          actionLabel: 'Review Security',
+          metadata: {
+            changedAt: new Date().toISOString(),
+          },
+        });
+        await this.notificationsService.create(passwordNotification);
+      } catch (notificationError) {
+        console.error('Failed to send password change notification:', notificationError);
+      }
+    }
+
+    // Send role change notification
+    if (roleChanged && oldRole) {
+      try {
+        const roleNotification = createUserActionNotification({
+          userId: user.id,
+          title: 'Role Updated',
+          message: `Your role has been changed from ${oldRole.name} to ${user.role.name}. Your permissions may have changed.`,
+          actionUrl: '/dashboard/permissions',
+          actionLabel: 'View Permissions',
+          metadata: {
+            oldRole: oldRole.name,
+            newRole: user.role.name,
+            changedAt: new Date().toISOString(),
+          },
+          requiredPermission: 'permissions:read',
+        });
+        await this.notificationsService.create(roleNotification);
+      } catch (notificationError) {
+        console.error('Failed to send role change notification:', notificationError);
+      }
+    }
+
+    // Send profile update notification (if not password or role change)
+    if (!passwordChanged && !roleChanged && Object.keys(updateData).length > 0) {
+      try {
+        const profileNotification = createUserActionNotification({
+          userId: user.id,
+          title: 'Profile Updated',
+          message: 'Your profile information has been successfully updated.',
+          actionUrl: '/dashboard/settings',
+          actionLabel: 'View Profile',
+          metadata: {
+            updatedFields: Object.keys(updateData),
+            updatedAt: new Date().toISOString(),
+          },
+        });
+        await this.notificationsService.create(profileNotification);
+      } catch (notificationError) {
+        console.error('Failed to send profile update notification:', notificationError);
+      }
+    }
 
     // Remove password
     const { password: _, ...userWithoutPassword } = user;

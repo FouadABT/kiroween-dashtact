@@ -4,7 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import Link from "next/link";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { useMetadata } from "@/contexts/MetadataContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,7 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Palette, ChevronRight } from "lucide-react";
+import { Palette, ChevronRight, Layout } from "lucide-react";
 
 // Form schemas
 const profileFormSchema = z.object({
@@ -39,6 +42,16 @@ export default function SettingsPage() {
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
   const { resolvedTheme } = useTheme();
+  const { updateMetadata } = useMetadata();
+
+  // Set page metadata on mount
+  useEffect(() => {
+    updateMetadata({
+      title: "Settings",
+      description: "Configure your application settings",
+      keywords: ["settings", "configuration", "preferences"],
+    });
+  }, [updateMetadata]);
 
   // Profile form
   const profileForm = useForm<ProfileFormValues>({
@@ -82,14 +95,55 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account settings and preferences.
-        </p>
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Manage your account settings and preferences."
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Landing Page Editor */}
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Layout className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Landing Page</CardTitle>
+                  <CardDescription>
+                    Customize your landing page sections and content
+                  </CardDescription>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
+                <div>
+                  <p className="text-sm font-medium">Content Management</p>
+                  <p className="text-xs text-muted-foreground">
+                    Edit hero, features, footer, and more
+                  </p>
+                </div>
+                <Layout className="h-8 w-8 text-muted-foreground" />
+              </div>
+              
+              <Link href="/dashboard/settings/landing-page">
+                <Button className="w-full" variant="default">
+                  Edit Landing Page
+                </Button>
+              </Link>
+              
+              <p className="text-xs text-muted-foreground text-center">
+                Manage sections, images, and global settings
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Theme Settings */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader>

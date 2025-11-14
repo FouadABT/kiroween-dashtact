@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -138,7 +139,99 @@ export function Sidebar() {
                 <ul role="list" className="-mx-2 space-y-1">
                   {navigationItems.map((item) => {
                     const isActive = isRouteActive(item.href);
+                    const [isExpanded, setIsExpanded] = React.useState(isActive);
                     
+                    // If item has children, render as collapsible group
+                    if (item.children && item.children.length > 0) {
+                      return (
+                        <li key={item.title}>
+                          <button
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            className={cn(
+                              "group flex w-full gap-x-2 sm:gap-x-3 rounded-md p-1.5 sm:p-2 text-xs sm:text-sm leading-5 sm:leading-6 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2",
+                              isActive
+                                ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
+                                : "text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent/50"
+                            )}
+                            aria-label={sidebarCollapsed ? item.title : undefined}
+                            title={sidebarCollapsed ? item.title : undefined}
+                            aria-expanded={isExpanded}
+                          >
+                            <item.icon
+                              className={cn(
+                                "h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors",
+                                isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
+                              )}
+                              aria-hidden="true"
+                            />
+                            <AnimatePresence mode="wait">
+                              {!sidebarCollapsed && (
+                                <motion.span
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: -10 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="truncate flex-1 text-left"
+                                >
+                                  {item.title}
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                            {!sidebarCollapsed && (
+                              <ChevronRight
+                                className={cn(
+                                  "h-4 w-4 transition-transform duration-200",
+                                  isExpanded && "rotate-90"
+                                )}
+                                aria-hidden="true"
+                              />
+                            )}
+                          </button>
+                          
+                          {/* Nested items */}
+                          <AnimatePresence>
+                            {isExpanded && !sidebarCollapsed && (
+                              <motion.ul
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="mt-1 space-y-1 pl-9"
+                              >
+                                {item.children.map((child) => {
+                                  const isChildActive = isRouteActive(child.href);
+                                  return (
+                                    <li key={child.title}>
+                                      <Link
+                                        href={child.href}
+                                        className={cn(
+                                          "group flex gap-x-2 rounded-md p-1.5 text-xs leading-5 font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2",
+                                          isChildActive
+                                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                            : "text-sidebar-foreground/80 hover:text-sidebar-accent-foreground hover:bg-sidebar-accent/50"
+                                        )}
+                                        aria-current={isChildActive ? "page" : undefined}
+                                      >
+                                        <child.icon
+                                          className={cn(
+                                            "h-4 w-4 shrink-0 transition-colors",
+                                            isChildActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
+                                          )}
+                                          aria-hidden="true"
+                                        />
+                                        <span className="truncate">{child.title}</span>
+                                      </Link>
+                                    </li>
+                                  );
+                                })}
+                              </motion.ul>
+                            )}
+                          </AnimatePresence>
+                        </li>
+                      );
+                    }
+                    
+                    // Regular item without children
                     return (
                       <li key={item.title}>
                         <Link
@@ -227,7 +320,84 @@ export function Sidebar() {
                 <ul role="list" className="-mx-2 space-y-1">
                   {navigationItems.map((item) => {
                     const isActive = isRouteActive(item.href);
+                    const [isExpanded, setIsExpanded] = React.useState(isActive);
                     
+                    // If item has children, render as collapsible group
+                    if (item.children && item.children.length > 0) {
+                      return (
+                        <li key={item.title}>
+                          <button
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            className={cn(
+                              "group flex w-full gap-x-2 sm:gap-x-3 rounded-md p-1.5 sm:p-2 text-xs sm:text-sm leading-5 sm:leading-6 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2",
+                              isActive
+                                ? "bg-sidebar-accent/50 text-sidebar-accent-foreground"
+                                : "text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent/50"
+                            )}
+                            aria-expanded={isExpanded}
+                          >
+                            <item.icon
+                              className={cn(
+                                "h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors",
+                                isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
+                              )}
+                              aria-hidden="true"
+                            />
+                            <span className="truncate flex-1 text-left">{item.title}</span>
+                            <ChevronRight
+                              className={cn(
+                                "h-4 w-4 transition-transform duration-200",
+                                isExpanded && "rotate-90"
+                              )}
+                              aria-hidden="true"
+                            />
+                          </button>
+                          
+                          {/* Nested items */}
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.ul
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="mt-1 space-y-1 pl-9"
+                              >
+                                {item.children.map((child) => {
+                                  const isChildActive = isRouteActive(child.href);
+                                  return (
+                                    <li key={child.title}>
+                                      <Link
+                                        href={child.href}
+                                        onClick={() => setSidebarOpen(false)}
+                                        className={cn(
+                                          "group flex gap-x-2 rounded-md p-1.5 text-xs leading-5 font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2",
+                                          isChildActive
+                                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                            : "text-sidebar-foreground/80 hover:text-sidebar-accent-foreground hover:bg-sidebar-accent/50"
+                                        )}
+                                        aria-current={isChildActive ? "page" : undefined}
+                                      >
+                                        <child.icon
+                                          className={cn(
+                                            "h-4 w-4 shrink-0 transition-colors",
+                                            isChildActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
+                                          )}
+                                          aria-hidden="true"
+                                        />
+                                        <span className="truncate">{child.title}</span>
+                                      </Link>
+                                    </li>
+                                  );
+                                })}
+                              </motion.ul>
+                            )}
+                          </AnimatePresence>
+                        </li>
+                      );
+                    }
+                    
+                    // Regular item without children
                     return (
                       <li key={item.title}>
                         <Link

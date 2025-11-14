@@ -13,10 +13,20 @@ export * from './components';
 
 // User and authentication types
 export * from './user';
+export * from './auth';
+
+// Permission types
+export * from './permission';
 
 // Settings and theming types
 export * from './settings';
 export * from './theme-context';
+
+// Upload types
+export * from './upload';
+
+// Metadata types
+export * from './metadata';
 
 // Re-export commonly used types for convenience
 export type {
@@ -45,6 +55,50 @@ export type {
 } from './user';
 
 export type {
+  // Authentication types
+  TokenPair,
+  JwtPayload,
+  TokenRefreshResponse,
+  RegisterData,
+  PasswordResetRequest,
+  PasswordResetConfirm,
+  EmailVerification,
+  ChangePasswordData,
+  AuthError,
+  AuthState,
+  PermissionCheckOptions,
+  RoleCheckOptions,
+  SessionInfo,
+  TwoFactorSetup,
+  TwoFactorVerification,
+  OAuthProvider,
+  OAuthCallback,
+  AuditLogEntry,
+  PasswordStrength,
+  AuthContextValue,
+  AuthGuardProps,
+  PermissionGuardProps,
+  RoleGuardProps,
+  LoginFormValues,
+  RegisterFormValues,
+  PasswordResetRequestFormValues,
+  PasswordResetConfirmFormValues,
+  ChangePasswordFormValues,
+} from './auth';
+
+export type {
+  // Permissions
+  Permission,
+  RolePermission,
+  CreatePermissionData,
+  UpdatePermissionData,
+  RolePermissionAssignment,
+  PermissionCheckResponse,
+  PermissionsListResponse,
+  PermissionQueryParams,
+} from './permission';
+
+export type {
   // Form states
   FormState,
 } from './dashboard';
@@ -65,6 +119,27 @@ export type {
   ThemeContextValue,
   ThemeProviderProps,
 } from './theme-context';
+
+export type {
+  // Upload types
+  UploadFileData,
+  UploadResponse,
+  UploadConfig,
+  UploadError,
+  UploadProgress,
+} from './upload';
+
+export type {
+  // Metadata types
+  OpenGraphImage,
+  OpenGraphMetadata,
+  TwitterMetadata,
+  RobotsMetadata,
+  BreadcrumbConfig,
+  PageMetadata,
+  RouteMetadata,
+  MetadataContextValue,
+} from './metadata';
 
 export type {
   // Authentication components

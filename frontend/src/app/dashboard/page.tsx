@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMetadata } from "@/contexts/MetadataContext";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -120,6 +123,17 @@ const quickActions = [
 ];
 
 export default function DashboardPage() {
+  const { updateMetadata } = useMetadata();
+
+  // Set page metadata on mount
+  useEffect(() => {
+    updateMetadata({
+      title: "Dashboard",
+      description: "Your personal dashboard overview",
+      keywords: ["dashboard", "overview", "analytics"],
+    });
+  }, [updateMetadata]);
+
   return (
     <motion.div 
       className="space-y-6"
@@ -127,14 +141,12 @@ export default function DashboardPage() {
       animate="visible"
       variants={containerVariants}
     >
-      {/* Header Section */}
+      {/* Page Header with Breadcrumbs */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Dashboard Overview
-        </h1>
-        <p className="text-muted-foreground">
-          Welcome to your dashboard. Here&apos;s what&apos;s happening with your business today.
-        </p>
+        <PageHeader
+          title="Dashboard Overview"
+          description="Welcome to your dashboard. Here's what's happening with your business today."
+        />
       </motion.div>
 
       {/* Stats Cards Grid */}
@@ -228,7 +240,7 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[200px] sm:h-[250px] lg:h-[300px] flex items-center justify-center bg-muted/50 rounded-lg border-2 border-dashed border-border">
+              <div className="h-[200px] sm:h-[250px] lg:h-[300px] flex items-center justify-center bg-muted/50 rounded-lg border-2 border-dashed">
                 <motion.div 
                   className="text-center"
                   initial={{ opacity: 0 }}
@@ -317,7 +329,7 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[200px] sm:h-[225px] lg:h-[250px] flex items-center justify-center bg-muted/50 rounded-lg border-2 border-dashed border-border">
+            <div className="h-[200px] sm:h-[225px] lg:h-[250px] flex items-center justify-center bg-muted/50 rounded-lg border-2 border-dashed">
               <div className="text-center">
                 <PieChart className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
                 <p className="text-muted-foreground font-medium">Pie Chart Placeholder</p>

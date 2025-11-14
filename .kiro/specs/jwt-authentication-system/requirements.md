@@ -163,3 +163,39 @@ This document defines the requirements for a professional JWT-based authenticati
 3. THE Backend Application SHALL provide a roles decorator that can specify required roles for endpoints
 4. WHEN middleware is applied, THE Backend Application SHALL automatically validate tokens and inject user context
 5. WHERE custom authentication logic is needed, THE Backend Application SHALL allow extending the base authentication guard
+
+### Requirement 13: Template Configuration and Customization
+
+**User Story:** As a developer using this template, I want to easily customize authentication settings without modifying core code, so that I can adapt the system to my project needs
+
+#### Acceptance Criteria
+
+1. THE Authentication System SHALL provide centralized configuration files for both backend and frontend settings
+2. WHEN configuration values are changed, THE Authentication System SHALL apply changes without requiring code modifications
+3. THE Authentication System SHALL support environment-based configuration with sensible defaults
+4. THE Authentication System SHALL provide clear documentation for all configuration options
+5. WHERE optional features exist, THE Authentication System SHALL allow enabling/disabling features through configuration flags
+
+### Requirement 14: Default Roles and Permissions
+
+**User Story:** As a developer using this template, I want pre-configured roles and permissions, so that I can start using the system immediately
+
+#### Acceptance Criteria
+
+1. THE Authentication System SHALL provide default roles (Super Admin, Admin, Manager, User) with appropriate permissions
+2. WHEN the system is seeded, THE Authentication System SHALL create all default permissions following the naming convention
+3. THE Authentication System SHALL mark system roles as protected from deletion
+4. THE Authentication System SHALL follow a consistent permission naming convention ({resource}:{action})
+5. WHEN new users register, THE Authentication System SHALL assign the default User role automatically
+
+### Requirement 15: Developer Tools and Documentation
+
+**User Story:** As a developer, I want debugging tools and comprehensive documentation, so that I can develop and troubleshoot efficiently
+
+#### Acceptance Criteria
+
+1. WHEN running in development mode, THE Frontend Application SHALL provide an authentication debug panel showing user state and permissions
+2. THE Authentication System SHALL provide scripts to generate permission documentation from code
+3. THE Authentication System SHALL provide migration scripts for existing systems
+4. THE Authentication System SHALL include comprehensive documentation for customization and extension
+5. THE Authentication System SHALL provide convenience hooks for common authentication patterns

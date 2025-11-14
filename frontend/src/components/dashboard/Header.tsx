@@ -8,7 +8,10 @@ import {
   ChevronRight,
   User,
   Sun,
-  Moon
+  Moon,
+  Settings,
+  HelpCircle,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,6 +26,7 @@ import {
 import { useNavigation } from "@/contexts/NavigationContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 /**
  * Props for the Header component
@@ -44,8 +48,19 @@ export function Header() {
   const { user, logout } = useAuth();
   const { resolvedTheme, setThemeMode } = useTheme();
 
+  // Log user avatar info for debugging
+  console.log('[Header] Rendering with user:', {
+    hasUser: !!user,
+    userId: user?.id,
+    userName: user?.name,
+    avatarUrl: user?.avatarUrl,
+    hasAvatar: !!user?.avatarUrl
+  });
+
   const toggleTheme = () => {
-    setThemeMode(resolvedTheme === 'light' ? 'dark' : 'light');
+    const newMode = resolvedTheme === 'light' ? 'dark' : 'light';
+    console.log('[Header] Toggling theme from', resolvedTheme, 'to', newMode);
+    setThemeMode(newMode);
   };
 
   return (
@@ -60,7 +75,7 @@ export function Header() {
         aria-expanded={false}
         type="button"
       >
-        <Menu className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+        <Menu className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" aria-hidden="true" />
         <span className="sr-only">Open sidebar</span>
       </Button>
 
@@ -136,7 +151,7 @@ export function Header() {
           aria-label="Open search"
           type="button"
         >
-          <Search className="h-4 w-4" aria-hidden="true" />
+          <Search className="h-4 w-4 text-foreground" aria-hidden="true" />
           <span className="sr-only">Search</span>
         </Button>
 
@@ -150,32 +165,15 @@ export function Header() {
           type="button"
         >
           {resolvedTheme === 'light' ? (
-            <Moon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+            <Moon className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" aria-hidden="true" />
           ) : (
-            <Sun className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+            <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" aria-hidden="true" />
           )}
           <span className="sr-only">Toggle theme</span>
         </Button>
 
         {/* Notifications */}
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="relative transition-all duration-200 hover:scale-110 active:scale-95 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          aria-label="View notifications (3 unread)"
-          type="button"
-        >
-          <Bell className="h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-200 hover:rotate-12" aria-hidden="true" />
-          <span className="sr-only">View notifications</span>
-          {/* Notification badge */}
-          <span 
-            className="absolute -top-0.5 -right-0.5 h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-red-500 text-xs text-white flex items-center justify-center animate-pulse"
-            aria-label="3 unread notifications"
-          >
-            <span className="hidden sm:inline">3</span>
-            <span className="sm:hidden text-[10px]">3</span>
-          </span>
-        </Button>
+        <NotificationCenter />
 
         {/* Separator */}
         <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-border" />
@@ -190,42 +188,88 @@ export function Header() {
               aria-haspopup="menu"
             >
               <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
-                <AvatarImage src="/avatars/01.png" alt={`${user?.name || 'User'} profile picture`} />
-                <AvatarFallback>
-                  <User className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
+                <AvatarImage src={user?.avatarUrl || undefined} alt={`${user?.name || 'User'} profile picture`} />
+                <AvatarFallback className="bg-blue-600 text-white text-xs sm:text-sm font-semibold">
+                  {user?.name 
+                    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                    : <User className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
+                  }
                 </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent 
-            className="w-48 sm:w-56" 
+            className="w-64 sm:w-72" 
             align="end" 
             forceMount
             role="menu"
             aria-label="User account menu"
           >
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none truncate">{user?.name || 'User'}</p>
-                <p className="text-xs leading-none text-muted-foreground truncate">
-                  {user?.email || 'user@example.com'}
-                </p>
+            {/* User Info Header with Avatar */}
+            <DropdownMenuLabel className="font-normal p-3">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={user?.avatarUrl || undefined} alt={`${user?.name || 'User'} profile picture`} />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-sm font-semibold">
+                    {user?.name 
+                      ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      : <User className="h-5 w-5" aria-hidden="true" />
+                    }
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col space-y-1 flex-1 min-w-0">
+                  <p className="text-sm font-semibold leading-none truncate">{user?.name || 'User'}</p>
+                  <p className="text-xs leading-none text-muted-foreground truncate">
+                    {user?.email || 'user@example.com'}
+                  </p>
+                  {user?.role && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 w-fit">
+                      {user.role.name}
+                    </span>
+                  )}
+                </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem role="menuitem">
-              <User className="mr-2 h-4 w-4" aria-hidden="true" />
-              <span>Profile</span>
+            
+            {/* Menu Items */}
+            <DropdownMenuItem asChild role="menuitem" className="cursor-pointer">
+              <Link href="/dashboard/profile" className="flex items-center py-2">
+                <User className="mr-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Profile</span>
+                  <span className="text-xs text-muted-foreground">View and edit your profile</span>
+                </div>
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem role="menuitem">
-              <span>Settings</span>
+            
+            <DropdownMenuItem asChild role="menuitem" className="cursor-pointer">
+              <Link href="/dashboard/settings" className="flex items-center py-2">
+                <Settings className="mr-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Settings</span>
+                  <span className="text-xs text-muted-foreground">Manage your preferences</span>
+                </div>
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem role="menuitem">
-              <span>Support</span>
+            
+            <DropdownMenuItem role="menuitem" className="cursor-pointer py-2">
+              <HelpCircle className="mr-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Support</span>
+                <span className="text-xs text-muted-foreground">Get help and support</span>
+              </div>
             </DropdownMenuItem>
+            
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout} role="menuitem">
-              <span>Log out</span>
+            
+            <DropdownMenuItem 
+              onClick={logout} 
+              role="menuitem" 
+              className="cursor-pointer py-2 text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-50 dark:focus:bg-red-950"
+            >
+              <LogOut className="mr-3 h-4 w-4" aria-hidden="true" />
+              <span className="text-sm font-medium">Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

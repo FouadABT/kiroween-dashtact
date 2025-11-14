@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavigationProvider, useNavigation } from "@/contexts/NavigationContext";
-import { RouteGuard } from "@/components/auth/RouteGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Header } from "@/components/dashboard/Header";
 
@@ -85,7 +85,7 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-background">
       {/* Skip to main content link */}
       <a
         ref={skipLinkRef}
@@ -152,10 +152,10 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <RouteGuard requireAuth={true}>
+    <AuthGuard>
       <NavigationProvider>
         <DashboardLayoutContent>{children}</DashboardLayoutContent>
       </NavigationProvider>
-    </RouteGuard>
+    </AuthGuard>
   );
 }

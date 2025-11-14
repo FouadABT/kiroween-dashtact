@@ -226,6 +226,8 @@ export function ThemeProvider({
   const applyTheme = useCallback((theme: 'light' | 'dark', currentSettings: Settings | null) => {
     if (typeof window === 'undefined') return;
 
+    console.log('[ThemeContext] 🎨 applyTheme called:', { theme, hasSettings: !!currentSettings });
+
     // Update document class
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
@@ -234,12 +236,30 @@ export function ThemeProvider({
     // Apply CSS variables if settings are available
     if (currentSettings) {
       const palette = theme === 'light' ? currentSettings.lightPalette : currentSettings.darkPalette;
+      
+      console.log('[ThemeContext] 🎨 Applying palette:', {
+        theme,
+        border: palette.border,
+        input: palette.input,
+        sidebarBorder: palette.sidebarBorder
+      });
+      
       const colorVars = colorPaletteToCSSVariables(palette);
       const typographyVars = typographyToCSSVariables(currentSettings.typography);
+      
+      console.log('[ThemeContext] 🎨 CSS Variables:', {
+        '--border': colorVars['--border'],
+        '--input': colorVars['--input'],
+        '--sidebar-border': colorVars['--sidebar-border']
+      });
       
       // Batch color and typography updates together
       // This ensures a single reflow/repaint instead of two
       applyCSSVariables({ ...colorVars, ...typographyVars });
+      
+      console.log('[ThemeContext] ✅ Theme applied successfully');
+    } else {
+      console.log('[ThemeContext] ⚠️ No settings available, using CSS fallback values');
     }
   }, []);
 
@@ -250,9 +270,14 @@ export function ThemeProvider({
     try {
       setIsLoading(true);
       
+      console.log('[ThemeContext] fetchSettings called, userId:', userId);
+      
       // Try to load from cache first
       const cacheKey = userId ? CACHE_KEYS.USER_SETTINGS(userId) : CACHE_KEYS.GLOBAL_SETTINGS;
       const cachedSettings = CacheManager.get<Settings>(cacheKey);
+      
+      console.log('[ThemeContext] Cache key:', cacheKey);
+      console.log('[ThemeContext] Cached settings:', cachedSettings ? `found (themeMode: ${cachedSettings.themeMode})` : 'not found');
       
       if (cachedSettings) {
         // Use cached settings
@@ -266,6 +291,8 @@ export function ThemeProvider({
         setResolvedTheme(resolved);
         applyTheme(resolved, cachedSettings);
         
+        console.log('[ThemeContext] Using cached settings, themeMode:', mode, 'resolved:', resolved);
+        
         setIsLoading(false);
         return;
       }
@@ -273,22 +300,30 @@ export function ThemeProvider({
       // Cache miss - fetch from backend
       let fetchedSettings: Settings;
       
+      console.log('[ThemeContext] Cache miss, fetching from backend...');
+      
       if (userId) {
         // Try to get user-specific settings
         try {
+          console.log('[ThemeContext] Fetching user settings for userId:', userId);
           fetchedSettings = await SettingsApi.getByUserId(userId);
-        } catch {
+          console.log('[ThemeContext] User settings fetched, themeMode:', fetchedSettings.themeMode);
+        } catch (error) {
           // Fall back to global settings if user settings don't exist
-          console.warn('User settings not found, falling back to global settings');
+          console.warn('[ThemeContext] User settings not found, falling back to global settings', error);
           fetchedSettings = await SettingsApi.getGlobal();
+          console.log('[ThemeContext] Global settings fetched, themeMode:', fetchedSettings.themeMode);
         }
       } else {
-        // Get global settings
+        // Get global settings (public endpoint, no auth required)
+        console.log('[ThemeContext] No userId, fetching global settings');
         fetchedSettings = await SettingsApi.getGlobal();
+        console.log('[ThemeContext] Global settings fetched, themeMode:', fetchedSettings.themeMode);
       }
       
       // Cache the fetched settings
       CacheManager.set(cacheKey, fetchedSettings, CACHE_TTL.ONE_HOUR);
+      console.log('[ThemeContext] Settings cached with key:', cacheKey);
       
       setSettings(fetchedSettings);
       
@@ -301,10 +336,11 @@ export function ThemeProvider({
       setResolvedTheme(resolved);
       applyTheme(resolved, fetchedSettings);
       
+      console.log('[ThemeContext] Applied theme from fetched settings, themeMode:', mode, 'resolved:', resolved);
+      
     } catch (err) {
-      console.error('Failed to fetch settings:', err);
+      console.error('[ThemeContext] Failed to fetch settings:', err);
       // Continue with default theme even if settings fetch fails
-    } finally {
       setIsLoading(false);
     }
   }, [userId, resolveTheme, applyTheme, saveThemeMode]);
@@ -313,6 +349,8 @@ export function ThemeProvider({
    * Initialize theme on mount
    */
   useEffect(() => {
+    console.log('[ThemeContext] Initializing theme, userId:', userId);
+    
     // Load stored theme mode
     const storedMode = loadStoredThemeMode();
     setThemeModeState(storedMode);
@@ -325,7 +363,17 @@ export function ThemeProvider({
     
     // Fetch settings from backend
     fetchSettings();
-  }, [loadStoredThemeMode, resolveTheme, applyTheme, fetchSettings]);
+  }, [loadStoredThemeMode, resolveTheme, applyTheme, fetchSettings, userId]);
+  
+  /**
+   * Refetch settings when userId changes (user logs in/out)
+   */
+  useEffect(() => {
+    if (userId) {
+      console.log('[ThemeContext] userId changed to:', userId, '- refetching settings');
+      fetchSettings();
+    }
+  }, [userId, fetchSettings]);
 
   /**
    * Listen for system theme changes
@@ -351,6 +399,8 @@ export function ThemeProvider({
    * Set theme mode
    */
   const setThemeMode = useCallback((mode: ThemeMode) => {
+    console.log('[ThemeContext] setThemeMode called with:', mode);
+    
     setThemeModeState(mode);
     saveThemeMode(mode);
     
@@ -369,16 +419,40 @@ export function ThemeProvider({
         clearTimeout(debounceTimerRef.current);
       }
       
+      // Capture the mode value in the closure to avoid stale closure issues
+      const modeToSave = mode;
+      const settingsIdToUpdate = settings.id;
+      
       debounceTimerRef.current = setTimeout(async () => {
         try {
-          const updated = await SettingsApi.update(settings.id, { themeMode: mode });
+          console.log('[ThemeContext] Updating backend with mode:', modeToSave, 'settingsId:', settingsIdToUpdate);
+          
+          const updated = await SettingsApi.update(settingsIdToUpdate, { themeMode: modeToSave });
+          
+          console.log('[ThemeContext] Backend response:', updated);
+          
+          // Update settings state with the response
+          // This is important because the backend might have created new user-specific settings
           setSettings(updated);
+          
+          // Invalidate old cache entries
+          const globalCacheKey = CACHE_KEYS.GLOBAL_SETTINGS;
+          const userCacheKey = userId ? CACHE_KEYS.USER_SETTINGS(userId) : null;
+          CacheManager.remove(globalCacheKey);
+          if (userCacheKey) {
+            CacheManager.remove(userCacheKey);
+          }
+          
+          // Cache the updated settings with the correct key
+          // Use user cache if userId exists in the updated settings
+          const cacheKey = updated.userId ? CACHE_KEYS.USER_SETTINGS(updated.userId) : CACHE_KEYS.GLOBAL_SETTINGS;
+          CacheManager.set(cacheKey, updated, CACHE_TTL.ONE_HOUR);
         } catch (error) {
           console.error('Failed to update theme mode:', error);
         }
       }, 500);
     }
-  }, [settings, resolveTheme, applyTheme, saveThemeMode, announce]);
+  }, [settings, resolveTheme, applyTheme, saveThemeMode, announce, userId]);
 
   /**
    * Update color palette

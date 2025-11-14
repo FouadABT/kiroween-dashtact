@@ -1,20 +1,28 @@
 "use client";
 
+import { useEffect } from "react";
 import { DataTable } from "@/components/dashboard/DataTable";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { useMetadata } from "@/contexts/MetadataContext";
 
 export default function DataPage() {
+  const { updateMetadata } = useMetadata();
+
+  // Set page metadata on mount
+  useEffect(() => {
+    updateMetadata({
+      title: "Data Management",
+      description: "Manage your data and records",
+      keywords: ["data", "management", "records"],
+    });
+  }, [updateMetadata]);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Data Management
-          </h1>
-          <p className="text-muted-foreground">
-            Manage and view your data in organized tables.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Data Management"
+        description="Manage and view your data in organized tables."
+      />
 
       <DataTable />
     </div>

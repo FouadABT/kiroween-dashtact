@@ -8,6 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
+import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
+import { authConfig } from '@/config/auth.config';
+import { RegisterData } from '@/types/auth';
 
 interface SignupFormData {
   name: string;
@@ -38,8 +41,21 @@ export interface SignupFormProps {
   redirectTo?: string;
 }
 
-export function SignupForm(_props?: SignupFormProps) {
-  const { signup, isLoading: authLoading } = useAuth();
+/**
+ * Signup Form Component
+ * 
+ * Provides a complete registration form with:
+ * - Email, name, password, and confirm password inputs
+ * - Password strength indicator
+ * - Form validation (email format, password requirements)
+ * - Submit button with loading state
+ * - Error message display
+ * - Link to login page
+ * 
+ * Requirements: 1.1, 1.2, 8.1
+ */
+export function SignupForm(props?: SignupFormProps) {
+  const { register, isLoading: authLoading } = useAuth();
   const router = useRouter();
   
   const [formData, setFormData] = useState<SignupFormData>({
@@ -105,16 +121,37 @@ export function SignupForm(_props?: SignupFormProps) {
     setErrors({});
 
     try {
-      const success = await signup(formData.name, formData.email, formData.password);
+      // Prepare registration data (only send fields expected by backend)
+      const registerData: RegisterData = {
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+      };
+
+      // Call auth context register method
+      await register(registerData);
       
-      if (success) {
-        // Redirect to dashboard after successful signup
-        router.push('/dashboard');
-      } else {
-        setErrors({ general: 'Signup failed. Please try again.' });
+      // Call success callback if provided
+      if (props?.onSuccess) {
+        props.onSuccess();
       }
-    } catch {
-      setErrors({ general: 'Signup failed. Please try again.' });
+      
+      // Redirect to dashboard or specified redirect URL after successful signup
+      const redirectTo = props?.redirectTo || authConfig.redirects.afterRegister;
+      router.push(redirectTo);
+      
+    } catch (error) {
+      // Extract error message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Registration failed. Please try again.';
+      
+      setErrors({ general: errorMessage });
+      
+      // Call error callback if provided
+      if (props?.onError) {
+        props.onError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -232,9 +269,13 @@ export function SignupForm(_props?: SignupFormProps) {
             {errors.password}
           </p>
         )}
-        <p id="password-requirements" className="text-xs text-muted-foreground">
-          Must be at least 8 characters with uppercase, lowercase, and number
-        </p>
+        {/* Password Strength Indicator */}
+        {authConfig.ui.showPasswordStrength && formData.password && (
+          <PasswordStrengthIndicator 
+            password={formData.password}
+            showRequirements={true}
+          />
+        )}
       </div>
 
       <div className="space-y-2">

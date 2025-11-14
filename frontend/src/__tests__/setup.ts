@@ -26,9 +26,18 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock requestAnimationFrame
 global.requestAnimationFrame = vi.fn((cb) => {
-  cb(0);
+  setTimeout(cb, 0);
   return 0;
 });
+
+global.cancelAnimationFrame = vi.fn();
+
+// Mock ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
 
 // Mock fetch
 global.fetch = vi.fn();

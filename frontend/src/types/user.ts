@@ -5,6 +5,8 @@
  * that correspond to the backend Prisma User model.
  */
 
+import { RolePermission } from './permission';
+
 /**
  * User role interface matching the backend UserRole model
  */
@@ -17,6 +19,10 @@ export interface UserRole {
   description?: string;
   /** Whether the role is active */
   isActive: boolean;
+  /** Whether this is a system role that cannot be deleted */
+  isSystemRole: boolean;
+  /** Role permissions (populated from relation) */
+  rolePermissions?: RolePermission[];
   /** Role creation timestamp */
   createdAt: string;
   /** Last update timestamp */
@@ -33,12 +39,30 @@ export interface User {
   email: string;
   /** User's display name (optional) */
   name?: string;
+  /** User's avatar URL (optional) */
+  avatarUrl?: string | null;
+  /** User's biography (optional) */
+  bio?: string | null;
+  /** User's phone number (optional) */
+  phone?: string | null;
+  /** User's location (optional) */
+  location?: string | null;
+  /** User's website URL (optional) */
+  website?: string | null;
   /** User's role ID (foreign key) */
   roleId: string;
   /** User's role object (populated from relation) */
   role: UserRole;
   /** Whether the user account is active */
   isActive: boolean;
+  /** Whether the user's email has been verified */
+  emailVerified: boolean;
+  /** Authentication provider (local, google, github, etc.) */
+  authProvider: string;
+  /** Whether two-factor authentication is enabled */
+  twoFactorEnabled: boolean;
+  /** Last password change timestamp (optional) */
+  lastPasswordChange?: string | null;
   /** Account creation timestamp */
   createdAt: string;
   /** Last update timestamp */
@@ -52,7 +76,15 @@ export interface CreateUserData {
   email: string;
   name?: string;
   password: string;
+  avatarUrl?: string;
+  bio?: string;
+  phone?: string;
+  location?: string;
+  website?: string;
   roleId?: string; // Now accepts role ID instead of enum
+  emailVerified?: boolean;
+  authProvider?: 'local' | 'google' | 'github' | 'facebook' | 'twitter';
+  twoFactorEnabled?: boolean;
 }
 
 /**
@@ -62,8 +94,16 @@ export interface UpdateUserData {
   id: string;
   email?: string;
   name?: string;
+  avatarUrl?: string;
+  bio?: string;
+  phone?: string;
+  location?: string;
+  website?: string;
   roleId?: string; // Now accepts role ID instead of enum
   isActive?: boolean;
+  emailVerified?: boolean;
+  authProvider?: 'local' | 'google' | 'github' | 'facebook' | 'twitter';
+  twoFactorEnabled?: boolean;
 }
 
 /**
@@ -91,20 +131,33 @@ export interface UserProfile {
   id: string;
   email: string;
   name?: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  phone?: string | null;
+  location?: string | null;
+  website?: string | null;
   roleId: string;
   role: UserRole;
   isActive: boolean;
+  emailVerified: boolean;
+  authProvider: string;
+  twoFactorEnabled: boolean;
+  lastPasswordChange?: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Array of permission strings the user has through their role */
+  permissions?: string[];
 }
 
 /**
  * Authentication response from login/register
+ * Matches backend AuthResponse interface
  */
 export interface AuthResponse {
   user: UserProfile;
-  token?: string;
-  message?: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number; // Access token expiration in seconds
 }
 
 /**

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This design document outlines a professional, production-ready JWT-based authentication system for a full-stack application using NestJS (backend) and Next.js (frontend). The system implements secure user authentication, role-based access control (RBAC), and flexible permission management with a focus on security, scalability, and developer experience.
+This design document outlines a professional, production-ready JWT-based authentication system for a full-stack application using NestJS (backend) and Next.js (frontend). The system is designed as a **starter kit template** that provides secure user authentication, role-based access control (RBAC), and flexible permission management with a focus on security, scalability, developer experience, and easy customization.
 
 ### Key Features
 
@@ -15,6 +15,10 @@ This design document outlines a professional, production-ready JWT-based authent
 - **Global Auth Context**: Centralized authentication state management in frontend
 - **Permission-Based UI**: Dynamic UI rendering based on user permissions
 - **Security Features**: Rate limiting, token blacklisting, audit logging
+- **Template-Ready Configuration**: Easy customization without touching core code
+- **Comprehensive Seeding**: Default roles and permissions for immediate use
+- **Developer Tools**: Debug panel and documentation generators (dev mode)
+- **Extensible Architecture**: Hooks for future features (OAuth, 2FA, email verification)
 
 ## Architecture
 
@@ -85,6 +89,212 @@ sequenceDiagram
     F->>B: POST /auth/refresh + Refresh token
     B->>B: Validate refresh token
     B-->>F: New access token
+```
+
+## Template Configuration System
+
+### Auth Configuration File
+
+**Purpose**: Centralized configuration for easy customization without modifying core code
+
+**File**: `backend/src/config/auth.config.ts`
+
+```typescript
+export const authConfig = {
+  // Token expiration settings
+  tokens: {
+    accessTokenExpiration: process.env.JWT_ACCESS_EXPIRATION || '15m',
+    refreshTokenExpiration: process.env.JWT_REFRESH_EXPIRATION || '7d',
+    resetTokenExpiration: '1h',
+  },
+  
+  // Password requirements
+  password: {
+    minLength: 8,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireNumbers: true,
+    requireSpecialChars: false, // Can be enabled per project
+  },
+  
+  // Security settings
+  security: {
+    bcryptRounds: 10,
+    rateLimitTTL: 900, // 15 minutes
+    rateLimitMax: 5,   // 5 attempts
+    enableAuditLogging: true,
+  },
+  
+  // Feature flags (for future extensibility)
+  features: {
+    emailVerification: false,    // Can be enabled later
+    twoFactorAuth: false,         // Can be enabled later
+    socialAuth: false,            // OAuth providers
+    rememberMe: true,
+    passwordReset: true,
+    sessionManagement: false,     // View/revoke active sessions
+  },
+  
+  // Default role assignment
+  defaultRole: 'USER',
+  
+  // Permission naming convention
+  permissionFormat: '{resource}:{action}', // e.g., users:read
+};
+```
+
+**Frontend Configuration**: `frontend/src/config/auth.config.ts`
+
+```typescript
+export const authConfig = {
+  // API endpoints
+  endpoints: {
+    login: '/auth/login',
+    register: '/auth/register',
+    logout: '/auth/logout',
+    refresh: '/auth/refresh',
+    profile: '/auth/profile',
+  },
+  
+  // Token storage
+  storage: {
+    accessTokenKey: 'accessToken',
+    useLocalStorage: true, // vs sessionStorage
+  },
+  
+  // Redirect paths
+  redirects: {
+    afterLogin: '/dashboard',
+    afterLogout: '/login',
+    unauthorized: '/login',
+    forbidden: '/403',
+  },
+  
+  // Token refresh settings
+  tokenRefresh: {
+    enabled: true,
+    refreshBeforeExpiry: 120, // seconds (2 minutes)
+  },
+  
+  // UI settings
+  ui: {
+    showPasswordStrength: true,
+    showRememberMe: true,
+    enableDebugPanel: process.env.NODE_ENV === 'development',
+  },
+};
+```
+
+### Permission Naming Convention
+
+**Standard Format**: `{resource}:{action}`
+
+**Resources**: 
+- `users` - User management
+- `roles` - Role management
+- `permissions` - Permission management
+- `settings` - Application settings
+- `profile` - User's own profile
+- Custom resources as needed
+
+**Actions**:
+- `read` - View/list resources
+- `write` - Create/update resources
+- `delete` - Delete resources
+- `admin` - Full administrative access to resource
+
+**Special Permissions**:
+- `*:*` - Super admin (all permissions)
+- `{resource}:*` - All actions on a specific resource
+- `profile:write` - Edit own profile (special case, not admin-level)
+
+**Examples**:
+```typescript
+'users:read'        // Can view users
+'users:write'       // Can create/edit users
+'users:delete'      // Can delete users
+'users:*'           // All user operations
+'settings:admin'    // Full settings access
+'profile:write'     // Edit own profile only
+'*:*'               // Super admin
+```
+
+### Default Roles and Permissions
+
+**Seeding Configuration**: `backend/prisma/seed-data/auth.seed.ts`
+
+```typescript
+export const DEFAULT_ROLES = {
+  SUPER_ADMIN: {
+    name: 'Super Admin',
+    description: 'Full system access with all permissions',
+    permissions: ['*:*'],
+    isSystemRole: true, // Cannot be deleted
+  },
+  
+  ADMIN: {
+    name: 'Admin',
+    description: 'Administrative access to most features',
+    permissions: [
+      'users:read', 'users:write', 'users:delete',
+      'roles:read', 'roles:write',
+      'permissions:read',
+      'settings:read', 'settings:write',
+      'profile:write',
+    ],
+    isSystemRole: true,
+  },
+  
+  MANAGER: {
+    name: 'Manager',
+    description: 'Can manage users and view settings',
+    permissions: [
+      'users:read', 'users:write',
+      'roles:read',
+      'settings:read',
+      'profile:write',
+    ],
+    isSystemRole: false, // Can be modified/deleted
+  },
+  
+  USER: {
+    name: 'User',
+    description: 'Standard user with basic access',
+    permissions: [
+      'users:read',      // Can view user list
+      'profile:write',   // Can edit own profile
+      'settings:read',   // Can view settings
+    ],
+    isSystemRole: true,
+  },
+};
+
+export const DEFAULT_PERMISSIONS = [
+  // User management
+  { name: 'users:read', resource: 'users', action: 'read', description: 'View users' },
+  { name: 'users:write', resource: 'users', action: 'write', description: 'Create/edit users' },
+  { name: 'users:delete', resource: 'users', action: 'delete', description: 'Delete users' },
+  
+  // Role management
+  { name: 'roles:read', resource: 'roles', action: 'read', description: 'View roles' },
+  { name: 'roles:write', resource: 'roles', action: 'write', description: 'Create/edit roles' },
+  { name: 'roles:delete', resource: 'roles', action: 'delete', description: 'Delete roles' },
+  
+  // Permission management
+  { name: 'permissions:read', resource: 'permissions', action: 'read', description: 'View permissions' },
+  { name: 'permissions:write', resource: 'permissions', action: 'write', description: 'Assign permissions' },
+  
+  // Settings
+  { name: 'settings:read', resource: 'settings', action: 'read', description: 'View settings' },
+  { name: 'settings:write', resource: 'settings', action: 'write', description: 'Modify settings' },
+  { name: 'settings:admin', resource: 'settings', action: 'admin', description: 'Full settings access' },
+  
+  // Profile
+  { name: 'profile:write', resource: 'profile', action: 'write', description: 'Edit own profile' },
+  
+  // Super admin
+  { name: '*:*', resource: '*', action: '*', description: 'All permissions' },
+];
 ```
 
 ## Components and Interfaces
@@ -255,6 +465,107 @@ export class RolesGuard implements CanActivate {
 }
 ```
 
+### Developer Tools (Development Mode Only)
+
+#### 1. Auth Debug Panel (`frontend/src/components/dev/AuthDebugPanel.tsx`)
+
+**Purpose**: Help developers test and debug authentication during development
+
+**Features**:
+```typescript
+interface AuthDebugPanelProps {
+  position?: 'bottom-right' | 'bottom-left';
+}
+
+export function AuthDebugPanel() {
+  const { user, isAuthenticated, hasPermission } = useAuth();
+  
+  return (
+    <div className="fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-lg shadow-lg max-w-md">
+      <h3>Auth Debug Panel</h3>
+      
+      {/* Current User Info */}
+      <div>
+        <strong>User:</strong> {user?.email || 'Not authenticated'}
+        <strong>Role:</strong> {user?.role.name}
+      </div>
+      
+      {/* Token Info */}
+      <div>
+        <strong>Access Token:</strong> {getTokenExpiry()}
+        <button onClick={forceRefresh}>Force Refresh</button>
+      </div>
+      
+      {/* Permissions List */}
+      <div>
+        <strong>Permissions:</strong>
+        <ul>
+          {user?.permissions.map(p => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      </div>
+      
+      {/* Permission Tester */}
+      <div>
+        <input 
+          placeholder="Test permission (e.g., users:write)"
+          onChange={(e) => setTestPerm(e.target.value)}
+        />
+        <span>Has permission: {hasPermission(testPerm) ? '✅' : '❌'}</span>
+      </div>
+      
+      {/* Quick Actions */}
+      <div>
+        <button onClick={logout}>Logout</button>
+        <button onClick={clearTokens}>Clear Tokens</button>
+      </div>
+    </div>
+  );
+}
+```
+
+**Usage**: Only rendered in development mode
+```typescript
+// In layout.tsx
+{process.env.NODE_ENV === 'development' && <AuthDebugPanel />}
+```
+
+#### 2. Permission Documentation Generator
+
+**Script**: `.kiro/scripts/generate-permission-docs.ts`
+
+**Purpose**: Automatically generate documentation of all protected endpoints
+
+```typescript
+// Scans backend controllers for @Permissions() decorators
+// Generates markdown documentation
+
+// Output: docs/API_PERMISSIONS.md
+/*
+# API Permissions Documentation
+
+## User Management Endpoints
+
+### GET /users
+- **Permission Required**: `users:read`
+- **Description**: List all users
+- **Role Access**: Admin, Manager, User
+
+### POST /users
+- **Permission Required**: `users:write`
+- **Description**: Create new user
+- **Role Access**: Admin, Manager
+
+...
+*/
+```
+
+**Usage**:
+```bash
+npm run generate:permission-docs
+```
+
 ### Frontend Components
 
 #### 1. Auth Context (`frontend/src/contexts/AuthContext.tsx`)
@@ -386,7 +697,103 @@ export function RoleGuard({ children, role, fallback }: RoleGuardProps) {
 - New password page (with token validation)
 - Confirmation and redirect to login
 
-#### 4. API Client Integration (`frontend/src/lib/api.ts`)
+#### 4. Convenience Hooks
+
+**usePermission Hook** (`frontend/src/hooks/usePermission.ts`):
+```typescript
+/**
+ * Simplified hook for checking a single permission
+ * @example
+ * const canEditUsers = usePermission('users:write');
+ * if (canEditUsers) { ... }
+ */
+export function usePermission(permission: string): boolean {
+  const { hasPermission } = useAuth();
+  return hasPermission(permission);
+}
+```
+
+**useRequireAuth Hook** (`frontend/src/hooks/useRequireAuth.ts`):
+```typescript
+/**
+ * Hook that redirects to login if not authenticated
+ * Use in pages that require authentication
+ * @example
+ * const { isLoading } = useRequireAuth();
+ * if (isLoading) return <Loading />;
+ */
+export function useRequireAuth(redirectTo = '/login') {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      // Store intended destination
+      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      router.push(redirectTo);
+    }
+  }, [isAuthenticated, isLoading, redirectTo, router]);
+  
+  return { isAuthenticated, isLoading };
+}
+```
+
+**useRequirePermission Hook** (`frontend/src/hooks/useRequirePermission.ts`):
+```typescript
+/**
+ * Hook that redirects to forbidden page if permission missing
+ * @example
+ * const { hasAccess, isLoading } = useRequirePermission('users:write');
+ */
+export function useRequirePermission(
+  permission: string | string[],
+  requireAll = false
+) {
+  const { hasPermission, hasAllPermissions, hasAnyPermission, isLoading } = useAuth();
+  const router = useRouter();
+  
+  const hasAccess = useMemo(() => {
+    if (isLoading) return false;
+    
+    if (Array.isArray(permission)) {
+      return requireAll 
+        ? hasAllPermissions(permission)
+        : hasAnyPermission(permission);
+    }
+    return hasPermission(permission);
+  }, [permission, requireAll, hasPermission, hasAllPermissions, hasAnyPermission, isLoading]);
+  
+  useEffect(() => {
+    if (!isLoading && !hasAccess) {
+      router.push('/403');
+    }
+  }, [hasAccess, isLoading, router]);
+  
+  return { hasAccess, isLoading };
+}
+```
+
+**useRole Hook** (`frontend/src/hooks/useRole.ts`):
+```typescript
+/**
+ * Hook for checking user role
+ * @example
+ * const isAdmin = useRole('Admin');
+ */
+export function useRole(role: string | string[]): boolean {
+  const { user } = useAuth();
+  
+  if (!user) return false;
+  
+  if (Array.isArray(role)) {
+    return role.includes(user.role.name);
+  }
+  
+  return user.role.name === role;
+}
+```
+
+#### 5. API Client Integration (`frontend/src/lib/api.ts`)
 
 **Token Management**:
 ```typescript
@@ -459,6 +866,136 @@ class ApiClient {
       return false;
     }
   }
+}
+```
+
+## Migration and Extensibility
+
+### Migration from Existing System
+
+**Migration Script**: `backend/src/scripts/migrate-to-permissions.ts`
+
+**Purpose**: Migrate existing users from old role system to new permission-based system
+
+```typescript
+/**
+ * Migration steps:
+ * 1. Create new Permission and RolePermission tables
+ * 2. Seed default permissions
+ * 3. Map existing roles to new permission system
+ * 4. Verify all users have valid role assignments
+ * 5. Update any hardcoded role checks to use permissions
+ */
+
+async function migrateToPermissionSystem() {
+  // 1. Backup existing data
+  await backupDatabase();
+  
+  // 2. Run Prisma migration
+  await runPrismaMigration();
+  
+  // 3. Seed permissions
+  await seedPermissions();
+  
+  // 4. Map existing roles
+  const roleMapping = {
+    'ADMIN': ['users:*', 'settings:*', 'roles:*'],
+    'USER': ['users:read', 'profile:write'],
+  };
+  
+  for (const [roleName, permissions] of Object.entries(roleMapping)) {
+    await assignPermissionsToRole(roleName, permissions);
+  }
+  
+  // 5. Verify migration
+  await verifyMigration();
+  
+  console.log('Migration complete!');
+}
+```
+
+### Extensibility Hooks
+
+**Future Feature Support**: The system is designed with hooks for future enhancements
+
+#### Email Verification (Disabled by Default)
+
+**Database Schema** (ready but not enforced):
+```prisma
+model User {
+  // ... existing fields
+  emailVerified Boolean  @default(false) @map("email_verified")
+  verificationToken String? @unique @map("verification_token")
+  verificationTokenExpiry DateTime? @map("verification_token_expiry")
+}
+```
+
+**Enable in config**:
+```typescript
+features: {
+  emailVerification: true, // Enable email verification
+}
+```
+
+#### OAuth/Social Authentication (Prepared)
+
+**Database Schema** (ready for OAuth):
+```prisma
+model User {
+  // ... existing fields
+  authProvider String @default("local") @map("auth_provider") // 'local', 'google', 'github'
+  providerId String? @map("provider_id") // OAuth provider user ID
+}
+```
+
+**Enable in config**:
+```typescript
+features: {
+  socialAuth: true,
+}
+
+oauth: {
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  },
+  github: {
+    clientId: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  },
+}
+```
+
+#### Two-Factor Authentication (Prepared)
+
+**Database Schema** (ready for 2FA):
+```prisma
+model User {
+  // ... existing fields
+  twoFactorEnabled Boolean @default(false) @map("two_factor_enabled")
+  twoFactorSecret String? @map("two_factor_secret")
+}
+```
+
+#### Session Management (Prepared)
+
+**Database Schema** (ready for session tracking):
+```prisma
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  ipAddress String   @map("ip_address")
+  userAgent String   @map("user_agent")
+  lastActive DateTime @default(now()) @map("last_active")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+  @@map("user_sessions")
 }
 ```
 
@@ -747,22 +1284,136 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - [ ] Configure session timeout warnings
 - [ ] Implement multi-factor authentication (optional)
 
+## Template Customization Guide
+
+### For Template Users
+
+**Quick Start Customization**:
+
+1. **Configure Authentication Settings**:
+   - Edit `backend/src/config/auth.config.ts`
+   - Edit `frontend/src/config/auth.config.ts`
+   - Update environment variables
+
+2. **Customize Roles and Permissions**:
+   - Edit `backend/prisma/seed-data/auth.seed.ts`
+   - Add your application-specific permissions
+   - Run `npm run prisma:seed`
+
+3. **Add New Protected Resources**:
+   ```typescript
+   // Backend: Add permission check
+   @Get()
+   @Permissions('posts:read')
+   async getPosts() { ... }
+   
+   // Frontend: Add permission guard
+   <PermissionGuard permission="posts:read">
+     <PostsList />
+   </PermissionGuard>
+   ```
+
+4. **Customize UI**:
+   - Modify login/signup pages in `frontend/src/app/(auth)/`
+   - Update branding and styling
+   - Customize error messages
+
+5. **Enable Optional Features**:
+   ```typescript
+   // In auth.config.ts
+   features: {
+     emailVerification: true,  // Enable email verification
+     twoFactorAuth: true,      // Enable 2FA
+     socialAuth: true,         // Enable OAuth
+   }
+   ```
+
+### Adding New Permissions
+
+**Step-by-step**:
+
+1. **Define Permission**:
+   ```typescript
+   // In seed-data/auth.seed.ts
+   { 
+     name: 'posts:write', 
+     resource: 'posts', 
+     action: 'write', 
+     description: 'Create/edit posts' 
+   }
+   ```
+
+2. **Assign to Roles**:
+   ```typescript
+   ADMIN: {
+     permissions: [
+       // ... existing
+       'posts:write',
+     ]
+   }
+   ```
+
+3. **Protect Backend Endpoint**:
+   ```typescript
+   @Post()
+   @Permissions('posts:write')
+   async createPost() { ... }
+   ```
+
+4. **Protect Frontend UI**:
+   ```typescript
+   const canCreatePost = usePermission('posts:write');
+   
+   {canCreatePost && <CreatePostButton />}
+   ```
+
+5. **Reseed Database**:
+   ```bash
+   npm run prisma:seed
+   ```
+
 ## Future Enhancements
 
-### Phase 2 Features
-- Multi-factor authentication (TOTP, SMS)
-- OAuth2 integration (Google, GitHub, etc.)
-- Session management dashboard
-- Device tracking and management
-- IP-based access restrictions
-- Passwordless authentication (magic links)
-- Biometric authentication support
+### Phase 1: Core Template (Current)
+- ✅ JWT authentication with refresh tokens
+- ✅ RBAC with flexible permissions
+- ✅ Frontend and backend guards
+- ✅ Configuration system
+- ✅ Default roles and permissions
+- ✅ Developer tools
+- ✅ Migration scripts
 
-### Phase 3 Features
-- Fine-grained permissions (resource-level)
-- Dynamic permission assignment
-- Permission inheritance
-- Audit log viewer in admin panel
-- Advanced rate limiting (per user, per IP)
-- Anomaly detection for suspicious activity
-- Compliance reporting (GDPR, SOC2)
+### Phase 2: Optional Features (Prepared, Disabled by Default)
+- 📦 Email verification flow
+- 📦 Two-factor authentication (TOTP)
+- 📦 OAuth2 integration (Google, GitHub, etc.)
+- 📦 Session management dashboard
+- 📦 Password reset via email
+- 📦 Account lockout after failed attempts
+
+### Phase 3: Advanced Features (Future)
+- 🔮 Fine-grained permissions (resource-level: "edit own posts only")
+- 🔮 Permission inheritance and hierarchies
+- 🔮 Audit log viewer in admin panel
+- 🔮 Advanced rate limiting (per user, per IP, per endpoint)
+- 🔮 Anomaly detection for suspicious activity
+- 🔮 Compliance reporting (GDPR, SOC2)
+- 🔮 Passwordless authentication (magic links)
+- 🔮 Biometric authentication support
+- 🔮 Multi-tenancy support
+
+### Template Philosophy
+
+This authentication system follows a **progressive enhancement** approach:
+
+1. **Core First**: Solid, production-ready JWT auth with RBAC
+2. **Configuration Over Code**: Easy customization via config files
+3. **Extensible by Design**: Hooks and schemas ready for future features
+4. **Developer Friendly**: Debug tools, documentation generators, clear conventions
+5. **Template Ready**: Can be dropped into any project and customized quickly
+
+The goal is to provide a **complete, working authentication system** that developers can:
+- Use immediately without modifications
+- Customize easily through configuration
+- Extend with advanced features when needed
+- Learn from as a reference implementation

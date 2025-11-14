@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -24,13 +24,30 @@ export function RouteGuard({
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
+    console.log('[RouteGuard]', { 
+      pathname, 
+      isLoading, 
+      isAuthenticated, 
+      requireAuth,
+      hasRedirected: hasRedirectedRef.current 
+    });
+
     // Don't redirect while loading
     if (isLoading) return;
 
+    // Prevent multiple redirects
+    if (hasRedirectedRef.current) {
+      console.log('[RouteGuard] Already redirected, skipping');
+      return;
+    }
+
     // Handle protected routes
     if (requireAuth && !isAuthenticated) {
+      console.log('[RouteGuard] Protected route, redirecting to login');
+      hasRedirectedRef.current = true;
       const destination = redirectTo || `/login?redirect=${encodeURIComponent(pathname)}`;
       router.push(destination);
       return;
@@ -38,10 +55,14 @@ export function RouteGuard({
 
     // Handle auth routes when already authenticated
     if (!requireAuth && isAuthenticated) {
+      console.log('[RouteGuard] Auth route but user authenticated, redirecting to dashboard');
+      hasRedirectedRef.current = true;
       const destination = redirectTo || "/dashboard";
       router.push(destination);
       return;
     }
+
+    console.log('[RouteGuard] No redirect needed');
   }, [isAuthenticated, isLoading, requireAuth, redirectTo, pathname, router]);
 
   // Show loading state while checking authentication

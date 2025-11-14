@@ -16,17 +16,23 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { ToggleStatusDto } from './dto/toggle-status.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   /**
    * Create a new user
    * POST /users
+   * Requires: users:write permission
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Permissions('users:write')
   async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
     return {
@@ -39,8 +45,10 @@ export class UsersController {
   /**
    * Get all available roles
    * GET /users/roles
+   * Requires: users:read permission
    */
   @Get('roles')
+  @Permissions('users:read')
   async getRoles() {
     const roles = await this.usersService.getRoles();
     return {
@@ -53,8 +61,10 @@ export class UsersController {
   /**
    * Get all users with filtering and pagination
    * GET /users
+   * Requires: users:read permission
    */
   @Get()
+  @Permissions('users:read')
   async findAll(@Query() query: UserQueryDto) {
     const result = await this.usersService.findAll(query);
     return {
@@ -67,8 +77,10 @@ export class UsersController {
   /**
    * Get user by ID
    * GET /users/:id
+   * Requires: users:read permission
    */
   @Get(':id')
+  @Permissions('users:read')
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findOne(id);
     return {
@@ -81,8 +93,10 @@ export class UsersController {
   /**
    * Update user
    * PATCH /users/:id
+   * Requires: users:write permission
    */
   @Patch(':id')
+  @Permissions('users:write')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     const user = await this.usersService.update(id, updateUserDto);
     return {
@@ -95,8 +109,10 @@ export class UsersController {
   /**
    * Toggle user active status
    * PATCH /users/:id/status
+   * Requires: users:write permission
    */
   @Patch(':id/status')
+  @Permissions('users:write')
   async toggleStatus(
     @Param('id') id: string,
     @Body() toggleStatusDto: ToggleStatusDto,
@@ -115,9 +131,11 @@ export class UsersController {
   /**
    * Soft delete user (deactivate)
    * DELETE /users/:id
+   * Requires: users:delete permission
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions('users:delete')
   async remove(@Param('id') id: string) {
     await this.usersService.remove(id);
     return {
@@ -129,9 +147,11 @@ export class UsersController {
   /**
    * Hard delete user (permanent deletion)
    * DELETE /users/:id/permanent
+   * Requires: users:delete permission
    */
   @Delete(':id/permanent')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Permissions('users:delete')
   async hardDelete(@Param('id') id: string) {
     await this.usersService.hardDelete(id);
     return {
