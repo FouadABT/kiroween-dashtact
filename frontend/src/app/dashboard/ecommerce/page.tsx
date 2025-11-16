@@ -53,11 +53,11 @@ export default function EcommerceDashboardPage() {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - parseInt(dateRange));
 
-        // Fetch orders
+        // Fetch orders (use pagination limit)
         const ordersResponse = await OrdersApi.getAll({
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
-          limit: 1000, // Get all orders in range
+          limit: 100, // Use max allowed limit
         });
 
         // Backend returns { orders: [], total, page, limit, totalPages }

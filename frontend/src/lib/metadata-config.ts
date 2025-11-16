@@ -758,6 +758,51 @@ export const metadataConfig: Record<string, PageMetadata> = {
     },
   },
 
+  '/dashboard/settings/menus': {
+    title: 'Menu Management',
+    description: 'Manage dashboard navigation menus and menu items',
+    keywords: ['menus', 'navigation', 'dashboard', 'management'],
+    breadcrumb: { label: 'Menus' },
+    openGraph: {
+      title: 'Menu Management',
+      description: 'Configure and manage dashboard navigation menus',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Menu Management',
+      description: 'Configure and manage dashboard navigation menus',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+    },
+  },
+
+  '/dashboard/settings/menus/new': {
+    title: 'Create Menu Item',
+    description: 'Create a new menu item for dashboard navigation',
+    keywords: ['menu', 'create', 'navigation', 'dashboard'],
+    breadcrumb: { label: 'New Menu' },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+    },
+  },
+
+  '/dashboard/settings/menus/:id/edit': {
+    title: 'Edit Menu: {menuLabel}',
+    description: 'Edit menu item configuration',
+    keywords: ['menu', 'edit', 'navigation'],
+    breadcrumb: { label: 'Edit', dynamic: false },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+    },
+  },
+
   // Public Storefront
   '/shop': {
     title: 'Shop - Browse Our Products',
@@ -923,19 +968,6 @@ export const metadataConfig: Record<string, PageMetadata> = {
       follow: true,
       maxImagePreview: 'large',
       maxSnippet: 160,
-    },
-  },
-
-  '/checkout/success': {
-    title: 'Order Confirmed',
-    description: 'Your order has been successfully placed',
-    keywords: ['order', 'confirmation', 'success'],
-    breadcrumb: { label: 'Order Confirmed' },
-    robots: {
-      index: false,
-      follow: false,
-      noarchive: true,
-      nosnippet: true,
     },
   },
 

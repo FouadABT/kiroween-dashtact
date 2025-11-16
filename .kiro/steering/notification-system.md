@@ -1,6 +1,8 @@
 ---
-inclusion: always
+inclusion: fileMatch
+fileMatchPattern: '{backend/src/notifications/**,frontend/src/components/notifications/**,frontend/src/contexts/NotificationContext.tsx}'
 ---
+
 # Notification System - Complete Steering Guide
 
 ## Overview

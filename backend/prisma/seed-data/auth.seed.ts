@@ -140,6 +140,58 @@ export const DEFAULT_PERMISSIONS: PermissionDefinition[] = [
     description: 'All settings operations',
   },
 
+  // Menu Management Permissions
+  {
+    name: 'menu:read',
+    resource: 'menu',
+    action: 'read',
+    description: 'View dashboard menus',
+  },
+  {
+    name: 'menu:write',
+    resource: 'menu',
+    action: 'write',
+    description: 'Create and edit dashboard menus',
+  },
+  {
+    name: 'menu:delete',
+    resource: 'menu',
+    action: 'delete',
+    description: 'Delete dashboard menus',
+  },
+  {
+    name: 'menu:*',
+    resource: 'menu',
+    action: '*',
+    description: 'All menu management operations',
+  },
+
+  // Dynamic Menu Management Permissions (Super Admin Only)
+  {
+    name: 'menus:view',
+    resource: 'menus',
+    action: 'view',
+    description: 'View menu management interface',
+  },
+  {
+    name: 'menus:create',
+    resource: 'menus',
+    action: 'create',
+    description: 'Create new menus',
+  },
+  {
+    name: 'menus:update',
+    resource: 'menus',
+    action: 'update',
+    description: 'Edit existing menus',
+  },
+  {
+    name: 'menus:delete',
+    resource: 'menus',
+    action: 'delete',
+    description: 'Delete menus',
+  },
+
   // Profile Permissions
   {
     name: 'profile:write',
@@ -304,6 +356,62 @@ export const DEFAULT_PERMISSIONS: PermissionDefinition[] = [
     description: 'All custom pages operations',
   },
 
+  // Dashboard Customization Permissions
+  {
+    name: 'widgets:read',
+    resource: 'widgets',
+    action: 'read',
+    description: 'View widget definitions and registry',
+  },
+  {
+    name: 'widgets:write',
+    resource: 'widgets',
+    action: 'write',
+    description: 'Create and edit widget definitions',
+  },
+  {
+    name: 'widgets:delete',
+    resource: 'widgets',
+    action: 'delete',
+    description: 'Delete widget definitions',
+  },
+  {
+    name: 'layouts:read',
+    resource: 'layouts',
+    action: 'read',
+    description: 'View dashboard layouts',
+  },
+  {
+    name: 'layouts:write',
+    resource: 'layouts',
+    action: 'write',
+    description: 'Create and edit dashboard layouts',
+  },
+  {
+    name: 'layouts:delete',
+    resource: 'layouts',
+    action: 'delete',
+    description: 'Delete dashboard layouts',
+  },
+  {
+    name: 'navigation:read',
+    resource: 'navigation',
+    action: 'read',
+    description: 'View navigation items',
+  },
+  {
+    name: 'navigation:write',
+    resource: 'navigation',
+    action: 'write',
+    description: 'Create and edit navigation items',
+  },
+  {
+    name: 'navigation:delete',
+    resource: 'navigation',
+    action: 'delete',
+    description: 'Delete navigation items',
+  },
+
   // E-Commerce Permissions
   // Products
   {
@@ -424,7 +532,13 @@ export const DEFAULT_ROLES: Record<string, RoleDefinition> = {
   SUPER_ADMIN: {
     name: 'Super Admin',
     description: 'Full system access with all permissions. Cannot be deleted.',
-    permissions: ['*:*'],
+    permissions: [
+      '*:*',
+      'menus:view',
+      'menus:create',
+      'menus:update',
+      'menus:delete',
+    ],
     isSystemRole: true,
   },
 
@@ -461,6 +575,19 @@ export const DEFAULT_ROLES: Record<string, RoleDefinition> = {
       'pages:write',
       'pages:delete',
       'pages:publish',
+      // Dashboard Customization Permissions
+      'widgets:read',
+      'widgets:write',
+      'widgets:delete',
+      'layouts:read',
+      'layouts:write',
+      'layouts:delete',
+      'navigation:read',
+      'navigation:write',
+      'navigation:delete',
+      'menu:read',
+      'menu:write',
+      'menu:delete',
       // E-Commerce Permissions (Full Access)
       'customers:read',
       'customers:write',
@@ -493,6 +620,12 @@ export const DEFAULT_ROLES: Record<string, RoleDefinition> = {
       'notifications:read',
       'landing:read',
       'pages:read',
+      // Dashboard Customization Permissions (Read/Write)
+      'widgets:read',
+      'layouts:read',
+      'layouts:write',
+      'navigation:read',
+      'menu:read',
       // E-Commerce Permissions (Read/Write, No Delete)
       'customers:read',
       'customers:write',
@@ -518,6 +651,10 @@ export const DEFAULT_ROLES: Record<string, RoleDefinition> = {
       'profile:read',
       'profile:write',
       'notifications:read',
+      // Dashboard Customization Permissions (Read + Own Layouts)
+      'widgets:read',
+      'layouts:read',
+      'layouts:write', // Users can customize their own layouts
     ],
     isSystemRole: true,
   },

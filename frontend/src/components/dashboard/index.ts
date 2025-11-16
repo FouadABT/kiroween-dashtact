@@ -1,17 +1,15 @@
 /**
  * Dashboard Components
  * 
- * Core dashboard layout and navigation components for building
- * admin panels and user dashboards.
+ * Export all dashboard-related components for easy importing
  */
 
-export { DashboardLayout } from './DashboardLayout';
-export { Sidebar } from './Sidebar';
-export { Header } from './Header';
-export { DataTable } from './DataTable';
+export { DashboardGrid, MemoizedDashboardGrid } from './DashboardGrid';
+export { WidgetRenderer, MemoizedWidgetRenderer } from './WidgetRenderer';
+export { SortableWidgetWrapper } from './SortableWidgetWrapper';
+export { DynamicPageRenderer, MemoizedDynamicPageRenderer } from './DynamicPageRenderer';
 
-// Re-export types for external use
-export type { DashboardLayoutProps } from './DashboardLayout';
-export type { SidebarProps } from './Sidebar';
-export type { HeaderProps } from './Header';
-export type { DataTableProps } from './DataTable';
+export type { DashboardGridProps } from './DashboardGrid';
+export type { WidgetRendererProps } from './WidgetRenderer';
+export type { SortableWidgetWrapperProps } from './SortableWidgetWrapper';
+export type { DynamicPageRendererProps } from './DynamicPageRenderer';

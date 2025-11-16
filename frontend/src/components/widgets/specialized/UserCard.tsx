@@ -118,6 +118,19 @@ export function UserCard({
   permission,
   className = '',
 }: UserCardProps) {
+  // Safety check for user object
+  if (!user || typeof user !== 'object') {
+    return (
+      <Card className={`p-6 ${className}`}>
+        <div className="text-center py-8">
+          <p className="text-sm text-muted-foreground">
+            No user data available
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
   const content = (
     <Card 
       className={`p-6 hover:shadow-md transition-shadow ${onClick ? 'cursor-pointer' : ''} ${className}`}
@@ -126,9 +139,9 @@ export function UserCard({
       <div className="flex items-start gap-4">
         {/* Avatar */}
         <Avatar className={compact ? 'h-12 w-12' : 'h-16 w-16'}>
-          <AvatarImage src={user.avatar} alt={user.name} />
+          {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
           <AvatarFallback className="bg-primary text-primary-foreground">
-            {getUserInitials(user.name)}
+            {getUserInitials(user.name || 'User')}
           </AvatarFallback>
         </Avatar>
 

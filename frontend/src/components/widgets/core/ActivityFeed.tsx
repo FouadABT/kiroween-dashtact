@@ -86,7 +86,7 @@ function getInitials(name: string): string {
  * ```
  */
 export function ActivityFeed({
-  activities,
+  activities = [],
   title = "Activity Feed",
   description,
   groupByDate = false,
@@ -99,10 +99,13 @@ export function ActivityFeed({
 }: ActivityFeedProps) {
   const [showAll, setShowAll] = useState(false);
 
+  // Ensure activities is always an array
+  const safeActivities = Array.isArray(activities) ? activities : [];
+
   // Limit visible items
   const visibleActivities = showAll
-    ? activities
-    : activities.slice(0, maxItems);
+    ? safeActivities
+    : safeActivities.slice(0, maxItems);
 
   // Group activities by date if enabled
   const groupedActivities = groupByDate
@@ -219,20 +222,20 @@ export function ActivityFeed({
       </ScrollArea>
 
       {/* Show More Button */}
-      {showMoreButton && activities.length > maxItems && !showAll && (
+      {showMoreButton && safeActivities.length > maxItems && !showAll && (
         <div className="mt-4 text-center">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowAll(true)}
           >
-            Show More ({activities.length - maxItems} more)
+            Show More ({safeActivities.length - maxItems} more)
           </Button>
         </div>
       )}
 
       {/* Show Less Button */}
-      {showMoreButton && showAll && activities.length > maxItems && (
+      {showMoreButton && showAll && safeActivities.length > maxItems && (
         <div className="mt-4 text-center">
           <Button
             variant="outline"
@@ -245,7 +248,7 @@ export function ActivityFeed({
       )}
 
       {/* Empty State */}
-      {activities.length === 0 && !loading && !error && (
+      {safeActivities.length === 0 && !loading && !error && (
         <div className="text-center py-8">
           <p className="text-sm text-muted-foreground">
             No activity to display

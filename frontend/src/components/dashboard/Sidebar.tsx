@@ -6,10 +6,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronLeft,
   ChevronRight,
-  X
+  X,
+  AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigation } from "@/contexts/NavigationContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * Props for the Sidebar component
@@ -33,6 +35,8 @@ export function Sidebar() {
     sidebarCollapsed, 
     setSidebarCollapsed,
     navigationItems,
+    isLoadingMenus,
+    menusError,
     isRouteActive
   } = useNavigation();
 
@@ -137,7 +141,46 @@ export function Sidebar() {
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
               <li>
                 <ul role="list" className="-mx-2 space-y-1">
-                  {navigationItems.map((item) => {
+                  {/* Loading state */}
+                  {isLoadingMenus && (
+                    <>
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <li key={i} className="px-2">
+                          <div className="flex items-center gap-x-3 p-2">
+                            <Skeleton className="h-6 w-6 rounded" />
+                            {!sidebarCollapsed && <Skeleton className="h-4 flex-1" />}
+                          </div>
+                        </li>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Error state */}
+                  {menusError && !isLoadingMenus && (
+                    <li className="px-2">
+                      <div className="flex items-center gap-x-3 p-2 text-destructive">
+                        <AlertCircle className="h-5 w-5" />
+                        {!sidebarCollapsed && (
+                          <span className="text-sm">{menusError}</span>
+                        )}
+                      </div>
+                    </li>
+                  )}
+
+                  {/* Empty state */}
+                  {!isLoadingMenus && !menusError && navigationItems.length === 0 && (
+                    <li className="px-2">
+                      <div className="flex items-center gap-x-3 p-2 text-muted-foreground">
+                        <AlertCircle className="h-5 w-5" />
+                        {!sidebarCollapsed && (
+                          <span className="text-sm">No menu items available</span>
+                        )}
+                      </div>
+                    </li>
+                  )}
+
+                  {/* Menu items */}
+                  {!isLoadingMenus && !menusError && navigationItems.map((item) => {
                     const isActive = isRouteActive(item.href);
                     const [isExpanded, setIsExpanded] = React.useState(isActive);
                     
@@ -318,7 +361,42 @@ export function Sidebar() {
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
               <li>
                 <ul role="list" className="-mx-2 space-y-1">
-                  {navigationItems.map((item) => {
+                  {/* Loading state */}
+                  {isLoadingMenus && (
+                    <>
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <li key={i} className="px-2">
+                          <div className="flex items-center gap-x-3 p-2">
+                            <Skeleton className="h-6 w-6 rounded" />
+                            <Skeleton className="h-4 flex-1" />
+                          </div>
+                        </li>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Error state */}
+                  {menusError && !isLoadingMenus && (
+                    <li className="px-2">
+                      <div className="flex items-center gap-x-3 p-2 text-destructive">
+                        <AlertCircle className="h-5 w-5" />
+                        <span className="text-sm">{menusError}</span>
+                      </div>
+                    </li>
+                  )}
+
+                  {/* Empty state */}
+                  {!isLoadingMenus && !menusError && navigationItems.length === 0 && (
+                    <li className="px-2">
+                      <div className="flex items-center gap-x-3 p-2 text-muted-foreground">
+                        <AlertCircle className="h-5 w-5" />
+                        <span className="text-sm">No menu items available</span>
+                      </div>
+                    </li>
+                  )}
+
+                  {/* Menu items */}
+                  {!isLoadingMenus && !menusError && navigationItems.map((item) => {
                     const isActive = isRouteActive(item.href);
                     const [isExpanded, setIsExpanded] = React.useState(isActive);
                     

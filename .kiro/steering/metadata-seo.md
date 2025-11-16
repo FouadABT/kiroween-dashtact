@@ -1,6 +1,8 @@
 ---
-inclusion: always
+inclusion: fileMatch
+fileMatchPattern: '{frontend/src/lib/metadata-*.ts,frontend/src/app/**/page.tsx,frontend/src/components/navigation/Breadcrumb.tsx,frontend/src/lib/breadcrumb-helpers.ts,frontend/src/lib/sitemap-helpers.ts}'
 ---
+
 # Page Metadata & SEO System - Global Guidelines
 
 ## Overview

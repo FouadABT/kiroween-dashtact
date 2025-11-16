@@ -2444,3 +2444,367 @@ export const getWishlist = WishlistApi.getWishlist;
 export const addToWishlist = WishlistApi.addItem;
 export const removeFromWishlist = WishlistApi.removeItem;
 export const moveWishlistItemToCart = WishlistApi.moveToCart;
+
+/**
+ * Dashboard Customization API endpoints
+ */
+
+// Widget Definitions API
+export class WidgetDefinitionsApi {
+  /**
+   * Get all widget definitions
+   */
+  static async getAll(params?: import('@/types/dashboard-customization').WidgetDefinitionQueryDto): Promise<import('@/types/dashboard-customization').WidgetDefinitionsResponse> {
+    return ApiClient.get<import('@/types/dashboard-customization').WidgetDefinitionsResponse>('/widgets/registry', params as Record<string, unknown>);
+  }
+
+  /**
+   * Get widget definition by key
+   */
+  static async getByKey(key: string): Promise<import('@/types/dashboard-customization').WidgetDefinition> {
+    return ApiClient.get<import('@/types/dashboard-customization').WidgetDefinition>(`/widgets/registry/${key}`);
+  }
+
+  /**
+   * Search widget definitions with natural language
+   * @param params Search parameters including query, limit, and optional flags
+   * @returns Array of widgets with relevance scores (if includeScores=true) or plain widget array
+   */
+  static async search(params: import('@/types/widgets').WidgetSearchDto): Promise<import('@/types/widgets').WidgetSearchResult[] | import('@/types/dashboard-customization').WidgetDefinition[]> {
+    return ApiClient.get<import('@/types/widgets').WidgetSearchResult[] | import('@/types/dashboard-customization').WidgetDefinition[]>('/widgets/registry/search', params as unknown as Record<string, unknown>);
+  }
+
+  /**
+   * Create widget definition (admin only)
+   */
+  static async create(data: import('@/types/dashboard-customization').CreateWidgetDefinitionDto): Promise<import('@/types/dashboard-customization').WidgetDefinition> {
+    return ApiClient.post<import('@/types/dashboard-customization').WidgetDefinition>('/widgets/registry', data);
+  }
+
+  /**
+   * Update widget definition (admin only)
+   */
+  static async update(key: string, data: import('@/types/dashboard-customization').UpdateWidgetDefinitionDto): Promise<import('@/types/dashboard-customization').WidgetDefinition> {
+    return ApiClient.patch<import('@/types/dashboard-customization').WidgetDefinition>(`/widgets/registry/${key}`, data);
+  }
+
+  /**
+   * Delete widget definition (admin only)
+   */
+  static async delete(key: string): Promise<void> {
+    return ApiClient.delete<void>(`/widgets/registry/${key}`);
+  }
+
+  /**
+   * Get widgets available for a specific page
+   * @param pageIdentifier Page identifier to filter widgets by
+   * @param params Optional query parameters
+   * @returns Widgets available for the specified page
+   */
+  static async getByPageIdentifier(pageIdentifier: string, params?: import('@/types/dashboard-customization').WidgetDefinitionQueryDto): Promise<import('@/types/dashboard-customization').WidgetDefinitionsResponse> {
+    return ApiClient.get<import('@/types/dashboard-customization').WidgetDefinitionsResponse>(`/widgets/registry/by-page/${pageIdentifier}`, params as Record<string, unknown>);
+  }
+}
+
+// Dashboard Layouts API
+export class DashboardLayoutsApi {
+  /**
+   * Get all dashboard layouts
+   */
+  static async getAll(params?: import('@/types/dashboard-customization').DashboardLayoutQueryDto): Promise<import('@/types/dashboard-customization').DashboardLayoutsResponse> {
+    return ApiClient.get<import('@/types/dashboard-customization').DashboardLayoutsResponse>('/dashboard-layouts', params as Record<string, unknown>);
+  }
+
+  /**
+   * Get layout by ID
+   */
+  static async getById(id: string): Promise<import('@/types/dashboard-customization').DashboardLayout> {
+    return ApiClient.get<import('@/types/dashboard-customization').DashboardLayout>(`/dashboard-layouts/${id}`);
+  }
+
+  /**
+   * Get layout for specific page
+   */
+  static async getForPage(pageId: string): Promise<import('@/types/dashboard-customization').DashboardLayout> {
+    return ApiClient.get<import('@/types/dashboard-customization').DashboardLayout>(`/dashboard-layouts/${pageId}`);
+  }
+
+  /**
+   * Create dashboard layout
+   */
+  static async create(data: import('@/types/dashboard-customization').CreateDashboardLayoutDto): Promise<import('@/types/dashboard-customization').DashboardLayout> {
+    return ApiClient.post<import('@/types/dashboard-customization').DashboardLayout>('/dashboard-layouts', data);
+  }
+
+  /**
+   * Update dashboard layout
+   */
+  static async update(id: string, data: import('@/types/dashboard-customization').UpdateDashboardLayoutDto): Promise<import('@/types/dashboard-customization').DashboardLayout> {
+    return ApiClient.patch<import('@/types/dashboard-customization').DashboardLayout>(`/dashboard-layouts/${id}`, data);
+  }
+
+  /**
+   * Delete dashboard layout
+   */
+  static async delete(id: string): Promise<void> {
+    return ApiClient.delete<void>(`/dashboard-layouts/${id}`);
+  }
+
+  /**
+   * Clone dashboard layout
+   */
+  static async clone(id: string, name: string): Promise<import('@/types/dashboard-customization').DashboardLayout> {
+    return ApiClient.post<import('@/types/dashboard-customization').DashboardLayout>(`/dashboard-layouts/${id}/clone`, { name });
+  }
+
+  /**
+   * Reset to default layout
+   */
+  static async reset(pageId: string): Promise<import('@/types/dashboard-customization').DashboardLayout> {
+    return ApiClient.post<import('@/types/dashboard-customization').DashboardLayout>('/dashboard-layouts/reset', { pageId });
+  }
+
+  /**
+   * Get available layout templates
+   */
+  static async getTemplates(): Promise<import('@/types/dashboard-customization').LayoutTemplate[]> {
+    return ApiClient.get<import('@/types/dashboard-customization').LayoutTemplate[]>('/dashboard-layouts/templates');
+  }
+
+  /**
+   * Apply template to layout
+   */
+  static async applyTemplate(id: string, templateId: string): Promise<import('@/types/dashboard-customization').DashboardLayout> {
+    return ApiClient.post<import('@/types/dashboard-customization').DashboardLayout>(`/dashboard-layouts/${id}/apply-template`, { templateId });
+  }
+}
+
+// Widget Instances API
+export class WidgetInstancesApi {
+  /**
+   * Get all widget instances for a layout
+   */
+  static async getAll(layoutId: string): Promise<import('@/types/dashboard-customization').WidgetInstancesResponse> {
+    return ApiClient.get<import('@/types/dashboard-customization').WidgetInstancesResponse>(`/dashboard-layouts/${layoutId}/widgets`);
+  }
+
+  /**
+   * Add widget to layout
+   */
+  static async add(layoutId: string, data: Omit<import('@/types/dashboard-customization').CreateWidgetInstanceDto, 'layoutId'>): Promise<import('@/types/dashboard-customization').WidgetInstance> {
+    return ApiClient.post<import('@/types/dashboard-customization').WidgetInstance>(`/dashboard-layouts/${layoutId}/widgets`, data);
+  }
+
+  /**
+   * Update widget instance
+   */
+  static async update(layoutId: string, widgetId: string, data: import('@/types/dashboard-customization').UpdateWidgetInstanceDto): Promise<import('@/types/dashboard-customization').WidgetInstance> {
+    return ApiClient.patch<import('@/types/dashboard-customization').WidgetInstance>(`/dashboard-layouts/${layoutId}/widgets/${widgetId}`, data);
+  }
+
+  /**
+   * Remove widget from layout
+   */
+  static async remove(layoutId: string, widgetId: string): Promise<void> {
+    return ApiClient.delete<void>(`/dashboard-layouts/${layoutId}/widgets/${widgetId}`);
+  }
+
+  /**
+   * Reorder widgets in layout
+   */
+  static async reorder(layoutId: string, updates: import('@/types/dashboard-customization').ReorderWidgetInstancesDto): Promise<void> {
+    return ApiClient.patch<void>(`/dashboard-layouts/${layoutId}/widgets/reorder`, updates);
+  }
+}
+
+// System Capabilities API (for AI Discovery)
+export class CapabilitiesApi {
+  /**
+   * Get system capabilities
+   */
+  static async get(): Promise<import('@/types/dashboard-customization').SystemCapabilities> {
+    return ApiClient.get<import('@/types/dashboard-customization').SystemCapabilities>('/capabilities');
+  }
+}
+
+/**
+ * Widget API endpoints
+ */
+export class WidgetApi {
+  /**
+   * Get all widgets with optional filtering
+   */
+  static async getAll(filters?: import('@/types/widget').WidgetFiltersDto): Promise<import('@/types/widget').Widget[]> {
+    return ApiClient.get<import('@/types/widget').Widget[]>('/widgets', filters as Record<string, unknown>);
+  }
+
+  /**
+   * Get widget by key
+   */
+  static async getByKey(key: string): Promise<import('@/types/widget').Widget> {
+    return ApiClient.get<import('@/types/widget').Widget>(`/widgets/${key}`);
+  }
+
+  /**
+   * Create new widget (admin only)
+   */
+  static async create(data: import('@/types/widget').CreateWidgetDto): Promise<import('@/types/widget').Widget> {
+    return ApiClient.post<import('@/types/widget').Widget>('/widgets', data);
+  }
+
+  /**
+   * Update widget (admin only)
+   */
+  static async update(key: string, data: import('@/types/widget').UpdateWidgetDto): Promise<import('@/types/widget').Widget> {
+    return ApiClient.patch<import('@/types/widget').Widget>(`/widgets/${key}`, data);
+  }
+
+  /**
+   * Delete widget (admin only - soft delete)
+   */
+  static async delete(key: string): Promise<import('@/types/widget').Widget> {
+    return ApiClient.delete<import('@/types/widget').Widget>(`/widgets/${key}`);
+  }
+
+  /**
+   * Search widgets by intent (natural language)
+   */
+  static async searchByIntent(data: import('@/types/widget').WidgetSearchDto): Promise<import('@/types/widget').Widget[] | import('@/types/widget').WidgetSearchResult[]> {
+    return ApiClient.post<import('@/types/widget').Widget[] | import('@/types/widget').WidgetSearchResult[]>('/widgets/search', data);
+  }
+
+  /**
+   * Get unique widget categories
+   */
+  static async getCategories(): Promise<string[]> {
+    return ApiClient.get<string[]>('/widgets/categories');
+  }
+
+  /**
+   * Filter widgets by user permissions
+   * This is a client-side helper that filters widgets based on user permissions
+   */
+  static filterByPermissions(widgets: import('@/types/widget').Widget[], userPermissions: string[]): import('@/types/widget').Widget[] {
+    const permissionsSet = new Set(userPermissions);
+
+    // Super admin sees all
+    if (permissionsSet.has('*:*')) {
+      return widgets;
+    }
+
+    return widgets.filter((widget) => {
+      const requirements = widget.dataRequirements;
+
+      // No permission requirements - visible to all
+      if (!requirements?.permissions || requirements.permissions.length === 0) {
+        return true;
+      }
+
+      // Check if user has all required permissions
+      return requirements.permissions.every((permission: string) =>
+        permissionsSet.has(permission),
+      );
+    });
+  }
+}
+
+/**
+ * Menu Management API endpoints
+ */
+export class MenuApi {
+  /**
+   * Get user-specific menus (filtered by role, permissions, and feature flags)
+   * Public to authenticated users
+   * @returns Nested hierarchy of menu items for current user
+   */
+  static async getUserMenus(): Promise<import('@/types/menu').MenuItem[]> {
+    return ApiClient.get<import('@/types/menu').MenuItem[]>('/dashboard-menus/user-menus');
+  }
+
+  /**
+   * Get all menus (super admin only)
+   * Returns all menus including inactive ones
+   * @returns Flat list of all menu items with parent references
+   */
+  static async getAllMenus(): Promise<import('@/types/menu').MenuItem[]> {
+    return ApiClient.get<import('@/types/menu').MenuItem[]>('/dashboard-menus');
+  }
+
+  /**
+   * Get menu by ID (super admin only)
+   * @param id Menu item ID
+   * @returns Single menu item
+   */
+  static async getById(id: string): Promise<import('@/types/menu').MenuItem> {
+    return ApiClient.get<import('@/types/menu').MenuItem>(`/dashboard-menus/${id}`);
+  }
+
+  /**
+   * Create new menu item (super admin only)
+   * @param data Menu creation data
+   * @returns Created menu item with ID
+   */
+  static async createMenu(data: import('@/types/menu').MenuFormData): Promise<import('@/types/menu').MenuItem> {
+    return ApiClient.post<import('@/types/menu').MenuItem>('/dashboard-menus', data);
+  }
+
+  /**
+   * Update existing menu item (super admin only)
+   * @param id Menu item ID
+   * @param data Menu update data (partial)
+   * @returns Updated menu item
+   */
+  static async updateMenu(id: string, data: Partial<import('@/types/menu').MenuFormData>): Promise<import('@/types/menu').MenuItem> {
+    return ApiClient.patch<import('@/types/menu').MenuItem>(`/dashboard-menus/${id}`, data);
+  }
+
+  /**
+   * Delete menu item (super admin only)
+   * Cascades to children or prevents if children exist
+   * @param id Menu item ID
+   * @returns Success message
+   */
+  static async deleteMenu(id: string): Promise<{ message: string }> {
+    return ApiClient.delete<{ message: string }>(`/dashboard-menus/${id}`);
+  }
+
+  /**
+   * Reorder menu items (super admin only)
+   * Updates order values for multiple items
+   * @param items Array of menu items with id and new order
+   * @returns Updated menu items
+   */
+  static async reorderMenus(items: import('@/types/menu').ReorderMenuItem[]): Promise<import('@/types/menu').MenuItem[]> {
+    return ApiClient.patch<import('@/types/menu').MenuItem[]>('/dashboard-menus/reorder', { items });
+  }
+
+  /**
+   * Toggle menu item active status (super admin only)
+   * @param id Menu item ID
+   * @returns Updated menu item
+   */
+  static async toggleMenuActive(id: string): Promise<import('@/types/menu').MenuItem> {
+    return ApiClient.patch<import('@/types/menu').MenuItem>(`/dashboard-menus/${id}/toggle`, {});
+  }
+
+  /**
+   * Get menu configuration for current route
+   * Used by DynamicPageRenderer to determine how to render a page
+   * @param route Current route path
+   * @returns Page configuration for the route
+   */
+  static async getMenuByRoute(route: string): Promise<import('@/types/menu').PageConfig> {
+    return ApiClient.get<import('@/types/menu').PageConfig>(`/dashboard-menus/route`, { route });
+  }
+}
+
+// Convenience exports for menu management
+export const getUserMenus = MenuApi.getUserMenus;
+export const getAllMenus = MenuApi.getAllMenus;
+export const getMenuById = MenuApi.getById;
+export const createMenu = MenuApi.createMenu;
+export const updateMenu = MenuApi.updateMenu;
+export const deleteMenu = MenuApi.deleteMenu;
+export const reorderMenus = MenuApi.reorderMenus;
+export const toggleMenuActive = MenuApi.toggleMenuActive;
+export const getMenuByRoute = MenuApi.getMenuByRoute;

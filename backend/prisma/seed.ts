@@ -472,6 +472,58 @@ async function main() {
     }
   }
 
+  // Seed Dashboard Customization System
+  console.log('Creating widget definitions...');
+  
+  // Import auto-discovered widget definitions
+  const { widgetDefinitions: discoveredWidgets } = require('./seed-data/widgets.seed');
+  
+  // Transform discovered widgets to match database schema
+  const widgetDefinitions = discoveredWidgets.map((widget: any) => ({
+    key: widget.key,
+    name: widget.name,
+    description: widget.description,
+    component: widget.component,
+    category: widget.category,
+    icon: widget.icon,
+    defaultGridSpan: widget.defaultGridSpan,
+    minGridSpan: widget.minGridSpan,
+    maxGridSpan: widget.maxGridSpan,
+    configSchema: widget.configSchema,
+    dataRequirements: widget.dataRequirements,
+    useCases: widget.useCases,
+    examples: widget.examples,
+    tags: widget.tags,
+    isActive: true,
+    isSystemWidget: widget.isSystemWidget,
+  }));
+
+  for (const widget of widgetDefinitions) {
+    const existing = await prisma.widgetDefinition.findUnique({
+      where: { key: widget.key },
+    });
+
+    if (!existing) {
+      await prisma.widgetDefinition.create({
+        data: widget,
+      });
+      console.log(`✅ Created widget definition: ${widget.name}`);
+    } else {
+      console.log(`⏭️  Widget definition already exists: ${widget.name}`);
+    }
+  }
+
+  // Seed default dashboard layouts using templates
+  const { seedDashboardLayouts, seedDemoLayouts } = require('./seed-data/dashboard-layouts.seed');
+  await seedDashboardLayouts();
+  
+  // Seed demo layouts for showcasing different use cases
+  await seedDemoLayouts();
+
+  // Seed dashboard menus
+  const { seedDashboardMenus } = require('./seed-data/dashboard-menus.seed');
+  await seedDashboardMenus(prisma);
+
   console.log('✨ Seeding completed successfully!');
 }
 

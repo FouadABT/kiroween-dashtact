@@ -31,6 +31,7 @@ model User {
   role                    UserRole                 @relation(fields: [roleId], references: [id])
   webhookConfigs          WebhookConfig[]
   blogPosts               BlogPost[]
+  dashboardLayouts        DashboardLayout[]
 
   @@index([roleId])
   @@index([email])
@@ -803,4 +804,115 @@ model PaymentMethod {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@map("payment_methods")
+}
+
+// Dashboard Customization System Models
+
+model WidgetDefinition {
+  id               String           @id @default(cuid())
+  key              String           @unique
+  name             String
+  description      String
+  component        String
+  category         String
+  icon             String
+  defaultGridSpan  Int              @default(6) @map("default_grid_span")
+  minGridSpan      Int              @default(3) @map("min_grid_span")
+  maxGridSpan      Int              @default(12) @map("max_grid_span")
+  configSchema     Json             @map("config_schema")
+  dataRequirements Json             @map("data_requirements")
+  useCases         String[]         @default([]) @map("use_cases")
+  examples         Json[]           @default([])
+  tags             String[]         @default([])
+  isActive         Boolean          @default(true) @map("is_active")
+  isSystemWidget   Boolean          @default(false) @map("is_system_widget")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  widgetInstances  WidgetInstance[]
+
+  @@index([key])
+  @@index([category])
+  @@index([isActive])
+  @@map("widget_definitions")
+}
+
+model DashboardLayout {
+  id              String           @id @default(cuid())
+  pageId          String           @map("page_id")
+  userId          String?          @map("user_id")
+  scope           String           @default("global")
+  name            String
+  description     String?
+  isActive        Boolean          @default(true) @map("is_active")
+  isDefault       Boolean          @default(false) @map("is_default")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  user            User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  widgetInstances WidgetInstance[]
+
+  @@unique([pageId, userId])
+  @@index([pageId])
+  @@index([userId])
+  @@index([scope])
+  @@index([isDefault])
+  @@map("dashboard_layouts")
+}
+
+model WidgetInstance {
+  id               String           @id @default(cuid())
+  layoutId         String           @map("layout_id")
+  widgetKey        String           @map("widget_key")
+  position         Int
+  gridSpan         Int              @default(6) @map("grid_span")
+  gridRow          Int?             @map("grid_row")
+  config           Json
+  isVisible        Boolean          @default(true) @map("is_visible")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  layout           DashboardLayout  @relation(fields: [layoutId], references: [id], onDelete: Cascade)
+  widgetDefinition WidgetDefinition @relation(fields: [widgetKey], references: [key])
+
+  @@index([layoutId])
+  @@index([widgetKey])
+  @@index([position])
+  @@map("widget_instances")
+}
+
+// Dynamic Menu Management System Models
+
+model DashboardMenu {
+  id                  String         @id @default(cuid())
+  key                 String         @unique
+  label               String
+  icon                String
+  route               String
+  order               Int
+  parentId            String?        @map("parent_id")
+  pageType            PageType       @map("page_type")
+  pageIdentifier      String?        @map("page_identifier")
+  componentPath       String?        @map("component_path")
+  isActive            Boolean        @default(true) @map("is_active")
+  requiredPermissions String[]       @default([]) @map("required_permissions")
+  requiredRoles       String[]       @default([]) @map("required_roles")
+  featureFlag         String?        @map("feature_flag")
+  description         String?
+  badge               String?
+  availableWidgets    String[]       @default([]) @map("available_widgets")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+  parent              DashboardMenu? @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children            DashboardMenu[] @relation("MenuHierarchy")
+
+  @@index([key])
+  @@index([isActive])
+  @@index([order])
+  @@index([parentId])
+  @@map("dashboard_menus")
+}
+
+enum PageType {
+  WIDGET_BASED
+  HARDCODED
+  CUSTOM
+  EXTERNAL
 }

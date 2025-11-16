@@ -65,13 +65,16 @@ export interface StatsGridProps extends BaseWidgetProps {
  * ```
  */
 export function StatsGrid({
-  stats,
+  stats = [],
   columns = 3,
   loading = false,
   error,
   permission,
   className,
 }: StatsGridProps) {
+  // Ensure stats is always an array
+  const safeStats = Array.isArray(stats) ? stats : [];
+  
   // Grid column classes based on column count
   const gridColsClasses = {
     2: "grid-cols-1 sm:grid-cols-2",
@@ -80,10 +83,21 @@ export function StatsGrid({
   };
 
   const gridClass = gridColsClasses[columns] || gridColsClasses[3];
+  
+  // Show empty state if no stats
+  if (safeStats.length === 0 && !loading) {
+    return (
+      <div className={cn("text-center py-8", className)}>
+        <p className="text-sm text-muted-foreground">
+          No statistics to display
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("grid gap-4", gridClass, className)}>
-      {stats.map((stat, index) => (
+      {safeStats.map((stat, index) => (
         <StatsCard
           key={`${stat.title}-${index}`}
           title={stat.title}

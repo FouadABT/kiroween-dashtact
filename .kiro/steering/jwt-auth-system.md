@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: '{backend/src/auth/**,backend/src/profile/**,frontend/src/contexts/AuthContext.tsx,backend/prisma/seed-data/auth.seed.ts,frontend/src/components/auth/**}'
+---
+
 # JWT Authentication & Permission System
 
 ## Overview

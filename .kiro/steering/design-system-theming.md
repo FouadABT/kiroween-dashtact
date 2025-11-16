@@ -1,3 +1,8 @@
+---
+inclusion: fileMatch
+fileMatchPattern: '{frontend/src/app/dashboard/settings/theme/**,frontend/src/contexts/ThemeContext.tsx,backend/src/settings/**,frontend/src/lib/design-tokens.ts}'
+---
+
 # Design System & Theming
 
 ## Overview

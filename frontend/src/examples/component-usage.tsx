@@ -15,8 +15,7 @@ import {
   RouteGuard,
   
   // Dashboard components
-  DashboardLayout,
-  DataTable,
+  DashboardGrid,
 } from '@/components';
 
 // Import UI components from specific paths
@@ -78,10 +77,10 @@ export function ExampleLoginPage() {
 export function ExampleDashboardPage() {
   return (
     <RouteGuard requireAuth={true}>
-      <DashboardLayout>
-        <div className="space-y-6">
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto py-6 space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-foreground">
               Dashboard Overview
             </h1>
             <ExampleActionButton />
@@ -99,11 +98,11 @@ export function ExampleDashboardPage() {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <DataTable />
+              <DashboardGrid pageId="overview" />
             </CardContent>
           </Card>
         </div>
-      </DashboardLayout>
+      </div>
     </RouteGuard>
   );
 }

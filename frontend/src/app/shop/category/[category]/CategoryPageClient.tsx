@@ -159,37 +159,37 @@ export function CategoryPageClient({
         <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb Navigation */}
         <nav aria-label="Breadcrumb" className="mb-6">
-        <ol className="flex items-center gap-2 text-sm text-muted-foreground">
-          <li>
-            <Link
-              href="/"
-              className="hover:text-foreground transition-colors"
-              aria-label="Home"
-            >
-              <Home className="h-4 w-4" />
-            </Link>
-          </li>
-          <li>
-            <ChevronRight className="h-4 w-4" />
-          </li>
-          <li>
-            <Link
-              href="/shop"
-              className="hover:text-foreground transition-colors"
-            >
-              Shop
-            </Link>
-          </li>
-          <li>
-            <ChevronRight className="h-4 w-4" />
-          </li>
-          <li>
-            <span className="font-medium text-foreground" aria-current="page">
-              {category.name}
-            </span>
-          </li>
-        </ol>
-      </nav>
+          <ol className="flex items-center gap-2 text-sm text-muted-foreground">
+            <li>
+              <Link
+                href="/"
+                className="hover:text-foreground transition-colors"
+                aria-label="Home"
+              >
+                <Home className="h-4 w-4" />
+              </Link>
+            </li>
+            <li>
+              <ChevronRight className="h-4 w-4" />
+            </li>
+            <li>
+              <Link
+                href="/shop"
+                className="hover:text-foreground transition-colors"
+              >
+                Shop
+              </Link>
+            </li>
+            <li>
+              <ChevronRight className="h-4 w-4" />
+            </li>
+            <li>
+              <span className="font-medium text-foreground" aria-current="page">
+                {category.name}
+              </span>
+            </li>
+          </ol>
+        </nav>
 
       {/* Category Header */}
       <div className="mb-8">
@@ -310,6 +310,7 @@ export function CategoryPageClient({
             </div>
           )}
         </main>
+      </div>
         </div>
       </div>
     </>

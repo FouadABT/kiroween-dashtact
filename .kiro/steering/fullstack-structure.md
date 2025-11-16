@@ -1,3 +1,7 @@
+---
+inclusion: always
+---
+
 # Full-Stack Project Structure
 
 ## Root Directory Layout

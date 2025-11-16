@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -26,6 +27,10 @@ import { StorefrontModule } from './storefront/storefront.module';
 import { CustomerAuthModule } from './customer-auth/customer-auth.module';
 import { CheckoutModule } from './checkout/checkout.module';
 import { CustomerOrdersModule } from './customer-orders/customer-orders.module';
+import { WidgetsModule } from './widgets/widgets.module';
+import { DashboardLayoutsModule } from './dashboard-layouts/dashboard-layouts.module';
+import { CapabilitiesModule } from './capabilities/capabilities.module';
+import { DashboardMenusModule } from './dashboard-menus/dashboard-menus.module';
 
 @Module({
   imports: [
@@ -36,6 +41,11 @@ import { CustomerOrdersModule } from './customer-orders/customer-orders.module';
       },
     ]),
     ScheduleModule.forRoot(),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 300000, // 5 minutes default TTL in milliseconds
+      max: 100, // Maximum number of items in cache
+    }),
     UsersModule,
     SettingsModule,
     AuthModule,
@@ -56,6 +66,10 @@ import { CustomerOrdersModule } from './customer-orders/customer-orders.module';
     CustomerAuthModule,
     CheckoutModule,
     CustomerOrdersModule,
+    WidgetsModule,
+    DashboardLayoutsModule,
+    CapabilitiesModule,
+    DashboardMenusModule,
   ],
   controllers: [AppController],
   providers: [

@@ -171,7 +171,7 @@ export function CheckoutForm({
       }
 
       // Redirect to success page
-      router.push(`/checkout/success?orderId=${order.id}&orderNumber=${order.orderNumber}`);
+      router.push(`/checkout/success?orderId=${order.orderId}&orderNumber=${order.orderNumber}`);
     } catch (error: any) {
       console.error('Failed to place order:', error);
       onFormChange({
