@@ -1,19 +1,19 @@
 /**
  * Color Palette Interface
  * Defines the complete structure for color palettes in the design system
- * All colors must be in OKLCH format for perceptual uniformity
+ * All colors are in HSL format (shorthand)
  */
 
 /**
  * Complete color palette interface with all semantic color tokens
  *
- * OKLCH Color Format:
- * - L (Lightness): 0-1 or 0-100%
- * - C (Chroma): 0-0.4 typically
+ * HSL Color Format (Shorthand):
  * - H (Hue): 0-360 degrees
- * - Optional alpha: 0-1
+ * - S (Saturation): 0-100%
+ * - L (Lightness): 0-100%
  *
- * Example: oklch(0.5 0.2 180) or oklch(0.5 0.2 180 / 0.8)
+ * Example: "240 5.9% 10%" or "0 0% 100%"
+ * This format is used by Tailwind CSS and shadcn/ui
  */
 export interface ColorPalette {
   // ===== Base Colors =====
@@ -159,38 +159,33 @@ export interface ColorPalette {
 }
 
 /**
- * Type guard to check if a string is a valid OKLCH color
+ * Type guard to check if a string is a valid HSL color
  */
-export function isValidOKLCHColor(color: string): boolean {
-  const oklchRegex = /^oklch\([^)]+\)$/;
-  return oklchRegex.test(color);
+export function isValidHSLColor(color: string): boolean {
+  const hslRegex = /^(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%$/;
+  return hslRegex.test(color);
 }
 
 /**
- * Parse OKLCH color string into components
+ * Parse HSL color string into components
  * Returns null if invalid format
  */
-export function parseOKLCHColor(color: string): {
-  lightness: number;
-  chroma: number;
+export function parseHSLColor(color: string): {
   hue: number;
-  alpha?: number;
+  saturation: number;
+  lightness: number;
 } | null {
-  if (!isValidOKLCHColor(color)) {
+  if (!isValidHSLColor(color)) {
     return null;
   }
 
-  // Extract values from oklch(L C H) or oklch(L C H / A)
-  const match = color.match(/oklch\(([^)]+)\)/);
+  // Extract values from "H S% L%"
+  const match = color.match(/^(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%$/);
   if (!match) return null;
 
-  const values = match[1].split(/[\s/]+/).map((v) => parseFloat(v));
-  if (values.length < 3) return null;
-
   return {
-    lightness: values[0],
-    chroma: values[1],
-    hue: values[2],
-    alpha: values[3],
+    hue: parseFloat(match[1]),
+    saturation: parseFloat(match[2]),
+    lightness: parseFloat(match[3]),
   };
 }

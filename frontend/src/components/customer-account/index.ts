@@ -1,5 +1,12 @@
 export { AccountLayout } from './AccountLayout';
 export { ProfileCard } from './ProfileCard';
+export { ProfileEditForm } from './ProfileEditForm';
+export { AddressList } from './AddressList';
+export { AddressForm } from './AddressForm';
+export { AddressCard } from './AddressCard';
+export { PaymentMethodList } from './PaymentMethodList';
+export { PaymentMethodForm } from './PaymentMethodForm';
+export { PaymentMethodCard } from './PaymentMethodCard';
 export { QuickActions } from './QuickActions';
 export { RecentOrders } from './RecentOrders';
 export { OrderList } from './OrderList';

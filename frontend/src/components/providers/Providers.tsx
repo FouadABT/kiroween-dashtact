@@ -17,10 +17,13 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { MetadataProvider } from '@/contexts/MetadataContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
+import { MessagingProvider } from '@/contexts/MessagingContext';
 import { EcommerceSettingsProvider } from '@/contexts/EcommerceSettingsContext';
 import { CustomerAuthProvider } from '@/contexts/CustomerAuthContext';
 import { WidgetProvider } from '@/contexts/WidgetContext';
+import { BrandingProvider } from '@/contexts/BrandingContext';
 import { QueryProvider } from '@/providers/QueryProvider';
+import { FaviconUpdater } from './FaviconUpdater';
 
 /**
  * Inner component that has access to auth context
@@ -36,7 +39,9 @@ function ThemeProviderWithAuth({ children }: { children: React.ReactNode }) {
       userId={user?.id}
     >
       <NotificationProvider>
-        {children}
+        <MessagingProvider>
+          {children}
+        </MessagingProvider>
       </NotificationProvider>
     </ThemeProvider>
   );
@@ -49,6 +54,7 @@ function ThemeProviderWithAuth({ children }: { children: React.ReactNode }) {
  * Order matters:
  * - QueryProvider should be outermost (provides React Query client)
  * - AuthProvider must be next (provides user data)
+ * - BrandingProvider is independent and provides global branding (placed early for metadata)
  * - ThemeProvider needs user ID from AuthProvider
  * - NotificationProvider needs user ID from AuthProvider (placed after ThemeProvider)
  * - WidgetProvider is independent and placed after ThemeProvider
@@ -60,15 +66,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryProvider>
       <AuthProvider>
         <CustomerAuthProvider>
-          <ThemeProviderWithAuth>
-            <WidgetProvider>
-              <MetadataProvider>
-                <EcommerceSettingsProvider>
-                  {children}
-                </EcommerceSettingsProvider>
-              </MetadataProvider>
-            </WidgetProvider>
-          </ThemeProviderWithAuth>
+          <BrandingProvider>
+            <ThemeProviderWithAuth>
+              <WidgetProvider>
+                <MetadataProvider>
+                  <EcommerceSettingsProvider>
+                    <FaviconUpdater />
+                    {children}
+                  </EcommerceSettingsProvider>
+                </MetadataProvider>
+              </WidgetProvider>
+            </ThemeProviderWithAuth>
+          </BrandingProvider>
         </CustomerAuthProvider>
       </AuthProvider>
     </QueryProvider>

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
 import { TestimonialEditor } from '@/components/landing/shared/TestimonialEditor';
@@ -20,22 +21,25 @@ export function TestimonialsSectionEditor({ data, onChange }: TestimonialsSectio
   };
 
   const handleAddTestimonial = () => {
+    const testimonials = data.testimonials || [];
     const newTestimonial: Testimonial = {
       id: `testimonial-${Date.now()}`,
       quote: 'Great product!',
       author: 'John Doe',
       role: 'CEO',
-      order: data.testimonials.length,
+      order: testimonials.length,
     };
-    handleChange('testimonials', [...data.testimonials, newTestimonial]);
+    handleChange('testimonials', [...testimonials, newTestimonial]);
   };
 
   const handleUpdateTestimonial = (id: string, updated: Testimonial): void => {
-    handleChange('testimonials', data.testimonials.map((t) => (t.id === id ? updated : t)));
+    const testimonials = data.testimonials || [];
+    handleChange('testimonials', testimonials.map((t) => (t.id === id ? updated : t)));
   };
 
   const handleDeleteTestimonial = (id: string) => {
-    handleChange('testimonials', data.testimonials.filter((t) => t.id !== id));
+    const testimonials = data.testimonials || [];
+    handleChange('testimonials', testimonials.filter((t) => t.id !== id));
   };
 
   return (
@@ -55,8 +59,17 @@ export function TestimonialsSectionEditor({ data, onChange }: TestimonialsSectio
           <SelectContent>
             <SelectItem value="grid">Grid</SelectItem>
             <SelectItem value="carousel">Carousel</SelectItem>
+            <SelectItem value="masonry">Masonry</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+      <div className="flex items-center justify-between space-x-2">
+        <Label htmlFor="show-ratings">Show Ratings</Label>
+        <Switch
+          id="show-ratings"
+          checked={data.showRatings !== false}
+          onCheckedChange={(checked) => handleChange('showRatings', checked)}
+        />
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -67,7 +80,7 @@ export function TestimonialsSectionEditor({ data, onChange }: TestimonialsSectio
           </Button>
         </div>
         <div className="space-y-2">
-          {data.testimonials.map((testimonial) => (
+          {(data.testimonials || []).map((testimonial) => (
             <Card key={testimonial.id} className="p-3">
               <div className="flex gap-2">
                 <div className="flex-1">

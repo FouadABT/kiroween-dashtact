@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsUrl } from 'class-validator';
+import { IsString, IsNotEmpty, IsUrl, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class SocialLinkDto {
   @IsString()
@@ -10,5 +11,7 @@ export class SocialLinkDto {
   url: string;
 
   @IsString()
-  icon: string;
+  @IsOptional()
+  @Transform(({ value, obj }) => value || obj.platform)
+  icon?: string;
 }

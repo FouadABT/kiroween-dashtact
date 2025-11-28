@@ -202,7 +202,7 @@ export function WidgetContainer({
   // Build the widget card
   const widgetCard = collapsible ? (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className={cn("bg-card text-card-foreground border-border", className)}>
+      <Card className={cn("bg-card text-card-foreground border-border min-h-[320px] flex flex-col", className)}>
         {(title || description || actions) && (
           <CardHeader>
             {title && (
@@ -235,14 +235,14 @@ export function WidgetContainer({
           </CardHeader>
         )}
         <CollapsibleContent>
-          <CardContent className={cn(contentClassName)}>
+          <CardContent className={cn("flex-1 flex flex-col", contentClassName)}>
             {renderContent()}
           </CardContent>
         </CollapsibleContent>
       </Card>
     </Collapsible>
   ) : (
-    <Card className={cn("bg-card text-card-foreground border-border", className)}>
+    <Card className={cn("bg-card text-card-foreground border-border min-h-[320px] flex flex-col", className)}>
       {(title || description || actions) && (
         <CardHeader>
           {title && <CardTitle>{title}</CardTitle>}
@@ -254,7 +254,7 @@ export function WidgetContainer({
           )}
         </CardHeader>
       )}
-      <CardContent className={cn(contentClassName)}>
+      <CardContent className={cn("flex-1 flex flex-col", contentClassName)}>
         {renderContent()}
       </CardContent>
     </Card>

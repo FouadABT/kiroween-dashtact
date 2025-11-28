@@ -292,7 +292,7 @@ export const columns: ColumnDef<DataItem>[] = [
       const item = row.original;
 
       return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button 
               variant="ghost" 
@@ -438,7 +438,7 @@ export function DataTable<TData = DataItem>(props?: DataTableProps<TData>) {
         </div>
 
         <div className="flex items-center space-x-2">
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 

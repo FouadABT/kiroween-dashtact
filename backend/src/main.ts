@@ -9,8 +9,14 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Serve static files from uploads directory
+  // Use /files/ prefix to avoid conflict with /uploads API endpoint
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads/',
+    prefix: '/files/',
+  });
+
+  // Serve static files from public directory (for branding assets)
+  app.useStaticAssets(join(process.cwd(), 'public'), {
+    prefix: '/public/',
   });
 
   // Enable CORS for frontend - supports multiple domains

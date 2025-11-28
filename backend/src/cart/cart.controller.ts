@@ -15,8 +15,12 @@ import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { Public } from '../auth/decorators/public.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { FeatureGuard } from '../common/guards/feature.guard';
+import { FeatureEnabled } from '../common/decorators/feature-enabled.decorator';
 
 @Controller('cart')
+@UseGuards(FeatureGuard)
+@FeatureEnabled('ecommerce')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 

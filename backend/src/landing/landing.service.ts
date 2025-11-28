@@ -14,6 +14,10 @@ import { CtaSectionDataDto } from './dto/cta-section-data.dto';
 import { TestimonialsSectionDataDto } from './dto/testimonials-section-data.dto';
 import { StatsSectionDataDto } from './dto/stats-section-data.dto';
 import { ContentSectionDataDto } from './dto/content-section-data.dto';
+import { BlogPostsSectionDataDto } from './dto/blog-posts-section-data.dto';
+import { PagesSectionDataDto } from './dto/pages-section-data.dto';
+import { ProductsSectionDataDto } from './dto/products-section-data.dto';
+import { HtmlSanitizerService } from './html-sanitizer.service';
 
 @Injectable()
 export class LandingService {
@@ -23,7 +27,10 @@ export class LandingService {
     timestamp: number;
   } | null = null;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly htmlSanitizer: HtmlSanitizerService,
+  ) {}
 
   /**
    * Get active landing page content with caching
@@ -256,6 +263,41 @@ export class LandingService {
   async validateSection(section: any): Promise<boolean> {
     const { type, data } = section;
 
+    // Sanitize HTML content for content sections
+    if (type === 'content') {
+      section.data = this.htmlSanitizer.sanitizeContentSection(data);
+    }
+
+    // Ensure stats have unique IDs
+    if (type === 'stats' && data.stats && Array.isArray(data.stats)) {
+      const { v4: uuidv4 } = await import('uuid');
+      data.stats = data.stats.map((stat: any, index: number) => ({
+        ...stat,
+        id: stat.id || uuidv4(),
+        order: stat.order ?? index,
+      }));
+    }
+
+    // Ensure features have unique IDs
+    if (type === 'features' && data.features && Array.isArray(data.features)) {
+      const { v4: uuidv4 } = await import('uuid');
+      data.features = data.features.map((feature: any, index: number) => ({
+        ...feature,
+        id: feature.id || uuidv4(),
+        order: feature.order ?? index,
+      }));
+    }
+
+    // Ensure testimonials have unique IDs
+    if (type === 'testimonials' && data.testimonials && Array.isArray(data.testimonials)) {
+      const { v4: uuidv4 } = await import('uuid');
+      data.testimonials = data.testimonials.map((testimonial: any, index: number) => ({
+        ...testimonial,
+        id: testimonial.id || uuidv4(),
+        order: testimonial.order ?? index,
+      }));
+    }
+
     // Map section types to their DTOs
     const dtoMap: Record<string, any> = {
       hero: HeroSectionDataDto,
@@ -265,6 +307,9 @@ export class LandingService {
       testimonials: TestimonialsSectionDataDto,
       stats: StatsSectionDataDto,
       content: ContentSectionDataDto,
+      'blog-posts': BlogPostsSectionDataDto,
+      pages: PagesSectionDataDto,
+      products: ProductsSectionDataDto,
     };
 
     const DtoClass = dtoMap[type];
@@ -273,29 +318,47 @@ export class LandingService {
     }
 
     // Transform and validate
-    const dto = plainToClass(DtoClass, data);
+    const dto = plainToClass(DtoClass, section.data);
     const errors = await validate(dto);
 
     if (errors.length > 0) {
-      const errorMessages = errors
-        .map((error) => Object.values(error.constraints || {}).join(', '))
-        .join('; ');
+      const formatErrors = (errs: any[], prefix = ''): string[] => {
+        return errs.flatMap((error) => {
+          const fieldPath = prefix ? `${prefix}.${error.property}` : error.property;
+          const messages: string[] = [];
+          
+          // Add constraint messages
+          if (error.constraints) {
+            const constraints = Object.values(error.constraints).join(', ');
+            messages.push(`${fieldPath}: ${constraints}`);
+          }
+          
+          // Add nested errors
+          if (error.children && error.children.length > 0) {
+            messages.push(...formatErrors(error.children, fieldPath));
+          }
+          
+          return messages;
+        });
+      };
+
+      const errorMessages = formatErrors(errors).join('; ');
       throw new BadRequestException(
-        `Validation failed for ${type} section: ${errorMessages}`,
+        `Validation failed for ${type} section: ${errorMessages || 'Unknown validation error'}`,
       );
     }
 
     // Validate CTA links if present
-    if (data.primaryCta) {
+    if (section.data.primaryCta) {
       await this.validateCtaLink(
-        data.primaryCta.link,
-        data.primaryCta.linkType,
+        section.data.primaryCta.link,
+        section.data.primaryCta.linkType,
       );
     }
-    if (data.secondaryCta) {
+    if (section.data.secondaryCta) {
       await this.validateCtaLink(
-        data.secondaryCta.link,
-        data.secondaryCta.linkType,
+        section.data.secondaryCta.link,
+        section.data.secondaryCta.linkType,
       );
     }
 
@@ -336,7 +399,251 @@ export class LandingService {
   }
 
   /**
-   * Invalidate content cache
+   * Sync branding settings with landing page
+   */
+  async syncBranding(brandSettings: any) {
+    const currentContent = await this.getContent();
+
+    // Update settings with branding
+    const updatedSettings = {
+      ...(currentContent.settings as any),
+      branding: {
+        brandName: brandSettings.brandName,
+        logoUrl: brandSettings.logoUrl,
+        logoDarkUrl: brandSettings.logoDarkUrl,
+        faviconUrl: brandSettings.faviconUrl,
+        websiteUrl: brandSettings.websiteUrl,
+        supportEmail: brandSettings.supportEmail,
+        socialLinks: brandSettings.socialLinks,
+      },
+      seo: {
+        ...(currentContent.settings as any)?.seo,
+        title: brandSettings.brandName || (currentContent.settings as any)?.seo?.title,
+      },
+    };
+
+    // Update sections with branding
+    const sections = currentContent.sections as any[];
+    const updatedSections = sections.map((section) => {
+      if (section.type === 'footer') {
+        return {
+          ...section,
+          data: {
+            ...section.data,
+            companyName: brandSettings.brandName || section.data.companyName,
+            socialLinks: brandSettings.socialLinks
+              ? Object.entries(brandSettings.socialLinks)
+                  .filter(([_, url]) => url)
+                  .map(([platform, url]) => ({
+                    platform,
+                    url: url as string,
+                    icon: platform,
+                  }))
+              : section.data.socialLinks,
+            copyright: brandSettings.brandName
+              ? `© ${new Date().getFullYear()} ${brandSettings.brandName}. All rights reserved.`
+              : section.data.copyright,
+          },
+        };
+      }
+      return section;
+    });
+
+    const updatedContent = await this.prisma.landingPageContent.update({
+      where: { id: currentContent.id },
+      data: {
+        sections: updatedSections,
+        settings: updatedSettings,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Invalidate cache
+    this.invalidateCache();
+
+    return updatedContent;
+  }
+
+  /**
+   * Get landing page settings
+   */
+  async getSettings() {
+    const content = await this.getContent();
+    return content.settings || {};
+  }
+
+  /**
+   * Update landing page settings
+   */
+  async updateSettings(settingsDto: any) {
+    const currentContent = await this.getContent();
+
+    // Merge with existing settings
+    const updatedSettings = {
+      ...(currentContent.settings as any),
+      ...settingsDto,
+    };
+
+    const updatedContent = await this.prisma.landingPageContent.update({
+      where: { id: currentContent.id },
+      data: {
+        settings: updatedSettings,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Invalidate cache
+    this.invalidateCache();
+
+    return updatedContent;
+  }
+
+  /**
+   * Get theme configuration
+   */
+  async getThemeConfig() {
+    const content = await this.getContent();
+    return {
+      themeMode: content.themeMode || 'auto',
+      colors: (content.settings as any)?.theme?.colors || null,
+    };
+  }
+
+  /**
+   * Update theme configuration
+   */
+  async updateThemeConfig(themeDto: { themeMode?: string; colors?: any }) {
+    const currentContent = await this.getContent();
+
+    const updates: any = {};
+
+    if (themeDto.themeMode) {
+      updates.themeMode = themeDto.themeMode;
+    }
+
+    if (themeDto.colors) {
+      const currentSettings = currentContent.settings as any;
+      updates.settings = {
+        ...currentSettings,
+        theme: {
+          ...(currentSettings?.theme || {}),
+          colors: themeDto.colors,
+        },
+      };
+    }
+
+    const updatedContent = await this.prisma.landingPageContent.update({
+      where: { id: currentContent.id },
+      data: {
+        ...updates,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Invalidate cache
+    this.invalidateCache();
+
+    return updatedContent;
+  }
+
+  /**
+   * Apply branding to all landing pages (bulk update)
+   */
+  async applyBrandingToAll(brandSettings: any) {
+    // Get all landing page content
+    const allContent = await this.prisma.landingPageContent.findMany();
+
+    const updatePromises = allContent.map(async (content) => {
+      // Update settings with branding
+      const updatedSettings = {
+        ...(content.settings as any),
+        branding: {
+          brandName: brandSettings.brandName,
+          logoUrl: brandSettings.logoUrl,
+          logoDarkUrl: brandSettings.logoDarkUrl,
+          faviconUrl: brandSettings.faviconUrl,
+          websiteUrl: brandSettings.websiteUrl,
+          supportEmail: brandSettings.supportEmail,
+          socialLinks: brandSettings.socialLinks,
+        },
+        seo: {
+          ...(content.settings as any)?.seo,
+          title:
+            brandSettings.brandName ||
+            (content.settings as any)?.seo?.title,
+        },
+      };
+
+      // Update sections with branding
+      const sections = content.sections as any[];
+      const updatedSections = sections.map((section) => {
+        // Update footer sections
+        if (section.type === 'footer') {
+          return {
+            ...section,
+            data: {
+              ...section.data,
+              companyName:
+                brandSettings.brandName || section.data.companyName,
+              socialLinks: brandSettings.socialLinks
+                ? Object.entries(brandSettings.socialLinks)
+                    .filter(([_, url]) => url)
+                    .map(([platform, url]) => ({
+                      platform,
+                      url: url as string,
+                      icon: platform,
+                    }))
+                : section.data.socialLinks,
+              copyright: brandSettings.brandName
+                ? `© ${new Date().getFullYear()} ${brandSettings.brandName}. All rights reserved.`
+                : section.data.copyright,
+            },
+          };
+        }
+
+        // Update hero sections with brand name
+        if (section.type === 'hero' && section.data.headline) {
+          const headline = section.data.headline as string;
+          if (headline.includes('[Brand]') && brandSettings.brandName) {
+            return {
+              ...section,
+              data: {
+                ...section.data,
+                headline: headline.replace(
+                  /\[Brand\]/g,
+                  brandSettings.brandName,
+                ),
+              },
+            };
+          }
+        }
+
+        return section;
+      });
+
+      return this.prisma.landingPageContent.update({
+        where: { id: content.id },
+        data: {
+          sections: updatedSections,
+          settings: updatedSettings,
+          updatedAt: new Date(),
+        },
+      });
+    });
+
+    await Promise.all(updatePromises);
+
+    // Invalidate cache
+    this.invalidateCache();
+
+    return {
+      updated: allContent.length,
+      message: `Successfully updated ${allContent.length} landing page(s)`,
+    };
+  }
+
+  /**
+   * Invalidate content cache (enhanced with theme mode support)
    */
   private invalidateCache() {
     this.contentCache = null;

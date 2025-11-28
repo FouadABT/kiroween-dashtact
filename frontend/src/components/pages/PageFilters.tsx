@@ -84,7 +84,7 @@ export function PageFilters({ filters, onFilterChange }: PageFiltersProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
             <Filter className="mr-2 h-4 w-4" />

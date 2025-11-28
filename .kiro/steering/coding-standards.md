@@ -51,6 +51,34 @@ inclusion: always
 
 ---
 
+## 🔔 Toast Notifications (CRITICAL)
+
+### We Use Sonner - NOT shadcn/ui Toast Hook
+
+**❌ NEVER:**
+```tsx
+import { useToast } from '@/hooks/use-toast';
+const { toast } = useToast();
+```
+
+**✅ ALWAYS:**
+```tsx
+import { toast } from '@/hooks/use-toast';
+
+toast.success('Success message');
+toast.error('Error message');
+toast.info('Info message');
+toast.warning('Warning message');
+```
+
+**Key Points:**
+- Import `toast` directly (not `useToast`)
+- Call methods: `toast.success()`, `toast.error()`, `toast.info()`, `toast.warning()`
+- No hook initialization needed
+- Built on Sonner, not shadcn/ui toast
+
+---
+
 ## 🎨 UI Library & Styling
 
 ### shadcn/ui Components

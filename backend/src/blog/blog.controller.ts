@@ -24,8 +24,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { Permissions } from '../auth/decorators/permissions.decorator';
 import { Public } from '../auth/decorators/public.decorator';
+import { FeatureGuard } from '../common/guards/feature.guard';
+import { FeatureEnabled } from '../common/decorators/feature-enabled.decorator';
 
 @Controller('blog')
+@UseGuards(FeatureGuard)
+@FeatureEnabled('blog')
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 

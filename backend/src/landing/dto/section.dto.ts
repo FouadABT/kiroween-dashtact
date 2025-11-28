@@ -20,6 +20,9 @@ export class SectionDto {
     'testimonials',
     'stats',
     'content',
+    'blog-posts',
+    'pages',
+    'products',
   ])
   type: string;
 

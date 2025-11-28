@@ -1,199 +1,405 @@
 import {
   Injectable,
-  BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
-import { promises as fs } from 'fs';
-import { join } from 'path';
-import { v4 as uuidv4 } from 'uuid';
-import sharp from 'sharp';
-import { UploadFileDto } from './dto/upload-file.dto';
-import { UploadResponseDto } from './dto/upload-response.dto';
-import { UPLOAD_CONFIGS } from './interfaces/upload-config.interface';
+import { PrismaService } from '../prisma/prisma.service';
+import { Prisma, Upload, Visibility } from '@prisma/client';
+import { CreateUploadDto } from './dto/create-upload.dto';
+import { GetUploadsQueryDto } from './dto/get-uploads-query.dto';
+import { UpdateUploadDto } from './dto/update-upload.dto';
+import { BulkDeleteDto } from './dto/bulk-delete.dto';
+import { BulkVisibilityUpdateDto } from './dto/bulk-visibility-update.dto';
+import type { RequestUser } from '../auth/decorators/current-user.decorator';
 
 @Injectable()
 export class UploadsService {
-  async uploadFile(
-    file: Express.Multer.File,
-    dto: UploadFileDto,
-  ): Promise<UploadResponseDto> {
-    // Validate file
-    this.validateFile(file, dto.type);
+  constructor(private prisma: PrismaService) {}
 
-    // Generate unique filename
-    const ext = file.originalname.split('.').pop();
-    const filename = `${uuidv4()}.${ext}`;
-
-    // Get upload directory
-    const config = UPLOAD_CONFIGS[dto.type];
-    const uploadDir = join(process.cwd(), config.uploadDir);
-
-    // Ensure directory exists
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    // Save file
-    const filepath = join(uploadDir, filename);
-    await fs.writeFile(filepath, file.buffer);
-
-    // Return response
-    return {
-      filename,
-      originalName: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      url: `/${config.uploadDir}/${filename}`,
-      uploadedAt: new Date(),
-    };
+  /**
+   * Create upload record after file storage
+   */
+  async create(dto: CreateUploadDto, userId: string): Promise<Upload> {
+    return this.prisma.upload.create({
+      data: {
+        ...dto,
+        uploadedById: userId,
+        visibility: dto.visibility || Visibility.PRIVATE, // Use provided visibility or default to PRIVATE
+      },
+      include: {
+        uploadedBy: {
+          select: { id: true, name: true, email: true, avatarUrl: true },
+        },
+      },
+    });
   }
 
-  async deleteFile(
-    type: 'image' | 'document',
-    filename: string,
+  /**
+   * Get uploads with access control
+   */
+  async findAll(
+    query: GetUploadsQueryDto,
+    user: RequestUser,
+  ): Promise<{ data: Upload[]; total: number; page: number; limit: number }> {
+    const {
+      page = 1,
+      limit = 20,
+      type,
+      visibility,
+      uploadedBy,
+      startDate,
+      endDate,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
+
+    const where: Prisma.UploadWhereInput = {
+      deletedAt: null,
+      ...(type && { type }),
+      ...(startDate && { createdAt: { gte: new Date(startDate) } }),
+      ...(endDate && { createdAt: { lte: new Date(endDate) } }),
+      ...(search && {
+        OR: [
+          { originalName: { contains: search, mode: 'insensitive' } },
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { tags: { has: search } },
+        ],
+      }),
+    };
+
+    // Apply access control
+    // Users with media:view:all can see all files regardless of ownership
+    const hasViewAllPermission = this.hasPermission(user, 'media:view:all');
+    if (!this.isAdmin(user) && !hasViewAllPermission) {
+      where.OR = [
+        { visibility: Visibility.PUBLIC },
+        { uploadedById: user.id },
+        {
+          visibility: Visibility.ROLE_BASED,
+          allowedRoles: { has: user.roleId },
+        },
+      ];
+    }
+
+    // Admin filter
+    if (uploadedBy && this.isAdmin(user)) {
+      where.uploadedById = uploadedBy;
+    }
+
+    // Visibility filter
+    if (visibility) {
+      where.visibility = visibility;
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.upload.findMany({
+        where,
+        include: {
+          uploadedBy: {
+            select: { id: true, name: true, email: true, avatarUrl: true },
+          },
+        },
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.upload.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
+  }
+
+  /**
+   * Get single upload with permission check
+   */
+  async findOne(id: string, user: RequestUser): Promise<Upload> {
+    const upload = await this.prisma.upload.findUnique({
+      where: { id, deletedAt: null },
+      include: {
+        uploadedBy: {
+          select: { id: true, name: true, email: true, avatarUrl: true },
+        },
+      },
+    });
+
+    if (!upload) {
+      throw new NotFoundException('Upload not found');
+    }
+
+    if (!this.canAccess(upload, user)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return upload;
+  }
+
+  /**
+   * Update upload metadata
+   */
+  async update(
+    id: string,
+    dto: UpdateUploadDto,
+    user: RequestUser,
+  ): Promise<Upload> {
+    const upload = await this.findOne(id, user);
+
+    if (!this.canEdit(upload, user)) {
+      throw new ForbiddenException(
+        'You do not have permission to edit this file',
+      );
+    }
+
+    return this.prisma.upload.update({
+      where: { id },
+      data: dto,
+      include: {
+        uploadedBy: {
+          select: { id: true, name: true, email: true, avatarUrl: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Soft delete
+   */
+  async remove(id: string, user: RequestUser): Promise<{ warning?: string }> {
+    const upload = await this.findOne(id, user);
+
+    if (!this.canDelete(upload, user)) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this file',
+      );
+    }
+
+    // Check if file is in use
+    let warning: string | undefined;
+    if (upload.usageCount > 0) {
+      warning = `This file is currently used in ${upload.usageCount} location(s). Deleting it may break references.`;
+    }
+
+    await this.prisma.upload.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        deletedById: user.id,
+      },
+    });
+
+    return { warning };
+  }
+
+  /**
+   * Bulk delete
+   */
+  async bulkDelete(
+    dto: BulkDeleteDto,
+    user: RequestUser,
+  ): Promise<{ deleted: number }> {
+    const uploads = await this.prisma.upload.findMany({
+      where: { id: { in: dto.ids }, deletedAt: null },
+    });
+
+    const deletableIds = uploads
+      .filter((upload) => this.canDelete(upload, user))
+      .map((upload) => upload.id);
+
+    await this.prisma.upload.updateMany({
+      where: { id: { in: deletableIds } },
+      data: {
+        deletedAt: new Date(),
+        deletedById: user.id,
+      },
+    });
+
+    return { deleted: deletableIds.length };
+  }
+
+  /**
+   * Bulk visibility update
+   */
+  async bulkUpdateVisibility(
+    dto: BulkVisibilityUpdateDto,
+    user: RequestUser,
+  ): Promise<{ updated: number }> {
+    const uploads = await this.prisma.upload.findMany({
+      where: { id: { in: dto.ids }, deletedAt: null },
+    });
+
+    const editableIds = uploads
+      .filter((upload) => this.canEdit(upload, user))
+      .map((upload) => upload.id);
+
+    await this.prisma.upload.updateMany({
+      where: { id: { in: editableIds } },
+      data: {
+        visibility: dto.visibility,
+        allowedRoles: dto.allowedRoles || [],
+      },
+    });
+
+    return { updated: editableIds.length };
+  }
+
+  /**
+   * Increment usage count
+   */
+  async incrementUsage(
+    id: string,
+    entity: string,
+    entityId: string,
   ): Promise<void> {
-    // Validate filename (prevent directory traversal)
+    const upload = await this.prisma.upload.findUnique({ where: { id } });
+    if (!upload) return;
+
+    const usedIn = (upload.usedIn as any) || {};
+    if (!usedIn[entity]) {
+      usedIn[entity] = [];
+    }
+    if (!usedIn[entity].includes(entityId)) {
+      usedIn[entity].push(entityId);
+    }
+
+    await this.prisma.upload.update({
+      where: { id },
+      data: {
+        usedIn,
+        usageCount: { increment: 1 },
+      },
+    });
+  }
+
+  /**
+   * Check if user has a specific permission
+   */
+  private hasPermission(user: RequestUser, permission: string): boolean {
+    return user.permissions?.includes(permission) || false;
+  }
+
+  /**
+   * Check if user is admin
+   */
+  private isAdmin(user: RequestUser): boolean {
+    return user.role?.name === 'Admin' || user.role?.name === 'Super Admin';
+  }
+
+  /**
+   * Check if user can access upload
+   */
+  private canAccess(upload: Upload, user: RequestUser): boolean {
+    if (this.isAdmin(user)) return true;
+    if (upload.visibility === Visibility.PUBLIC) return true;
+    if (upload.uploadedById === user.id) return true;
     if (
-      filename.includes('..') ||
-      filename.includes('/') ||
-      filename.includes('\\')
+      upload.visibility === Visibility.ROLE_BASED &&
+      upload.allowedRoles.includes(user.roleId)
     ) {
-      throw new BadRequestException('Invalid filename');
+      return true;
     }
-
-    // Get upload directory
-    const config = UPLOAD_CONFIGS[type];
-    const uploadDir = join(process.cwd(), config.uploadDir);
-    const filepath = join(uploadDir, filename);
-
-    try {
-      // Check if file exists
-      await fs.access(filepath);
-
-      // Delete file
-      await fs.unlink(filepath);
-    } catch (error: unknown) {
-      if (
-        error &&
-        typeof error === 'object' &&
-        'code' in error &&
-        error.code === 'ENOENT'
-      ) {
-        throw new NotFoundException('File not found');
-      }
-      throw error;
-    }
+    return false;
   }
 
-  async uploadEditorImage(
-    file: Express.Multer.File,
-  ): Promise<UploadResponseDto> {
-    // Generate unique filename with timestamp and random string
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    const ext = file.originalname.split('.').pop();
-    const filename = `${timestamp}-${randomString}.${ext}`;
-
-    // Get upload directory for editor images
-    const uploadDir = join(process.cwd(), 'uploads/editor-images');
-
-    // Ensure directory exists
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    // Save file
-    const filepath = join(uploadDir, filename);
-    await fs.writeFile(filepath, file.buffer);
-
-    // Generate full URL
-    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
-    const url = `${baseUrl}/uploads/editor-images/${filename}`;
-
-    // Return response
-    return {
-      filename,
-      originalName: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      url,
-      uploadedAt: new Date(),
-    };
+  /**
+   * Check if user can edit upload
+   */
+  private canEdit(upload: Upload, user: RequestUser): boolean {
+    return this.isAdmin(user) || upload.uploadedById === user.id;
   }
 
-  async uploadAvatar(
-    file: Express.Multer.File,
-    userId: string,
-  ): Promise<UploadResponseDto> {
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowedTypes.includes(file.mimetype)) {
-      throw new BadRequestException(
-        'Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed',
-      );
-    }
-
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      throw new BadRequestException('File size exceeds 5MB limit');
-    }
-
-    // Generate unique filename
-    const filename = `${userId}-${uuidv4()}.webp`;
-
-    // Get upload directory for avatars
-    const uploadDir = join(process.cwd(), 'uploads/avatars');
-
-    // Ensure directory exists
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    // Optimize image with Sharp
-    // - Resize to 400x400
-    // - Convert to WebP format
-    // - Quality 85%
-    // - Strip EXIF metadata
-    const optimizedBuffer = await sharp(file.buffer)
-      .rotate() // Auto-rotate based on EXIF (before stripping)
-      .resize(400, 400, {
-        fit: 'cover',
-        position: 'center',
-      })
-      .webp({ quality: 85 })
-      .toBuffer();
-
-    // Save optimized file
-    const filepath = join(uploadDir, filename);
-    await fs.writeFile(filepath, optimizedBuffer);
-
-    // Generate full URL
-    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
-    const url = `${baseUrl}/uploads/avatars/${filename}`;
-
-    // Return response
-    return {
-      filename,
-      originalName: file.originalname,
-      mimetype: 'image/webp',
-      size: optimizedBuffer.length,
-      url,
-      uploadedAt: new Date(),
-    };
+  /**
+   * Check if user can delete upload
+   */
+  private canDelete(upload: Upload, user: RequestUser): boolean {
+    return this.isAdmin(user) || upload.uploadedById === user.id;
   }
 
-  private validateFile(
-    file: Express.Multer.File,
-    type: 'image' | 'document',
-  ): void {
-    const config = UPLOAD_CONFIGS[type];
-
-    // Check file size
-    if (file.size > config.maxFileSize) {
-      throw new BadRequestException(
-        `File size exceeds maximum of ${config.maxFileSize / 1024 / 1024}MB`,
-      );
+  /**
+   * Get soft-deleted files (admin only)
+   */
+  async findDeleted(
+    user: RequestUser,
+  ): Promise<Upload[]> {
+    if (!this.isAdmin(user)) {
+      throw new ForbiddenException('Only admins can view deleted files');
     }
 
-    // Check mime type
-    if (!config.allowedMimeTypes.includes(file.mimetype)) {
-      throw new BadRequestException(
-        `File type ${file.mimetype} is not allowed. Allowed types: ${config.allowedMimeTypes.join(', ')}`,
-      );
+    return this.prisma.upload.findMany({
+      where: {
+        deletedAt: { not: null },
+      },
+      include: {
+        uploadedBy: {
+          select: { id: true, name: true, email: true, avatarUrl: true },
+        },
+        deletedBy: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+      orderBy: { deletedAt: 'desc' },
+    });
+  }
+
+  /**
+   * Restore soft-deleted file (admin only)
+   */
+  async restore(id: string, user: RequestUser): Promise<Upload> {
+    if (!this.isAdmin(user)) {
+      throw new ForbiddenException('Only admins can restore files');
+    }
+
+    const upload = await this.prisma.upload.findUnique({
+      where: { id },
+    });
+
+    if (!upload) {
+      throw new NotFoundException('Upload not found');
+    }
+
+    if (!upload.deletedAt) {
+      throw new ForbiddenException('File is not deleted');
+    }
+
+    return this.prisma.upload.update({
+      where: { id },
+      data: {
+        deletedAt: null,
+        deletedById: null,
+      },
+      include: {
+        uploadedBy: {
+          select: { id: true, name: true, email: true, avatarUrl: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Permanently delete file (admin only)
+   */
+  async permanentDelete(id: string, user: RequestUser): Promise<void> {
+    if (!this.isAdmin(user)) {
+      throw new ForbiddenException('Only admins can permanently delete files');
+    }
+
+    const upload = await this.prisma.upload.findUnique({
+      where: { id },
+    });
+
+    if (!upload) {
+      throw new NotFoundException('Upload not found');
+    }
+
+    // Delete from database
+    await this.prisma.upload.delete({
+      where: { id },
+    });
+
+    // Delete from filesystem
+    const fs = require('fs');
+    if (fs.existsSync(upload.path)) {
+      fs.unlinkSync(upload.path);
     }
   }
 }

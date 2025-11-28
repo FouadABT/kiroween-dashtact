@@ -88,7 +88,7 @@ export function ProductCard({ product, onDelete, onEdit, onView }: ProductCardPr
               <CardDescription className="text-xs mt-1">SKU: {product.sku}</CardDescription>
             )}
           </div>
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <MoreVertical className="h-4 w-4" />

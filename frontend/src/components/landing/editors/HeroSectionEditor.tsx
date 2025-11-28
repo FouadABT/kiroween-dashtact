@@ -82,6 +82,7 @@ export function HeroSectionEditor({ data, onChange }: HeroSectionEditorProps) {
             <SelectItem value="solid">Solid Color</SelectItem>
             <SelectItem value="gradient">Gradient</SelectItem>
             <SelectItem value="image">Image</SelectItem>
+            <SelectItem value="video">Video</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -96,7 +97,22 @@ export function HeroSectionEditor({ data, onChange }: HeroSectionEditorProps) {
         </div>
       )}
 
-      {(data.backgroundType === 'solid' || data.backgroundType === 'gradient') && (
+      {data.backgroundType === 'video' && (
+        <div className="space-y-2">
+          <Label htmlFor="background-video">Background Video URL</Label>
+          <Input
+            id="background-video"
+            value={(data as any).backgroundVideo || ''}
+            onChange={(e) => handleChange('backgroundVideo' as any, e.target.value)}
+            placeholder="https://example.com/video.mp4 or YouTube URL"
+          />
+          <p className="text-xs text-muted-foreground">
+            Supports MP4, WebM, YouTube, and Vimeo URLs
+          </p>
+        </div>
+      )}
+
+      {data.backgroundType === 'solid' && (
         <div className="space-y-2">
           <Label htmlFor="background-color">Background Color</Label>
           <div className="flex gap-2">
@@ -114,6 +130,64 @@ export function HeroSectionEditor({ data, onChange }: HeroSectionEditorProps) {
             />
           </div>
         </div>
+      )}
+
+      {data.backgroundType === 'gradient' && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="gradient-start">Gradient Start Color</Label>
+            <div className="flex gap-2">
+              <Input
+                type="color"
+                value={(data as any).gradientStart || '#000000'}
+                onChange={(e) => handleChange('gradientStart' as any, e.target.value)}
+                className="w-20 h-10"
+              />
+              <Input
+                id="gradient-start"
+                value={(data as any).gradientStart || '#000000'}
+                onChange={(e) => handleChange('gradientStart' as any, e.target.value)}
+                placeholder="#000000"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="gradient-end">Gradient End Color</Label>
+            <div className="flex gap-2">
+              <Input
+                type="color"
+                value={(data as any).gradientEnd || '#ffffff'}
+                onChange={(e) => handleChange('gradientEnd' as any, e.target.value)}
+                className="w-20 h-10"
+              />
+              <Input
+                id="gradient-end"
+                value={(data as any).gradientEnd || '#ffffff'}
+                onChange={(e) => handleChange('gradientEnd' as any, e.target.value)}
+                placeholder="#ffffff"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="gradient-angle">Gradient Angle</Label>
+            <Select
+              value={(data as any).gradientAngle || '180'}
+              onValueChange={(value) => handleChange('gradientAngle' as any, value)}
+            >
+              <SelectTrigger id="gradient-angle">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Top to Bottom</SelectItem>
+                <SelectItem value="90">Left to Right</SelectItem>
+                <SelectItem value="180">Bottom to Top</SelectItem>
+                <SelectItem value="270">Right to Left</SelectItem>
+                <SelectItem value="45">Diagonal (↗)</SelectItem>
+                <SelectItem value="135">Diagonal (↘)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </>
       )}
 
       <div className="space-y-2">

@@ -25,7 +25,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CreateLayoutDto } from './dto/create-layout.dto';
 import { UpdateLayoutDto } from './dto/update-layout.dto';
 import { AddWidgetDto } from './dto/add-widget.dto';
-import { UpdateWidgetDto } from './dto/update-widget.dto';
+import { UpdateLayoutWidgetDto } from './dto/update-widget.dto';
 import { ReorderWidgetsDto } from './dto/reorder-widgets.dto';
 import { LayoutFiltersDto } from './dto/layout-filters.dto';
 
@@ -254,7 +254,7 @@ export class DashboardLayoutsController {
   async updateWidget(
     @Param('layoutId') layoutId: string,
     @Param('widgetId') widgetId: string,
-    @Body() dto: UpdateWidgetDto
+    @Body() dto: UpdateLayoutWidgetDto
   ) {
     return this.dashboardLayoutsService.updateWidget(layoutId, widgetId, dto);
   }

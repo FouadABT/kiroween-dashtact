@@ -4,6 +4,7 @@
   "description": "Full-stack template with Next.js frontend and NestJS backend",
   "scripts": {
     "setup": "node setup-workspace.js",
+    "setup:fresh": "node setup-cli.js",
     "dev:backend": "cd backend && npm run start:dev",
     "dev:frontend": "cd frontend && npm run dev",
     "install:all": "cd backend && npm install && cd ../frontend && npm install",

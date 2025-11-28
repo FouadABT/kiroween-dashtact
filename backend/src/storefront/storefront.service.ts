@@ -26,6 +26,7 @@ export class StorefrontService {
       minPrice,
       maxPrice,
       isFeatured,
+      inStock,
       sortBy = SortBy.NEWEST,
       page = 1,
       limit = 24,
@@ -74,6 +75,19 @@ export class StorefrontService {
     // Featured filter
     if (isFeatured !== undefined) {
       where.isFeatured = isFeatured;
+    }
+
+    // In stock filter
+    if (inStock !== undefined && inStock) {
+      where.variants = {
+        some: {
+          inventory: {
+            some: {
+              available: { gt: 0 },
+            },
+          },
+        },
+      };
     }
 
     // Determine sort order

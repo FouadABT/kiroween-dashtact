@@ -11,13 +11,14 @@ import * as Icons from 'lucide-react';
 
 interface FeaturesSectionProps {
   section: LandingPageSection;
+  maxWidth?: 'full' | 'container' | 'narrow';
 }
 
-export function FeaturesSection({ section }: FeaturesSectionProps) {
+export function FeaturesSection({ section, maxWidth = 'container' }: FeaturesSectionProps) {
   const data = section.data as FeaturesSectionData;
 
   // Sort features by order
-  const sortedFeatures = [...data.features].sort((a, b) => a.order - b.order);
+  const sortedFeatures = [...(data.features || [])].sort((a, b) => a.order - b.order);
 
   // Determine layout classes
   const layoutClass = data.layout === 'list' 

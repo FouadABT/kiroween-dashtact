@@ -1,15 +1,12 @@
-import { PartialType, OmitType } from '@nestjs/mapped-types';
-import { CreateSettingsDto, ThemeMode } from './create-settings.dto';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { ThemeMode } from './create-settings.dto';
+import { IsEnum, IsOptional, IsString, IsObject } from 'class-validator';
 
 /**
  * DTO for updating existing settings
  * All fields are optional to support partial updates
- * Omits userId and scope as they cannot be changed after creation
+ * Accepts partial color palettes and typography for flexible updates
  */
-export class UpdateSettingsDto extends PartialType(
-  OmitType(CreateSettingsDto, ['userId', 'scope'] as const),
-) {
+export class UpdateSettingsDto {
   @IsOptional()
   @IsEnum(ThemeMode)
   themeMode?: ThemeMode;
@@ -18,6 +15,15 @@ export class UpdateSettingsDto extends PartialType(
   @IsString()
   activeTheme?: string;
 
-  // lightPalette, darkPalette, and typography are inherited as optional
-  // from PartialType(CreateSettingsDto)
+  @IsOptional()
+  @IsObject()
+  lightPalette?: Record<string, any>;
+
+  @IsOptional()
+  @IsObject()
+  darkPalette?: Record<string, any>;
+
+  @IsOptional()
+  @IsObject()
+  typography?: Record<string, any>;
 }

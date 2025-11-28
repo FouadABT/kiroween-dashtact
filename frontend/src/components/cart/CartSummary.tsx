@@ -23,8 +23,8 @@ export function CartSummary({ cart }: CartSummaryProps) {
   const total = subtotal + estimatedTax + estimatedShipping;
 
   return (
-    <div className="bg-card rounded-lg border p-6">
-      <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+    <div className="bg-card border border-border rounded-lg p-6">
+      <h2 className="text-lg font-semibold text-foreground mb-4">Order Summary</h2>
 
       <div className="space-y-3">
         {/* Subtotal */}
@@ -32,13 +32,13 @@ export function CartSummary({ cart }: CartSummaryProps) {
           <span className="text-muted-foreground">
             Subtotal ({cart.itemCount} {cart.itemCount === 1 ? 'item' : 'items'})
           </span>
-          <span className="font-medium">${subtotal.toFixed(2)}</span>
+          <span className="font-medium text-foreground">${subtotal.toFixed(2)}</span>
         </div>
 
         {/* Estimated Tax */}
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Estimated Tax</span>
-          <span className="font-medium">${estimatedTax.toFixed(2)}</span>
+          <span className="font-medium text-foreground">${estimatedTax.toFixed(2)}</span>
         </div>
 
         {/* Estimated Shipping */}
@@ -46,16 +46,16 @@ export function CartSummary({ cart }: CartSummaryProps) {
           <span className="text-muted-foreground">Estimated Shipping</span>
           <span className="font-medium">
             {estimatedShipping === 0 ? (
-              <span className="text-green-600">FREE</span>
+              <span className="text-green-600 dark:text-green-400">FREE</span>
             ) : (
-              `$${estimatedShipping.toFixed(2)}`
+              <span className="text-foreground">${estimatedShipping.toFixed(2)}</span>
             )}
           </span>
         </div>
 
         {/* Free Shipping Notice */}
         {subtotal < 50 && (
-          <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
+          <div className="text-xs text-muted-foreground bg-muted border border-border p-2 rounded">
             Add ${(50 - subtotal).toFixed(2)} more for free shipping!
           </div>
         )}
@@ -63,7 +63,7 @@ export function CartSummary({ cart }: CartSummaryProps) {
         <Separator />
 
         {/* Total */}
-        <div className="flex justify-between text-lg font-bold">
+        <div className="flex justify-between text-lg font-bold text-foreground">
           <span>Total</span>
           <span>${total.toFixed(2)}</span>
         </div>

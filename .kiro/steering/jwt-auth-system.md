@@ -21,7 +21,8 @@ This project uses a professional JWT-based authentication system with role-based
 
 **Backend** (`backend/src/auth/`):
 - `auth.service.ts` - Authentication business logic
-- `auth.controller.ts` - Auth endpoints (login, register, refresh, logout, profile)
+- `auth.controller.ts` - Auth endpoints (login, register, refresh, logout, profile, password reset)
+- `services/password-reset.service.ts` - Password reset token management
 - `jwt-auth.guard.ts` - JWT validation guard
 - `permissions.guard.ts` - Permission checking guard
 - `roles.guard.ts` - Role checking guard
@@ -29,6 +30,8 @@ This project uses a professional JWT-based authentication system with role-based
 **Frontend** (`frontend/src/`):
 - `contexts/AuthContext.tsx` - Global auth state management
 - `components/auth/` - Auth guards and components
+- `app/forgot-password/` - Password reset request page
+- `app/reset-password/` - Password reset confirmation page
 - `hooks/` - Auth convenience hooks
 
 ## Permission System
@@ -693,6 +696,9 @@ export const authConfig = {
 - `POST /auth/logout` - Logout (authenticated)
 - `POST /auth/refresh` - Refresh access token (public with refresh token)
 - `GET /auth/profile` - Get current user profile (authenticated)
+- `POST /auth/forgot-password` - Request password reset email (public)
+- `POST /auth/validate-reset-token` - Validate reset token (public)
+- `POST /auth/reset-password` - Reset password with token (public)
 
 ### Users
 
@@ -755,6 +761,409 @@ The system is prepared for OAuth:
 - `authProvider` field in User model
 - `providerId` field for OAuth user ID
 - Enable in config: `features.socialAuth = true`
+
+## Password Reset via Email
+
+### Backend Implementation
+
+```typescript
+// Request password reset
+await authService.forgotPassword('user@example.com');
+// Generates token, stores in DB, sends email
+
+// Validate token
+await passwordResetService.validateToken('reset-token');
+// Returns true if valid and not expired
+
+// Reset password
+await authService.resetPassword('reset-token', 'newPassword123');
+// Updates password, invalidates token, clears sessions
+```
+
+### Frontend Pages
+
+- `/forgot-password` - Email input form
+- `/reset-password?token=xxx` - New password form with token validation
+
+### API Methods
+
+```typescript
+// In UserApi class
+await UserApi.forgotPassword('user@example.com');
+await UserApi.validateResetToken('token');
+await UserApi.resetPassword('token', 'newPassword');
+```
+
+### Security Features
+
+- Tokens expire in 1 hour
+- Single-use tokens (invalidated after use)
+- Rate limiting on forgot password endpoint
+- All user sessions cleared on password reset
+- User enumeration prevention (same response for valid/invalid emails)
+
+### Requirements
+
+- Email system must be configured (SMTP settings in database)
+- Password reset template must exist in email templates
+- Feature enabled in `authConfig.features.passwordReset`
+
+## Two-Factor Authentication (2FA)
+
+### Overview
+
+Email-based two-factor authentication adds an extra layer of security by requiring users to enter a verification code sent to their email during login.
+
+### Key Components
+
+**Backend** (`backend/src/auth/services/`):
+- `two-factor.service.ts` - Code generation, validation, rate limiting
+- `two-factor-cleanup.service.ts` - Automated cleanup of expired codes
+
+**Frontend** (`frontend/src/components/auth/`):
+- `TwoFactorVerification.tsx` - 6-digit code input component
+- `LoginForm.tsx` - Updated to handle 2FA flow
+
+**Database**:
+- `TwoFactorCode` model - Stores verification codes with expiration
+
+### Backend Implementation
+
+**Enable/Disable 2FA**:
+```typescript
+// Enable 2FA for user
+await authService.enableTwoFactor(userId);
+// Sets twoFactorEnabled = true, sends confirmation email
+
+// Disable 2FA for user
+await authService.disableTwoFactor(userId);
+// Sets twoFactorEnabled = false, clears secret, sends confirmation email
+```
+
+**Login Flow with 2FA**:
+```typescript
+// 1. User logs in with credentials
+const response = await authService.login(loginDto, request);
+
+// 2. If 2FA enabled, returns TwoFactorRequiredResponse
+if (response.requiresTwoFactor) {
+  // { requiresTwoFactor: true, userId: string, message: string }
+  // Frontend shows code input
+}
+
+// 3. User enters code from email
+await authService.verifyTwoFactorAndLogin(userId, code, request);
+// Returns AuthResponse with JWT tokens
+```
+
+**Code Generation**:
+```typescript
+// Generate and send code
+await twoFactorService.generateAndSendCode(userId, email, ipAddress);
+// Generates 6-digit code, stores in DB, sends via email
+// Code expires in 10 minutes
+```
+
+**Code Validation**:
+```typescript
+// Validate code
+const isValid = await twoFactorService.validateCode(userId, code);
+// Checks expiration, attempts, rate limits
+// Max 3 attempts per code
+```
+
+### Frontend Implementation
+
+**Login Flow**:
+```typescript
+'use client';
+import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
+
+function LoginForm() {
+  const [twoFactorRequired, setTwoFactorRequired] = useState(null);
+  
+  const handleSubmit = async (credentials) => {
+    const response = await UserApi.login(credentials);
+    
+    // Check if 2FA required
+    if (response.requiresTwoFactor) {
+      setTwoFactorRequired(response);
+      return;
+    }
+    
+    // Normal login flow
+    await login(credentials);
+  };
+  
+  // Show 2FA verification if required
+  if (twoFactorRequired) {
+    return (
+      <TwoFactorVerification
+        userId={twoFactorRequired.userId}
+        onSuccess={handleSuccess}
+        onCancel={handleCancel}
+      />
+    );
+  }
+  
+  return <LoginFormUI />;
+}
+```
+
+**2FA Settings**:
+```typescript
+import { ProfileApi } from '@/lib/api';
+
+// Get 2FA status
+const status = await ProfileApi.getTwoFactorStatus();
+// { enabled: boolean, verifiedAt?: string }
+
+// Enable 2FA
+await ProfileApi.enableTwoFactor();
+
+// Disable 2FA
+await ProfileApi.disableTwoFactor();
+```
+
+**2FA Verification Component**:
+```typescript
+<TwoFactorVerification
+  userId="user-id"
+  onSuccess={() => router.push('/dashboard')}
+  onCancel={() => setTwoFactorRequired(null)}
+/>
+```
+
+Features:
+- 6-digit code input with auto-advance
+- Paste support for codes
+- Resend code with 60-second cooldown
+- Real-time validation
+- Error handling
+
+### API Endpoints
+
+**Authentication**:
+- `POST /auth/verify-2fa` - Verify code and complete login
+- `POST /auth/resend-2fa` - Resend verification code
+
+**Profile Settings**:
+- `GET /profile/two-factor/status` - Get 2FA status
+- `POST /profile/two-factor/enable` - Enable 2FA (authenticated)
+- `POST /profile/two-factor/disable` - Disable 2FA (authenticated)
+
+### Security Features
+
+**Rate Limiting**:
+- 3 code requests per 10 minutes per user
+- 3 verification attempts per code
+- 5 failed attempts = 15-minute account lockout
+
+**Code Security**:
+- Cryptographically secure random generation
+- 10-minute expiration
+- Single-use codes (invalidated after verification)
+- Automatic invalidation when generating new codes
+
+**Audit Logging**:
+- All 2FA events logged with IP address
+- Enable/disable actions logged
+- Failed verification attempts tracked
+
+**Automated Cleanup**:
+- Hourly cleanup of expired/verified codes
+- Daily cleanup of codes older than 7 days
+- Manual cleanup method for testing
+
+### Database Schema
+
+```prisma
+model User {
+  twoFactorEnabled    Boolean   @default(false) @map("two_factor_enabled")
+  twoFactorSecret     String?   @map("two_factor_secret")
+  twoFactorVerifiedAt DateTime? @map("two_factor_verified_at")
+}
+
+model TwoFactorCode {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  code      String
+  expiresAt DateTime @map("expires_at")
+  verified  Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([code])
+  @@map("two_factor_codes")
+}
+```
+
+### Email Templates
+
+**Required Template**: `two-factor-verification`
+
+Variables:
+- `{code}` - 6-digit verification code
+- `{userName}` - User's name
+- `{expiresIn}` - Expiration time (e.g., "10 minutes")
+- `{ipAddress}` - Login IP address
+- `{appName}` - Application name
+
+**Additional Templates**:
+- `two-factor-enabled` - Confirmation when 2FA is enabled
+- `two-factor-disabled` - Confirmation when 2FA is disabled
+
+### Configuration
+
+**Backend** (`backend/src/auth/services/two-factor.service.ts`):
+```typescript
+private readonly CODE_EXPIRATION_MINUTES = 10;
+private readonly MAX_ATTEMPTS_PER_CODE = 3;
+private readonly MAX_FAILED_ATTEMPTS = 5;
+private readonly LOCKOUT_DURATION_MINUTES = 15;
+private readonly MAX_CODE_REQUESTS_PER_WINDOW = 3;
+private readonly CODE_REQUEST_WINDOW_MINUTES = 10;
+```
+
+**Frontend** (`frontend/src/components/auth/TwoFactorVerification.tsx`):
+```typescript
+const RESEND_COOLDOWN_SECONDS = 60;
+const CODE_LENGTH = 6;
+```
+
+### User Experience
+
+**Login Flow**:
+1. User enters email and password
+2. If 2FA enabled, login form is replaced with code input
+3. User receives email with 6-digit code
+4. User enters code (auto-advances between digits)
+5. On success, user is logged in and redirected
+6. On failure, error shown and code cleared
+
+**Settings Flow**:
+1. User navigates to Security Settings
+2. Toggle switch to enable/disable 2FA
+3. Confirmation dialog appears
+4. On confirm, 2FA status updated
+5. Confirmation email sent
+6. In-app notification shown
+
+### Testing
+
+**Manual Testing**:
+```bash
+# 1. Enable 2FA for a user
+# 2. Log out
+# 3. Log in with credentials
+# 4. Verify code input appears
+# 5. Check email for code
+# 6. Enter code
+# 7. Verify successful login
+```
+
+**Test Rate Limiting**:
+```bash
+# 1. Request code 3 times quickly
+# 2. Verify 4th request is blocked
+# 3. Wait 10 minutes
+# 4. Verify can request again
+```
+
+**Test Code Expiration**:
+```bash
+# 1. Request code
+# 2. Wait 11 minutes
+# 3. Try to verify code
+# 4. Verify "expired" error
+```
+
+### Troubleshooting
+
+**Code Not Received**:
+- Check email system is enabled
+- Verify email template exists
+- Check email logs for delivery status
+- Verify user's email address is correct
+
+**"Too Many Attempts" Error**:
+- User exceeded rate limits
+- Wait for lockout period to expire (15 minutes)
+- Or manually clear failed attempts in database
+
+**Code Always Invalid**:
+- Check code hasn't expired (10 minutes)
+- Verify code matches exactly (6 digits)
+- Check attempts counter hasn't exceeded limit
+- Verify code exists in database
+
+**2FA Not Working After Enable**:
+- User must log out and log back in
+- Check `twoFactorEnabled` field in database
+- Verify email system is configured
+- Check 2FA template exists
+
+### Requirements
+
+- Email system must be configured and enabled
+- Email template `two-factor-verification` must exist
+- ScheduleModule must be imported (for cleanup jobs)
+- User must have valid email address
+
+### Best Practices
+
+**Security**:
+- Always use HTTPS in production
+- Never log verification codes
+- Implement rate limiting on all endpoints
+- Monitor failed verification attempts
+- Send security notifications for 2FA changes
+
+**User Experience**:
+- Clear error messages
+- Show code expiration time
+- Provide resend option with cooldown
+- Auto-advance between input fields
+- Support paste for codes
+
+**Monitoring**:
+- Track 2FA adoption rate
+- Monitor failed verification attempts
+- Alert on unusual patterns
+- Log all 2FA events for audit
+
+### Migration
+
+**Enabling 2FA for Existing Users**:
+```sql
+-- Enable 2FA for specific user
+UPDATE users 
+SET two_factor_enabled = true 
+WHERE email = 'user@example.com';
+
+-- Enable 2FA for all admins
+UPDATE users 
+SET two_factor_enabled = true 
+WHERE role_id IN (
+  SELECT id FROM user_roles WHERE name IN ('Admin', 'Super Admin')
+);
+```
+
+**Bulk Operations**:
+```typescript
+// Enable 2FA for all users in a role
+const adminRole = await prisma.userRole.findUnique({
+  where: { name: 'Admin' },
+  include: { users: true }
+});
+
+for (const user of adminRole.users) {
+  await authService.enableTwoFactor(user.id);
+}
+```
 
 ## Resources
 

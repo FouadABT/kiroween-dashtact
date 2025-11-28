@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CtaButtonDto {
   @IsString()
@@ -10,5 +11,7 @@ export class CtaButtonDto {
   link: string;
 
   @IsEnum(['url', 'page'])
-  linkType: 'url' | 'page';
+  @IsOptional()
+  @Transform(({ value }) => value || 'url')
+  linkType?: 'url' | 'page';
 }

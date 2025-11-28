@@ -60,7 +60,7 @@ export function ImageSizeControls({ editor }: ImageSizeControlsProps) {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           type="button"

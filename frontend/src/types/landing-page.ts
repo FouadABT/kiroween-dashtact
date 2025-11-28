@@ -10,14 +10,14 @@ export type PageStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 export type PageVisibility = 'PUBLIC' | 'PRIVATE';
 
 // Section Types for Landing Page
-export type SectionType = 'hero' | 'features' | 'footer' | 'cta' | 'testimonials' | 'stats' | 'content';
+export type SectionType = 'hero' | 'features' | 'footer' | 'cta' | 'testimonials' | 'stats' | 'content' | 'blog-posts' | 'pages' | 'products';
 
 export interface LandingPageSection {
   id: string;
   type: SectionType;
   enabled: boolean;
   order: number;
-  data: HeroSectionData | FeaturesSectionData | FooterSectionData | CtaSectionData | TestimonialsSectionData | StatsSectionData | ContentSectionData;
+  data: HeroSectionData | FeaturesSectionData | FooterSectionData | CtaSectionData | TestimonialsSectionData | StatsSectionData | ContentSectionData | BlogPostsSectionData | PagesSectionData | ProductsSectionData;
 }
 
 // CTA Button
@@ -34,10 +34,18 @@ export interface HeroSectionData {
   primaryCta: CtaButton;
   secondaryCta?: CtaButton;
   backgroundImage?: string;
-  backgroundType: 'image' | 'gradient' | 'solid';
+  backgroundVideo?: string;
+  backgroundType: 'image' | 'gradient' | 'solid' | 'video';
   backgroundColor?: string;
+  gradientStart?: string;
+  gradientEnd?: string;
+  gradientAngle?: string;
   textAlignment: 'left' | 'center' | 'right';
-  height: 'small' | 'medium' | 'large' | 'full';
+  height: 'small' | 'medium' | 'large' | 'extra-large' | 'full';
+  // Optional extended fields for enhanced hero sections
+  features?: string[];
+  trustBadges?: string[];
+  showTrustBadges?: boolean;
 }
 
 // Feature Card
@@ -51,11 +59,14 @@ export interface FeatureCard {
 
 // Features Section Data
 export interface FeaturesSectionData {
-  title: string;
+  title?: string;
   subtitle?: string;
-  layout: 'grid' | 'list' | 'carousel';
-  columns: 2 | 3 | 4;
-  features: FeatureCard[];
+  layout?: 'grid' | 'list' | 'carousel';
+  columns?: 2 | 3 | 4;
+  features?: FeatureCard[];
+  heading?: string;
+  subheading?: string;
+  backgroundType?: string;
 }
 
 // Nav Link
@@ -104,15 +115,20 @@ export interface Testimonial {
   role: string;
   company?: string;
   avatar?: string;
+  rating?: number; // 1-5 stars
   order: number;
 }
 
 // Testimonials Section Data
 export interface TestimonialsSectionData {
-  title: string;
+  title?: string;
   subtitle?: string;
-  layout: 'grid' | 'carousel';
-  testimonials: Testimonial[];
+  layout?: 'grid' | 'carousel' | 'masonry';
+  showRatings?: boolean;
+  testimonials?: Testimonial[];
+  heading?: string;
+  subheading?: string;
+  columns?: number;
 }
 
 // Stat
@@ -121,6 +137,8 @@ export interface Stat {
   value: string;
   label: string;
   icon?: string;
+  prefix?: string;
+  suffix?: string;
   order: number;
 }
 
@@ -138,6 +156,54 @@ export interface ContentSectionData {
   layout: 'single' | 'two-column';
   image?: string;
   imagePosition?: 'left' | 'right' | 'top' | 'bottom';
+  contentWidth?: 'full' | 'wide' | 'standard' | 'narrow';
+  customCSS?: string; // Custom CSS scoped to this section
+  htmlMode?: boolean; // Whether user is editing in HTML mode
+}
+
+// Blog Posts Section Data
+export interface BlogPostsSectionData {
+  title?: string;
+  subtitle?: string;
+  layout: 'grid' | 'list' | 'carousel';
+  columns: 2 | 3 | 4;
+  postCount: 3 | 6 | 9 | 12;
+  filterByCategory?: string;
+  filterByTag?: string;
+  showAuthor: boolean;
+  showDate: boolean;
+  showCategories: boolean;
+  showExcerpt: boolean;
+  ctaText: string;
+  ctaLink: string;
+}
+
+// Custom Pages Section Data
+export interface PagesSectionData {
+  title?: string;
+  subtitle?: string;
+  layout: 'grid' | 'cards' | 'list';
+  columns: 2 | 3 | 4;
+  pageCount: 3 | 6 | 9 | 12;
+  filterByParent?: string;
+  showExcerpt: boolean;
+  showImage: boolean;
+  ctaText: string;
+}
+
+// Products Section Data
+export interface ProductsSectionData {
+  title?: string;
+  subtitle?: string;
+  layout?: 'grid' | 'carousel' | 'featured';
+  columns?: 2 | 3 | 4;
+  productCount?: 3 | 6 | 9 | 12;
+  filterByCategory?: string;
+  filterByTag?: string;
+  showPrice?: boolean;
+  showRating?: boolean;
+  showStock?: boolean;
+  ctaText?: string;
 }
 
 // Landing Page Settings
@@ -154,7 +220,7 @@ export interface LandingPageSettings {
   seo?: {
     title: string;
     description: string;
-    keywords?: string;
+    keywords?: string[];
     ogImage?: string;
   };
 }

@@ -33,17 +33,33 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       toastOptions={{
         classNames: {
-          toast: 'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+          toast: 'group toast group-[.toaster]:bg-card group-[.toaster]:text-card-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
           description: 'group-[.toast]:text-muted-foreground',
           actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
           cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+          success: 'group-[.toast]:!bg-card group-[.toast]:!text-card-foreground group-[.toast]:!border-border',
+          error: 'group-[.toast]:!bg-card group-[.toast]:!text-card-foreground group-[.toast]:!border-border',
+          warning: 'group-[.toast]:!bg-card group-[.toast]:!text-card-foreground group-[.toast]:!border-border',
+          info: 'group-[.toast]:!bg-card group-[.toast]:!text-card-foreground group-[.toast]:!border-border',
         },
       }}
       style={
         {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
+          "--normal-bg": "hsl(var(--card))",
+          "--normal-text": "hsl(var(--card-foreground))",
+          "--normal-border": "hsl(var(--border))",
+          "--success-bg": "hsl(var(--card))",
+          "--success-text": "hsl(var(--card-foreground))",
+          "--success-border": "hsl(var(--border))",
+          "--error-bg": "hsl(var(--card))",
+          "--error-text": "hsl(var(--card-foreground))",
+          "--error-border": "hsl(var(--border))",
+          "--warning-bg": "hsl(var(--card))",
+          "--warning-text": "hsl(var(--card-foreground))",
+          "--warning-border": "hsl(var(--border))",
+          "--info-bg": "hsl(var(--card))",
+          "--info-text": "hsl(var(--card-foreground))",
+          "--info-border": "hsl(var(--border))",
           "--border-radius": "var(--radius)",
         } as React.CSSProperties
       }

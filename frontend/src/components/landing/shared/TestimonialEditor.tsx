@@ -60,6 +60,35 @@ export function TestimonialEditor({ value, onChange }: TestimonialEditorProps) {
           onChange={(avatarUrl) => handleChange('avatar', avatarUrl)}
         />
       </div>
+      <div className="space-y-2">
+        <Label htmlFor={`testimonial-rating-${value.id}`}>Rating (Optional)</Label>
+        <div className="flex items-center gap-2">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => handleChange('rating', star)}
+              className={`text-2xl transition-colors ${
+                (value.rating || 0) >= star
+                  ? 'text-yellow-400 hover:text-yellow-500'
+                  : 'text-muted-foreground hover:text-yellow-300'
+              }`}
+              aria-label={`${star} star${star > 1 ? 's' : ''}`}
+            >
+              ★
+            </button>
+          ))}
+          {value.rating && (
+            <button
+              type="button"
+              onClick={() => handleChange('rating', undefined)}
+              className="text-xs text-muted-foreground hover:text-foreground ml-2"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

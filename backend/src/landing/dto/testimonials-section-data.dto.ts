@@ -5,24 +5,49 @@ import {
   IsOptional,
   IsArray,
   ValidateNested,
+  IsBoolean,
+  IsNumber,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { TestimonialDto } from './testimonial.dto';
 
 export class TestimonialsSectionDataDto {
   @IsString()
-  @IsNotEmpty()
-  title: string;
+  @IsOptional()
+  title?: string;
 
   @IsString()
   @IsOptional()
   subtitle?: string;
 
-  @IsEnum(['grid', 'carousel'])
-  layout: string;
+  @IsOptional()
+  @IsEnum(['grid', 'carousel', 'masonry'])
+  @Transform(({ value }) => value || 'grid')
+  layout?: string;
 
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TestimonialDto)
-  testimonials: TestimonialDto[];
+  @Transform(({ value }) => value || [])
+  testimonials?: TestimonialDto[];
+
+  // Optional extended fields
+  @IsString()
+  @IsOptional()
+  heading?: string;
+
+  @IsString()
+  @IsOptional()
+  subheading?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => value !== false)
+  showRatings?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  @Transform(({ value }) => value || 3)
+  columns?: number;
 }

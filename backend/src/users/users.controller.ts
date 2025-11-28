@@ -19,6 +19,7 @@ import { ToggleStatusDto } from './dto/toggle-status.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { Permissions } from '../auth/decorators/permissions.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -62,10 +63,21 @@ export class UsersController {
    * Get all users with filtering and pagination
    * GET /users
    * Requires: users:read permission
+   * 
+   * Security: Regular users can only see other users with "User" role
+   * Admins and Super Admins can see all users
    */
   @Get()
   @Permissions('users:read')
-  async findAll(@Query() query: UserQueryDto) {
+  async findAll(@Query() query: UserQueryDto, @CurrentUser() currentUser: any) {
+    // Filter users based on current user's role
+    const userRole = currentUser.role?.name;
+    
+    // If not admin or super admin, restrict to only "User" role
+    if (userRole !== 'Admin' && userRole !== 'Super Admin') {
+      query.roleName = 'User';
+    }
+    
     const result = await this.usersService.findAll(query);
     return {
       statusCode: HttpStatus.OK,

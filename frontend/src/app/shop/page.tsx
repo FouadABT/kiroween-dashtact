@@ -1,9 +1,11 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { ShopPageClient } from './ShopPageClient';
 import { StorefrontApi } from '@/lib/api';
 import type { StorefrontProductListResponseDto, StorefrontCategoryResponseDto } from '@/types/ecommerce';
 import { generatePageMetadata } from '@/lib/metadata-helpers';
 import { generateWebSiteStructuredData, generateProductListStructuredData } from '@/lib/structured-data-helpers';
+import { isFeatureEnabled } from '@/config/features.config';
 
 export const metadata: Metadata = generatePageMetadata('/shop');
 
@@ -61,6 +63,11 @@ async function getCategories(): Promise<StorefrontCategoryResponseDto[]> {
 }
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {
+  // Check if ecommerce feature is enabled
+  if (!isFeatureEnabled('ecommerce')) {
+    notFound();
+  }
+
   // Await searchParams (Next.js 15+ requirement)
   const params = await searchParams;
   

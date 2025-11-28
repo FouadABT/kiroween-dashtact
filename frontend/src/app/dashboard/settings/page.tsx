@@ -16,7 +16,8 @@ import { Separator } from "@/components/ui/separator";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Palette, ChevronRight, Layout } from "lucide-react";
+import { Palette, ChevronRight, Layout, MessageSquare } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Form schemas
 const profileFormSchema = z.object({
@@ -43,6 +44,10 @@ export default function SettingsPage() {
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
   const { resolvedTheme } = useTheme();
   const { updateMetadata } = useMetadata();
+  const { user } = useAuth();
+  
+  // Check if user has messaging settings permission
+  const hasMessagingPermission = user?.role?.name === 'Super Admin';
 
   // Set page metadata on mount
   useEffect(() => {
@@ -93,6 +98,8 @@ export default function SettingsPage() {
     setIsNotificationLoading(false);
   };
 
+
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -101,48 +108,63 @@ export default function SettingsPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Landing Page Editor */}
-        <Card className="hover:shadow-md transition-shadow">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Layout className="h-5 w-5 text-primary" />
+        {/* Landing Page Editor - Super Admin Only */}
+        {hasMessagingPermission && (
+          <Card className="hover:shadow-md transition-shadow border-primary/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Layout className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <CardTitle>Landing Page</CardTitle>
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                        Super Admin
+                      </span>
+                    </div>
+                    <CardDescription>
+                      Customize your landing page sections and content
+                    </CardDescription>
+                  </div>
                 </div>
-                <div>
-                  <CardTitle>Landing Page</CardTitle>
-                  <CardDescription>
-                    Customize your landing page sections and content
-                  </CardDescription>
-                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
-                <div>
-                  <p className="text-sm font-medium">Content Management</p>
-                  <p className="text-xs text-muted-foreground">
-                    Edit hero, features, footer, and more
-                  </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 p-3 rounded-lg border bg-muted/50">
+                    <Layout className="h-4 w-4 text-primary" />
+                    <div>
+                      <p className="text-xs font-medium">Content</p>
+                      <p className="text-xs text-muted-foreground">Sections</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 rounded-lg border bg-muted/50">
+                    <Palette className="h-4 w-4 text-primary" />
+                    <div>
+                      <p className="text-xs font-medium">Branding</p>
+                      <p className="text-xs text-muted-foreground">Theme</p>
+                    </div>
+                  </div>
                 </div>
-                <Layout className="h-8 w-8 text-muted-foreground" />
+                
+                <Link href="/dashboard/settings/landing-page">
+                  <Button className="w-full" variant="default">
+                    <Layout className="h-4 w-4 mr-2" />
+                    Manage Landing Page
+                  </Button>
+                </Link>
+                
+                <p className="text-xs text-muted-foreground text-center">
+                  Full control over homepage content, header, footer, and analytics
+                </p>
               </div>
-              
-              <Link href="/dashboard/settings/landing-page">
-                <Button className="w-full" variant="default">
-                  Edit Landing Page
-                </Button>
-              </Link>
-              
-              <p className="text-xs text-muted-foreground text-center">
-                Manage sections, images, and global settings
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Theme Settings */}
         <Card className="hover:shadow-md transition-shadow">
@@ -186,6 +208,51 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Messaging Settings - Only show for Super Admin */}
+        {hasMessagingPermission && (
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Messaging System</CardTitle>
+                    <CardDescription>
+                      Configure messaging system settings
+                    </CardDescription>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
+                  <div>
+                    <p className="text-sm font-medium">System Status</p>
+                    <p className="text-xs text-muted-foreground">
+                      Messaging is enabled
+                    </p>
+                  </div>
+                  <MessageSquare className="h-8 w-8 text-muted-foreground" />
+                </div>
+                
+                <Link href="/dashboard/settings/messaging">
+                  <Button className="w-full" variant="default">
+                    Configure Messaging
+                  </Button>
+                </Link>
+                
+                <p className="text-xs text-muted-foreground text-center">
+                  Manage message limits, retention, and features
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Profile Settings */}
         <Card>

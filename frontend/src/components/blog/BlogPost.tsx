@@ -4,8 +4,6 @@ import { BlogPost as BlogPostType } from '@/types/blog';
 import { Calendar, User, ArrowLeft, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Breadcrumb } from '@/components/navigation/Breadcrumb';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { getImageUrl } from '@/lib/image-proxy';
 
 /**
@@ -120,89 +118,11 @@ export function BlogPost({ post }: BlogPostProps) {
             </div>
           )}
 
-          {/* Content */}
-          <div className="prose prose-lg dark:prose-invert max-w-none">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                // Customize markdown rendering
-                h1: ({ children }) => (
-                  <h2 className="text-3xl font-bold mt-8 mb-4">{children}</h2>
-                ),
-                h2: ({ children }) => (
-                  <h3 className="text-2xl font-bold mt-6 mb-3">{children}</h3>
-                ),
-                h3: ({ children }) => (
-                  <h4 className="text-xl font-bold mt-4 mb-2">{children}</h4>
-                ),
-                p: ({ children }) => (
-                  <p className="mb-4 leading-relaxed">{children}</p>
-                ),
-                ul: ({ children }) => (
-                  <ul className="list-disc list-inside mb-4 space-y-2">{children}</ul>
-                ),
-                ol: ({ children }) => (
-                  <ol className="list-decimal list-inside mb-4 space-y-2">{children}</ol>
-                ),
-                li: ({ children }) => (
-                  <li className="ml-4">{children}</li>
-                ),
-                blockquote: ({ children }) => (
-                  <blockquote className="border-l-4 border-primary pl-4 italic my-4">
-                    {children}
-                  </blockquote>
-                ),
-                code: ({ children, className }) => {
-                  const isInline = !className;
-                  return isInline ? (
-                    <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">
-                      {children}
-                    </code>
-                  ) : (
-                    <code className={className}>{children}</code>
-                  );
-                },
-                pre: ({ children }) => (
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto mb-4">
-                    {children}
-                  </pre>
-                ),
-                a: ({ href, children }) => (
-                  <a
-                    href={href}
-                    className="text-primary hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {children}
-                  </a>
-                ),
-                img: ({ src, alt }) => {
-                  // Ensure src is a string for Next.js Image component
-                  const imageSrc: string = typeof src === 'string' ? src : '';
-                  
-                  // Skip rendering if no valid src
-                  if (!imageSrc) {
-                    return null;
-                  }
-                  
-                  return (
-                    <div className="relative w-full h-96 my-6">
-                      <Image
-                        src={imageSrc}
-                        alt={alt || ''}
-                        fill
-                        className="object-contain rounded-lg"
-                        sizes="(max-width: 768px) 100vw, 896px"
-                      />
-                    </div>
-                  );
-                },
-              }}
-            >
-              {post.content}
-            </ReactMarkdown>
-          </div>
+          {/* Content - Render HTML directly */}
+          <div 
+            className="prose prose-lg dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
 
           {/* Tags */}
           {post.tags.length > 0 && (

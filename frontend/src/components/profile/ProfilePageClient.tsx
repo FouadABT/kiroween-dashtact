@@ -9,6 +9,7 @@
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ProfileHeader } from './ProfileHeader';
 import { ProfileForm } from './ProfileForm';
+import { TwoFactorSettings } from './TwoFactorSettings';
 import { ProfileSkeleton } from './ProfileSkeleton';
 import { useProfile } from '@/hooks/useProfile';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -59,13 +60,14 @@ export function ProfilePageClient() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left column: Avatar and basic info */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
           <ProfileHeader profile={profile} />
         </div>
 
-        {/* Right column: Edit form */}
-        <div className="lg:col-span-2">
+        {/* Right column: Edit form and 2FA settings */}
+        <div className="lg:col-span-2 space-y-6">
           <ProfileForm profile={profile} />
+          <TwoFactorSettings initialEnabled={profile.twoFactorEnabled} />
         </div>
       </div>
     </div>

@@ -243,4 +243,25 @@ export class ProfileService {
     // Note: The actual token blacklisting would happen in the auth service
     // when the user logs out or when tokens are validated
   }
+
+  async getTwoFactorStatus(
+    userId: string,
+  ): Promise<{ enabled: boolean; verifiedAt?: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        twoFactorEnabled: true,
+        twoFactorVerifiedAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      enabled: user.twoFactorEnabled,
+      verifiedAt: user.twoFactorVerifiedAt?.toISOString(),
+    };
+  }
 }

@@ -5,17 +5,19 @@ import {
   IsOptional,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { CtaButtonDto } from './cta-button.dto';
 
 export class CtaSectionDataDto {
   @IsString()
-  @IsNotEmpty()
-  title: string;
+  @IsOptional()
+  @Transform(({ value }) => value || 'Ready to Get Started?')
+  title?: string;
 
   @IsString()
-  @IsNotEmpty()
-  description: string;
+  @IsOptional()
+  @Transform(({ value }) => value || 'Join thousands of users already using our platform')
+  description?: string;
 
   @ValidateNested()
   @Type(() => CtaButtonDto)
@@ -27,11 +29,30 @@ export class CtaSectionDataDto {
   secondaryCta?: CtaButtonDto;
 
   @IsString()
-  backgroundColor: string;
+  @IsOptional()
+  @Transform(({ value }) => value || 'oklch(0.5 0.2 250)')
+  backgroundColor?: string;
 
   @IsString()
-  textColor: string;
+  @IsOptional()
+  @Transform(({ value }) => value || 'oklch(1 0 0)')
+  textColor?: string;
 
   @IsEnum(['left', 'center', 'right'])
-  alignment: string;
+  @IsOptional()
+  @Transform(({ value }) => value || 'center')
+  alignment?: string;
+
+  // Optional extended fields
+  @IsString()
+  @IsOptional()
+  heading?: string;
+
+  @IsString()
+  @IsOptional()
+  subheading?: string;
+
+  @IsEnum(['solid', 'gradient', 'image'])
+  @IsOptional()
+  backgroundType?: string;
 }

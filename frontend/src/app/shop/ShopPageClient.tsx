@@ -208,204 +208,251 @@ export function ShopPageClient({
 
   return (
     <>
-      {/* Storefront Header with Cart and Theme Toggle */}
+      {/* Storefront Header */}
       <StorefrontHeader />
-      
+
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-4 sm:py-8">
-        {/* Page Title */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Shop</h1>
+        <div className="container mx-auto px-4 py-6 sm:py-10">
+          {/* Page Header */}
+          <div className="mb-8 sm:mb-10">
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
+              Shop
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Discover our curated collection of premium products
+            </p>
           </div>
-          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-muted-foreground">
-            Browse our complete catalog of products
-          </p>
-        </div>
 
-      {/* Active Filters Summary */}
-      {(activeFiltersCount > 0 || selectedCategory) && (
-        <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2">
-          <span className="text-xs sm:text-sm font-medium text-foreground">Active Filters:</span>
-          {selectedCategory && (
-            <Badge variant="secondary" className="text-xs">
-              Category: {selectedCategory.name}
-            </Badge>
-          )}
-          {filters.search && (
-            <Badge variant="secondary" className="text-xs">
-              Search: {filters.search}
-            </Badge>
-          )}
-          {(filters.minPrice !== undefined || filters.maxPrice !== undefined) && (
-            <Badge variant="secondary" className="text-xs">
-              Price: ${filters.minPrice || 0} - ${filters.maxPrice || '∞'}
-            </Badge>
-          )}
-          {filters.isFeatured && (
-            <Badge variant="secondary" className="text-xs">Featured</Badge>
-          )}
-          {filters.inStock && (
-            <Badge variant="secondary" className="text-xs">In Stock</Badge>
-          )}
-        </div>
-      )}
-
-      <div className="grid gap-6 sm:gap-8 lg:grid-cols-[280px_1fr]">
-        {/* Desktop Sidebar - Filters */}
-        <aside className="hidden lg:block space-y-6">
-          <ProductFilters
-            categories={categories}
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            priceRange={{ min: 0, max: 1000 }}
-          />
-        </aside>
-
-        {/* Main Content */}
-        <main className="space-y-4 sm:space-y-6">
-          {/* Toolbar */}
-          <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-xs sm:text-sm text-muted-foreground">
-                Showing {products.products.length} of {products.total} products
-                {currentPage > 1 && ` (Page ${currentPage} of ${products.totalPages})`}
-              </div>
-              
-              {/* Mobile Filter Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="lg:hidden min-h-[44px] touch-manipulation"
-                onClick={() => setIsMobileFiltersOpen(true)}
+          {/* Active Filters */}
+          {(activeFiltersCount > 0 || selectedCategory) && (
+            <div className="mb-6 sm:mb-8 flex flex-wrap items-center gap-2">
+              {selectedCategory && (
+                <Badge variant="secondary" className="text-xs sm:text-sm">
+                  {selectedCategory.name}
+                </Badge>
+              )}
+              {filters.search && (
+                <Badge variant="secondary" className="text-xs sm:text-sm">
+                  Search: {filters.search}
+                </Badge>
+              )}
+              {(filters.minPrice !== undefined || filters.maxPrice !== undefined) && (
+                <Badge variant="secondary" className="text-xs sm:text-sm">
+                  ${filters.minPrice || 0} - ${filters.maxPrice || '∞'}
+                </Badge>
+              )}
+              {filters.isFeatured && (
+                <Badge variant="secondary" className="text-xs sm:text-sm">
+                  Featured
+                </Badge>
+              )}
+              {filters.inStock && (
+                <Badge variant="secondary" className="text-xs sm:text-sm">
+                  In Stock
+                </Badge>
+              )}
+              <button
+                onClick={() => handleFiltersChange({
+                  search: '',
+                  categorySlug: undefined,
+                  minPrice: undefined,
+                  maxPrice: undefined,
+                  isFeatured: undefined,
+                  inStock: undefined,
+                })}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors ml-2"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mr-2"
-                >
-                  <line x1="4" y1="21" x2="4" y2="14" />
-                  <line x1="4" y1="10" x2="4" y2="3" />
-                  <line x1="12" y1="21" x2="12" y2="12" />
-                  <line x1="12" y1="8" x2="12" y2="3" />
-                  <line x1="20" y1="21" x2="20" y2="16" />
-                  <line x1="20" y1="12" x2="20" y2="3" />
-                  <line x1="1" y1="14" x2="7" y2="14" />
-                  <line x1="9" y1="8" x2="15" y2="8" />
-                  <line x1="17" y1="16" x2="23" y2="16" />
-                </svg>
-                Filters
-                {activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </Button>
-            </div>
-            
-            <ProductSort value={sortBy} onChange={handleSortChange} />
-          </div>
-
-          {/* Loading State */}
-          {isLoading && (
-            <div className="flex min-h-[400px] items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                Clear all
+              </button>
             </div>
           )}
 
-          {/* Products Grid */}
-          {!isLoading && (
-            <>
-              <ProductGrid
-                products={products.products}
-                onAddToCart={handleAddToCart}
-              />
+          <div className="grid gap-6 sm:gap-8 lg:grid-cols-[260px_1fr]">
+            {/* Desktop Sidebar - Filters */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-20 space-y-6">
+                <ProductFilters
+                  categories={categories}
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                  priceRange={{ min: 0, max: 1000 }}
+                />
+              </div>
+            </aside>
 
-              {/* Pagination */}
-              {products.totalPages > 1 && (
-                <div className="mt-8">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={products.totalPages}
-                    onPageChange={handlePageChange}
-                  />
+            {/* Main Content */}
+            <main className="space-y-6">
+              {/* Toolbar */}
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-sm text-muted-foreground">
+                  {products.products.length > 0 ? (
+                    <>
+                      Showing <span className="font-semibold text-foreground">{products.products.length}</span> of{' '}
+                      <span className="font-semibold text-foreground">{products.total}</span> products
+                      {currentPage > 1 && (
+                        <>
+                          {' '}
+                          (Page <span className="font-semibold text-foreground">{currentPage}</span> of{' '}
+                          <span className="font-semibold text-foreground">{products.totalPages}</span>)
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    'No products found'
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {/* Mobile Filter Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="lg:hidden min-h-[40px] touch-manipulation"
+                    onClick={() => setIsMobileFiltersOpen(true)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="mr-2"
+                    >
+                      <line x1="4" y1="21" x2="4" y2="14" />
+                      <line x1="4" y1="10" x2="4" y2="3" />
+                      <line x1="12" y1="21" x2="12" y2="12" />
+                      <line x1="12" y1="8" x2="12" y2="3" />
+                      <line x1="20" y1="21" x2="20" y2="16" />
+                      <line x1="20" y1="12" x2="20" y2="3" />
+                      <line x1="1" y1="14" x2="7" y2="14" />
+                      <line x1="9" y1="8" x2="15" y2="8" />
+                      <line x1="17" y1="16" x2="23" y2="16" />
+                    </svg>
+                    Filters
+                    {activeFiltersCount > 0 && (
+                      <Badge variant="secondary" className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs font-bold">
+                        {activeFiltersCount}
+                      </Badge>
+                    )}
+                  </Button>
+
+                  {/* Sort */}
+                  <ProductSort value={sortBy} onChange={handleSortChange} />
+                </div>
+              </div>
+
+              {/* Loading State */}
+              {isLoading && (
+                <div className="flex min-h-[400px] items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               )}
-            </>
-          )}
 
-          {/* Empty State */}
-          {!isLoading && products.products.length === 0 && (
-            <div className="flex min-h-[300px] sm:min-h-[400px] flex-col items-center justify-center rounded-lg border border-border bg-card p-6 sm:p-8 text-center">
-              <ShoppingBag className="mb-3 sm:mb-4 h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
-              <h3 className="mb-2 text-base sm:text-lg font-semibold text-foreground">No products found</h3>
-              <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground">
-                Try adjusting your filters or search query
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => handleFiltersChange({ search: '' })}
-                className="min-h-[44px] touch-manipulation"
-              >
-                Clear Filters
-              </Button>
-            </div>
-          )}
-        </main>
-      </div>
+              {/* Products Grid */}
+              {!isLoading && products.products.length > 0 && (
+                <>
+                  <ProductGrid
+                    products={products.products}
+                    onAddToCart={handleAddToCart}
+                  />
 
-      {/* Mobile Filters Sheet */}
-      <Sheet open={isMobileFiltersOpen} onOpenChange={setIsMobileFiltersOpen}>
-        <SheetContent side="left" className="w-full sm:w-[400px] overflow-y-auto">
-          <SheetHeader className="mb-4">
-            <div className="flex items-center justify-between">
-              <SheetTitle>Filters</SheetTitle>
-              <SheetClose asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <X className="h-4 w-4" />
-                </Button>
-              </SheetClose>
-            </div>
-          </SheetHeader>
-          
-          <ProductFilters
-            categories={categories}
-            filters={filters}
-            onFiltersChange={(newFilters) => {
-              handleFiltersChange(newFilters);
-              setIsMobileFiltersOpen(false);
-            }}
-            priceRange={{ min: 0, max: 1000 }}
-          />
-          
-          <div className="mt-6 flex gap-2">
-            <Button
-              variant="outline"
-              className="flex-1 min-h-[44px] touch-manipulation"
-              onClick={() => {
-                handleFiltersChange({ search: '' });
-                setIsMobileFiltersOpen(false);
-              }}
-            >
-              Clear All
-            </Button>
-            <Button
-              className="flex-1 min-h-[44px] touch-manipulation"
-              onClick={() => setIsMobileFiltersOpen(false)}
-            >
-              Apply Filters
-            </Button>
+                  {/* Pagination */}
+                  {products.totalPages > 1 && (
+                    <div className="mt-8 pt-6 border-t border-border">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={products.totalPages}
+                        onPageChange={handlePageChange}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Empty State */}
+              {!isLoading && products.products.length === 0 && (
+                <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border border-border bg-card/50 p-8 text-center">
+                  <ShoppingBag className="mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 text-lg font-semibold text-foreground">
+                    No products found
+                  </h3>
+                  <p className="mb-6 text-sm text-muted-foreground max-w-sm">
+                    Try adjusting your filters or search query to find what you're looking for
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleFiltersChange({
+                      search: '',
+                      categorySlug: undefined,
+                      minPrice: undefined,
+                      maxPrice: undefined,
+                      isFeatured: undefined,
+                      inStock: undefined,
+                    })}
+                    className="min-h-[40px] touch-manipulation"
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
+              )}
+            </main>
           </div>
-        </SheetContent>
-      </Sheet>
+
+          {/* Mobile Filters Sheet */}
+          <Sheet open={isMobileFiltersOpen} onOpenChange={setIsMobileFiltersOpen}>
+            <SheetContent side="left" className="w-full sm:w-[400px] overflow-y-auto">
+              <SheetHeader className="mb-6">
+                <div className="flex items-center justify-between">
+                  <SheetTitle className="text-lg font-semibold">Filters</SheetTitle>
+                  <SheetClose asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </SheetClose>
+                </div>
+              </SheetHeader>
+
+              <ProductFilters
+                categories={categories}
+                filters={filters}
+                onFiltersChange={(newFilters) => {
+                  handleFiltersChange(newFilters);
+                  setIsMobileFiltersOpen(false);
+                }}
+                priceRange={{ min: 0, max: 1000 }}
+              />
+
+              <div className="mt-8 flex gap-2 border-t border-border pt-6">
+                <Button
+                  variant="outline"
+                  className="flex-1 min-h-[40px] touch-manipulation"
+                  onClick={() => {
+                    handleFiltersChange({
+                      search: '',
+                      categorySlug: undefined,
+                      minPrice: undefined,
+                      maxPrice: undefined,
+                      isFeatured: undefined,
+                      inStock: undefined,
+                    });
+                    setIsMobileFiltersOpen(false);
+                  }}
+                >
+                  Clear All
+                </Button>
+                <Button
+                  className="flex-1 min-h-[40px] touch-manipulation"
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                >
+                  Done
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </>

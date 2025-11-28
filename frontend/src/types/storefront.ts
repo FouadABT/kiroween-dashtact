@@ -141,6 +141,7 @@ export interface CustomerAccount {
     firstName: string;
     lastName: string;
     phone?: string | null;
+    company?: string | null;
     shippingAddress?: Address | null;
     billingAddress?: Address | null;
   };
@@ -168,7 +169,9 @@ export interface CustomerAuthResponse {
 export interface UpdateCustomerProfileDto {
   firstName?: string;
   lastName?: string;
+  email?: string;
   phone?: string;
+  company?: string;
   shippingAddress?: Address;
   billingAddress?: Address;
 }

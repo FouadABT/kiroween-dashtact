@@ -2,10 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import type { StorefrontProductResponseDto } from '@/types/ecommerce';
 
 interface ProductCardProps {
@@ -33,57 +32,81 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
   return (
     <Link href={`/shop/${product.slug}`}>
-      <Card className="group h-full overflow-hidden transition-all hover:shadow-lg touch-manipulation">
-        <div className="relative aspect-square overflow-hidden bg-muted">
+      <div className="group h-full flex flex-col overflow-hidden transition-all duration-300">
+        {/* Image Container */}
+        <div className="relative aspect-square overflow-hidden bg-muted rounded-lg mb-3 sm:mb-4 transition-all duration-300">
           {product.featuredImage ? (
             <Image
               src={product.featuredImage}
               alt={product.name}
               fill
-              className="object-cover transition-transform group-hover:scale-105"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               loading="lazy"
               quality={85}
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm sm:text-base text-muted-foreground">
+            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
               No Image
             </div>
           )}
-          
-          {/* Badges */}
-          <div className="absolute left-2 top-2 flex flex-col gap-1">
+
+          {/* Badges - Top Left */}
+          <div className="absolute left-2 top-2 sm:left-3 sm:top-3 flex flex-col gap-1.5 transition-all duration-300">
             {isOutOfStock && (
-              <Badge variant="destructive" className="shadow-sm text-xs">
+              <Badge variant="destructive" className="text-xs font-medium shadow-sm">
                 Out of Stock
               </Badge>
             )}
             {product.isFeatured && !isOutOfStock && (
-              <Badge variant="secondary" className="shadow-sm text-xs">
+              <Badge variant="secondary" className="text-xs font-medium shadow-sm">
                 Featured
               </Badge>
             )}
             {hasDiscount && !isOutOfStock && (
-              <Badge className="bg-green-600 shadow-sm hover:bg-green-700 text-xs">
-                {discountPercent}% OFF
+              <Badge className="bg-accent text-accent-foreground text-xs font-bold shadow-sm">
+                -{discountPercent}%
               </Badge>
             )}
           </div>
+
+          {/* Wishlist Button - Top Right */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            className="absolute right-2 top-2 sm:right-3 sm:top-3 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:bg-background transition-all duration-500 ease-out opacity-0 group-hover:opacity-100"
+            aria-label="Add to wishlist"
+          >
+            <Heart className="h-4 w-4 text-muted-foreground hover:text-destructive transition-colors duration-500" />
+          </button>
         </div>
 
-        <CardContent className="p-3 sm:p-4">
-          <h3 className="line-clamp-2 text-sm sm:text-base font-semibold text-foreground group-hover:text-primary">
+        {/* Content */}
+        <div className="flex-1 flex flex-col">
+          {/* Category */}
+          {product.categories && product.categories.length > 0 && (
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 transition-colors duration-500 group-hover:text-primary">
+              {product.categories[0].name}
+            </p>
+          )}
+
+          {/* Title */}
+          <h3 className="line-clamp-2 text-sm sm:text-base font-semibold text-foreground transition-colors duration-500 group-hover:text-primary mb-1.5 sm:mb-2">
             {product.name}
           </h3>
-          
+
+          {/* Description */}
           {product.shortDescription && (
-            <p className="mt-1 line-clamp-2 text-xs sm:text-sm text-muted-foreground">
+            <p className="line-clamp-2 text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
               {product.shortDescription}
             </p>
           )}
 
-          <div className="mt-2 sm:mt-3 flex items-baseline gap-2">
-            <span className="text-base sm:text-lg font-bold text-foreground">
+          {/* Price */}
+          <div className="flex items-baseline gap-2 mb-3 sm:mb-4">
+            <span className="text-base sm:text-lg font-bold text-foreground transition-colors duration-500">
               ${product.basePrice.toFixed(2)}
             </span>
             {hasDiscount && (
@@ -93,29 +116,17 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             )}
           </div>
 
-          {product.categories && product.categories.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {product.categories.slice(0, 2).map((category) => (
-                <Badge key={category.id} variant="outline" className="text-xs">
-                  {category.name}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </CardContent>
-
-        <CardFooter className="p-3 sm:p-4 pt-0">
-          <Button
+          {/* Add to Cart Button */}
+          <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className="w-full min-h-[44px] touch-manipulation"
-            size="sm"
+            className="w-full min-h-[40px] sm:min-h-[44px] touch-manipulation text-sm font-medium transition-all duration-500 ease-out group-hover:shadow-xl px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            <span className="text-sm">{isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</span>
-          </Button>
-        </CardFooter>
-      </Card>
+            <ShoppingCart className="h-4 w-4" />
+            <span>{isOutOfStock ? 'Out of Stock' : 'Add to Cart'}</span>
+          </button>
+        </div>
+      </div>
     </Link>
   );
 }

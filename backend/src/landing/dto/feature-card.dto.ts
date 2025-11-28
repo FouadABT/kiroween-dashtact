@@ -1,13 +1,13 @@
-import { IsString, IsNotEmpty, IsNumber, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, MaxLength, IsOptional } from 'class-validator';
 
 export class FeatureCardDto {
   @IsString()
-  @IsNotEmpty()
-  id: string;
+  @IsOptional()
+  id?: string;
 
   @IsString()
-  @IsNotEmpty()
-  icon: string;
+  @IsOptional()
+  icon?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -20,5 +20,6 @@ export class FeatureCardDto {
   description: string;
 
   @IsNumber()
-  order: number;
+  @IsOptional()
+  order?: number;
 }

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -181,6 +181,7 @@ export function ProductGallery({ images, featuredImage, productName }: ProductGa
       {/* Lightbox Dialog */}
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
         <DialogContent className="max-w-7xl w-full h-[90vh] p-0">
+          <DialogTitle className="sr-only">Product Image Gallery</DialogTitle>
           <div 
             className="relative w-full h-full bg-background"
             onTouchStart={handleTouchStart}

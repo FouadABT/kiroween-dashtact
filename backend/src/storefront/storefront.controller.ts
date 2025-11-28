@@ -1,10 +1,14 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { StorefrontService } from './storefront.service';
 import { StorefrontQueryDto } from './dto';
 import { Public } from '../auth/decorators/public.decorator';
+import { FeatureGuard } from '../common/guards/feature.guard';
+import { FeatureEnabled } from '../common/decorators/feature-enabled.decorator';
 
 @Controller('storefront')
 @Public() // All storefront endpoints are public
+@UseGuards(FeatureGuard)
+@FeatureEnabled('ecommerce')
 export class StorefrontController {
   constructor(private readonly storefrontService: StorefrontService) {}
 
@@ -49,14 +53,11 @@ export class StorefrontController {
 
   /**
    * Search products
-   * GET /storefront/search?q=query
+   * GET /storefront/search?search=query
    */
   @Get('search')
-  async searchProducts(
-    @Query('q') searchQuery: string,
-    @Query() query: StorefrontQueryDto,
-  ) {
-    return this.storefrontService.searchProducts(searchQuery, query);
+  async searchProducts(@Query() query: StorefrontQueryDto) {
+    return this.storefrontService.searchProducts(query.search || '', query);
   }
 
   /**

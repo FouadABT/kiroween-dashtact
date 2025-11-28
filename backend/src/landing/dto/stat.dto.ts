@@ -1,9 +1,10 @@
 import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { v4 as uuidv4 } from 'uuid';
 
 export class StatDto {
   @IsString()
-  @IsNotEmpty()
-  id: string;
+  @IsOptional()
+  id?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -15,8 +16,30 @@ export class StatDto {
 
   @IsString()
   @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsOptional()
   icon?: string;
 
   @IsNumber()
-  order: number;
+  @IsOptional()
+  order?: number;
+
+  // Additional fields that may be sent from frontend
+  @IsString()
+  @IsOptional()
+  prefix?: string;
+
+  @IsString()
+  @IsOptional()
+  suffix?: string;
+
+  constructor(partial?: Partial<StatDto>) {
+    Object.assign(this, partial);
+    // Generate ID if not provided
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+  }
 }

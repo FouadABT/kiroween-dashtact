@@ -17,6 +17,7 @@ export enum NotificationCategory {
   WORKFLOW = 'WORKFLOW',
   SOCIAL = 'SOCIAL',
   CUSTOM = 'CUSTOM',
+  CALENDAR = 'CALENDAR',
 }
 
 /**

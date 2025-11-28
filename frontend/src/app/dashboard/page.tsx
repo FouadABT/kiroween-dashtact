@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWidgets } from "@/contexts/WidgetContext";
 import { DashboardGrid } from "@/components/dashboard/DashboardGrid";
 import { WidgetLibrary } from "@/components/admin/WidgetLibrary";
+import { DashboardDataProvider } from "@/contexts/DashboardDataContext";
+import { DashboardRefreshButton } from "@/components/dashboard/DashboardRefreshButton";
 import { Button } from "@/components/ui/button";
 import { Edit, Save, X, Plus } from "lucide-react";
 
@@ -46,65 +48,72 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Dashboard Overview"
-        description={
-          isEditMode
-            ? "Edit mode: Add, remove, or rearrange widgets. Drag widgets to reorder them."
-            : "Customize your dashboard with widgets. Click Edit Layout to add, remove, or rearrange widgets."
-        }
-        actions={
-          canEditLayout && (
+    <DashboardDataProvider>
+      <div className="space-y-6">
+        <PageHeader
+          title="Dashboard Overview"
+          description={
+            isEditMode
+              ? "Edit mode: Add, remove, or rearrange widgets. Drag widgets to reorder them."
+              : "Customize your dashboard with widgets. Click Edit Layout to add, remove, or rearrange widgets."
+          }
+          actions={
             <div className="flex items-center gap-2">
-              {isEditMode && (
+              {/* Dashboard Refresh Button */}
+              {!isEditMode && <DashboardRefreshButton />}
+              
+              {/* Edit Mode Actions */}
+              {canEditLayout && (
                 <>
+                  {isEditMode && (
+                    <>
+                      <Button
+                        onClick={() => {
+                          console.log('🎯 Add Widget clicked:', {
+                            hasCurrentLayout: !!currentLayout,
+                            currentLayoutId: currentLayout?.id,
+                            isLoading,
+                          });
+                          if (currentLayout) {
+                            setShowWidgetLibrary(true);
+                          } else {
+                            console.error('❌ No current layout available!');
+                          }
+                        }}
+                        variant="default"
+                        disabled={!currentLayout || isLoading}
+                        title={!currentLayout ? "Loading layout..." : "Add widgets to your dashboard"}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        {isLoading ? "Loading..." : "Add Widget"}
+                      </Button>
+                      <Button onClick={handleSaveChanges} variant="default">
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </Button>
+                    </>
+                  )}
                   <Button
-                    onClick={() => {
-                      console.log('🎯 Add Widget clicked:', {
-                        hasCurrentLayout: !!currentLayout,
-                        currentLayoutId: currentLayout?.id,
-                        isLoading,
-                      });
-                      if (currentLayout) {
-                        setShowWidgetLibrary(true);
-                      } else {
-                        console.error('❌ No current layout available!');
-                      }
-                    }}
-                    variant="default"
-                    disabled={!currentLayout || isLoading}
-                    title={!currentLayout ? "Loading layout..." : "Add widgets to your dashboard"}
+                    onClick={toggleEditMode}
+                    variant={isEditMode ? "outline" : "default"}
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {isLoading ? "Loading..." : "Add Widget"}
-                  </Button>
-                  <Button onClick={handleSaveChanges} variant="default">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
+                    {isEditMode ? (
+                      <>
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </>
+                    ) : (
+                      <>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Layout
+                      </>
+                    )}
                   </Button>
                 </>
               )}
-              <Button
-                onClick={toggleEditMode}
-                variant={isEditMode ? "outline" : "default"}
-              >
-                {isEditMode ? (
-                  <>
-                    <X className="h-4 w-4 mr-2" />
-                    Cancel
-                  </>
-                ) : (
-                  <>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Layout
-                  </>
-                )}
-              </Button>
             </div>
-          )
-        }
-      />
+          }
+        />
 
       {/* Edit Mode Info Banner */}
       {isEditMode && (
@@ -131,15 +140,16 @@ export default function DashboardPage() {
 
       <DashboardGrid pageId="main-dashboard" />
 
-      {/* Widget Library Modal */}
-      {currentLayout && (
-        <WidgetLibrary
-          open={showWidgetLibrary}
-          onClose={() => setShowWidgetLibrary(false)}
-          layoutId={currentLayout.id}
-          pageIdentifier="main-dashboard"
-        />
-      )}
-    </div>
+        {/* Widget Library Modal */}
+        {currentLayout && (
+          <WidgetLibrary
+            open={showWidgetLibrary}
+            onClose={() => setShowWidgetLibrary(false)}
+            layoutId={currentLayout.id}
+            pageIdentifier="main-dashboard"
+          />
+        )}
+      </div>
+    </DashboardDataProvider>
   );
 }

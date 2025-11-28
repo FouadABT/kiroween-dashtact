@@ -19,7 +19,6 @@ This project uses Model Context Protocol (MCP) servers for specialized operation
 
 **Configuration**:
 - Mode: `unrestricted` (full read/write access)
-- Database: `postgresql://postgres:d1d1d1f1@localhost:5432/myapp`
 
 **When to Use**:
 - ✅ **ALWAYS** for database queries (SELECT, INSERT, UPDATE, DELETE)

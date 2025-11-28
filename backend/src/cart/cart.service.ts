@@ -306,24 +306,29 @@ export class CartService {
     const errors: any[] = [];
 
     for (const item of cart.items) {
-      // Get inventory for the product variant or product
-      const inventory = await this.prisma.inventory.findFirst({
-        where: {
-          productVariantId: item.productVariantId || undefined,
-        },
-      });
-
-      if (!inventory) {
-        errors.push({
-          itemId: item.id,
-          productId: item.productId,
-          productName: item.product?.name,
-          error: 'Inventory not found',
-        });
+      // Skip inventory validation if no variant (product-level inventory not tracked)
+      if (!item.productVariantId) {
         continue;
       }
 
-      if (inventory.available < item.quantity) {
+      // Get inventory for the product variant
+      const inventory = await this.prisma.inventory.findUnique({
+        where: {
+          productVariantId: item.productVariantId,
+        },
+      });
+
+      // If no inventory record exists, assume unlimited stock (for now)
+      if (!inventory) {
+        continue;
+      }
+
+      // Only validate if inventory tracking is enabled
+      if (!inventory.trackInventory) {
+        continue;
+      }
+
+      if (inventory.available < item.quantity && !inventory.allowBackorder) {
         errors.push({
           itemId: item.id,
           productId: item.productId,

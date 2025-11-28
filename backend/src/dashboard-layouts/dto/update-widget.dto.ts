@@ -1,7 +1,7 @@
 import { IsOptional, IsNumber, IsBoolean, IsObject, Min, Max } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export class UpdateWidgetDto {
+export class UpdateLayoutWidgetDto {
   @ApiPropertyOptional({
     description: 'Widget position in the layout',
     example: 0,

@@ -143,7 +143,7 @@ export function PageCard({
                 <Button variant="ghost" size="sm" onClick={onEdit}>
                   <Edit className="h-4 w-4" />
                 </Button>
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm">
                       <MoreVertical className="h-4 w-4" />
@@ -234,7 +234,7 @@ export function PageCard({
                 <p className="text-sm text-muted-foreground truncate">/{page.slug}</p>
               </div>
             </div>
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm">
                   <MoreVertical className="h-4 w-4" />

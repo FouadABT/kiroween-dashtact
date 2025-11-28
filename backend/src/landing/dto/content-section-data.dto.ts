@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional, IsBoolean } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class ContentSectionDataDto {
   @IsString()
@@ -6,11 +7,14 @@ export class ContentSectionDataDto {
   title?: string;
 
   @IsString()
-  @IsNotEmpty()
-  content: string;
+  @IsOptional()
+  @Transform(({ value }) => value || '<p>Add your content here...</p>')
+  content?: string;
 
+  @IsOptional()
   @IsEnum(['single', 'two-column'])
-  layout: string;
+  @Transform(({ value }) => value || 'single')
+  layout?: string;
 
   @IsString()
   @IsOptional()
@@ -18,5 +22,30 @@ export class ContentSectionDataDto {
 
   @IsEnum(['left', 'right', 'top', 'bottom'])
   @IsOptional()
+  @Transform(({ value }) => value || 'right')
   imagePosition?: string;
+
+  @IsEnum(['full', 'wide', 'standard', 'narrow'])
+  @IsOptional()
+  @Transform(({ value }) => value || 'standard')
+  contentWidth?: string;
+
+  // Optional extended fields
+  @IsString()
+  @IsOptional()
+  heading?: string;
+
+  @IsEnum(['solid', 'gradient', 'image'])
+  @IsOptional()
+  backgroundType?: string;
+
+  // Custom CSS and HTML mode
+  @IsString()
+  @IsOptional()
+  customCSS?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => value === true)
+  htmlMode?: boolean;
 }

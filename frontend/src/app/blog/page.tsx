@@ -23,9 +23,9 @@ export const metadata: Metadata = generatePageMetadata('/blog');
 export const revalidate = 300; // 5 minutes
 
 interface BlogPageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
-  };
+  }>;
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
@@ -34,7 +34,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     redirect('/404');
   }
 
-  const page = Number(searchParams.page) || 1;
+  const params = await searchParams;
+  const page = Number(params.page) || 1;
 
   return (
     <div className="min-h-screen bg-background">

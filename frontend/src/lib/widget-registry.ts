@@ -190,6 +190,267 @@ export const widgetRegistry: Record<string, WidgetRegistryEntry> = {
     category: 'ecommerce',
     lazy: true,
   },
+  
+  // ============================================================================
+  // Dashboard Widgets - Role-Based Dashboard System
+  // ============================================================================
+  
+  // System Widgets (Super Admin)
+  'system-health-card': {
+    component: lazy(() => import('@/components/widgets/dashboard/SystemHealthCard').then(m => ({ default: m.SystemHealthCard }))),
+    defaultProps: {
+      title: 'System Health',
+      refreshInterval: 60,
+    },
+    category: 'core',
+    lazy: true,
+  },
+  
+  'cron-jobs-status': {
+    component: lazy(() => import('@/components/widgets/dashboard/CronJobsStatus').then(m => ({ default: m.CronJobsStatus }))),
+    defaultProps: {
+      title: 'Cron Jobs Status',
+      limit: 10,
+    },
+    category: 'core',
+    lazy: true,
+  },
+  
+  'email-delivery-stats': {
+    component: lazy(() => import('@/components/widgets/dashboard/EmailDeliveryStats').then(m => ({ default: m.EmailDeliveryStats }))),
+    defaultProps: {
+      title: 'Email Delivery',
+      period: '24h',
+    },
+    category: 'core',
+    lazy: true,
+  },
+  
+  'security-alerts': {
+    component: lazy(() => import('@/components/widgets/dashboard/SecurityAlerts').then(m => ({ default: m.SecurityAlerts }))),
+    defaultProps: {
+      title: 'Security Alerts',
+      limit: 5,
+    },
+    category: 'core',
+    lazy: true,
+  },
+  
+  // Business Widgets (Admin, Manager)
+  'revenue-card': {
+    component: lazy(() => import('@/components/widgets/dashboard/RevenueCard').then(m => ({ default: m.RevenueCard }))),
+    defaultProps: {
+      title: 'Revenue',
+      showTrend: true,
+    },
+    category: 'ecommerce',
+    lazy: true,
+  },
+  
+  'orders-card': {
+    component: lazy(() => import('@/components/widgets/dashboard/OrdersCard').then(m => ({ default: m.OrdersCard }))),
+    defaultProps: {
+      title: 'Orders',
+      showBreakdown: true,
+    },
+    category: 'ecommerce',
+    lazy: true,
+  },
+  
+  'customers-card': {
+    component: lazy(() => import('@/components/widgets/dashboard/CustomersCard').then(m => ({ default: m.CustomersCard }))),
+    defaultProps: {
+      title: 'Customers',
+      showTrend: true,
+    },
+    category: 'ecommerce',
+    lazy: true,
+  },
+  
+  'inventory-alerts-card': {
+    component: lazy(() => import('@/components/widgets/dashboard/InventoryAlertsCard').then(m => ({ default: m.InventoryAlertsCard }))),
+    defaultProps: {
+      title: 'Inventory Alerts',
+      linkToInventory: true,
+    },
+    category: 'ecommerce',
+    lazy: true,
+  },
+  
+  // Chart Widgets (Analytics)
+  'revenue-chart': {
+    component: lazy(() => import('@/components/widgets/dashboard/RevenueChart').then(m => ({ default: m.RevenueChart }))),
+    defaultProps: {
+      title: 'Revenue Trend',
+      period: '30d',
+    },
+    category: 'analytics',
+    lazy: true,
+  },
+  
+  'sales-by-category-chart': {
+    component: lazy(() => import('@/components/widgets/dashboard/SalesByCategoryChart').then(m => ({ default: m.SalesByCategoryChart }))),
+    defaultProps: {
+      title: 'Sales by Category',
+      period: '30d',
+    },
+    category: 'analytics',
+    lazy: true,
+  },
+  
+  'top-products-chart': {
+    component: lazy(() => import('@/components/widgets/dashboard/TopProductsChart').then(m => ({ default: m.TopProductsChart }))),
+    defaultProps: {
+      title: 'Top Selling Products',
+      limit: 10,
+    },
+    category: 'analytics',
+    lazy: true,
+  },
+  
+  // Table Widgets (Data Display)
+  'recent-orders-table': {
+    component: lazy(() => import('@/components/widgets/dashboard/RecentOrdersTable').then(m => ({ default: m.RecentOrdersTable }))),
+    defaultProps: {
+      title: 'Recent Orders',
+      limit: 10,
+    },
+    category: 'data-display',
+    lazy: true,
+  },
+  
+  'low-stock-table': {
+    component: lazy(() => import('@/components/widgets/dashboard/LowStockTable').then(m => ({ default: m.LowStockTable }))),
+    defaultProps: {
+      title: 'Low Stock Products',
+    },
+    category: 'data-display',
+    lazy: true,
+  },
+  
+  'recent-customers-table': {
+    component: lazy(() => import('@/components/widgets/dashboard/RecentCustomersTable').then(m => ({ default: m.RecentCustomersTable }))),
+    defaultProps: {
+      title: 'Recent Customers',
+      limit: 10,
+    },
+    category: 'data-display',
+    lazy: true,
+  },
+  
+  'recent-posts-table': {
+    component: lazy(() => import('@/components/widgets/dashboard/RecentPostsTable').then(m => ({ default: m.RecentPostsTable }))),
+    defaultProps: {
+      title: 'Recent Blog Posts',
+      limit: 10,
+    },
+    category: 'data-display',
+    lazy: true,
+  },
+  
+  // Personal Widgets (User Role)
+  'personal-stats-card': {
+    component: lazy(() => import('@/components/widgets/dashboard/PersonalStatsCard').then(m => ({ default: m.PersonalStatsCard }))),
+    defaultProps: {
+      title: 'My Stats',
+    },
+    category: 'core',
+    lazy: true,
+  },
+  
+  'notifications-feed': {
+    component: lazy(() => import('@/components/widgets/dashboard/NotificationsFeed').then(m => ({ default: m.NotificationsFeed }))),
+    defaultProps: {
+      title: 'Recent Notifications',
+      limit: 10,
+    },
+    category: 'data-display',
+    lazy: true,
+  },
+  
+  'messages-feed': {
+    component: lazy(() => import('@/components/widgets/dashboard/MessagesFeed').then(m => ({ default: m.MessagesFeed }))),
+    defaultProps: {
+      title: 'Recent Messages',
+      limit: 10,
+    },
+    category: 'data-display',
+    lazy: true,
+  },
+  
+  'profile-summary-card': {
+    component: lazy(() => import('@/components/widgets/dashboard/ProfileSummaryCard').then(m => ({ default: m.ProfileSummaryCard }))),
+    defaultProps: {
+      title: 'My Profile',
+      showCompletion: true,
+    },
+    category: 'core',
+    lazy: true,
+  },
+  
+  // Action Widgets (Quick Actions & Alerts)
+  'quick-actions-grid': {
+    component: lazy(() => import('@/components/widgets/dashboard/QuickActionsGrid').then(m => ({ default: m.QuickActionsGrid }))),
+    defaultProps: {
+      title: 'Quick Actions',
+    },
+    category: 'interactive',
+    lazy: true,
+  },
+  
+  'alerts-panel': {
+    component: lazy(() => import('@/components/widgets/dashboard/AlertsPanel').then(m => ({ default: m.AlertsPanel }))),
+    defaultProps: {
+      title: 'Alerts',
+      showDismissed: false,
+    },
+    category: 'interactive',
+    lazy: true,
+  },
+  
+  // ============================================================================
+  // Calendar Widgets
+  // ============================================================================
+  
+  'mini-calendar': {
+    component: lazy(() => import('@/components/widgets/calendar/MiniCalendarWidget').then(m => ({ default: m.MiniCalendarWidget }))),
+    defaultProps: {
+      title: 'Calendar',
+    },
+    category: 'calendar',
+    lazy: true,
+  },
+  
+  'upcoming-events': {
+    component: lazy(() => import('@/components/widgets/calendar/UpcomingEventsWidget').then(m => ({ default: m.UpcomingEventsWidget }))),
+    defaultProps: {
+      title: 'Upcoming Events',
+      limit: 10,
+      showOnlyMyEvents: false,
+    },
+    category: 'calendar',
+    lazy: true,
+  },
+  
+  'today-agenda': {
+    component: lazy(() => import('@/components/widgets/calendar/TodayAgendaWidget').then(m => ({ default: m.TodayAgendaWidget }))),
+    defaultProps: {
+      title: "Today's Agenda",
+    },
+    category: 'calendar',
+    lazy: true,
+  },
+  
+  'team-schedule': {
+    component: lazy(() => import('@/components/widgets/calendar/TeamScheduleWidget').then(m => ({ default: m.TeamScheduleWidget }))),
+    defaultProps: {
+      title: 'Team Schedule',
+      defaultUserIds: [],
+      maxUsers: 5,
+    },
+    category: 'calendar',
+    lazy: true,
+  },
 };
 
 

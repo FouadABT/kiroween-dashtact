@@ -6,6 +6,8 @@
  */
 
 import { PageMetadata } from '@/types/metadata';
+import type { BrandSettings } from '@/types/branding';
+import { DEFAULT_BRANDING } from '@/lib/constants/branding';
 
 /**
  * Default metadata applied to all pages as fallback
@@ -119,6 +121,72 @@ export const metadataConfig: Record<string, PageMetadata> = {
     },
   },
 
+  // Blog pages
+  '/blog': {
+    title: 'Blog',
+    description: 'Read our latest articles and tutorials',
+    keywords: ['blog', 'articles', 'tutorials', 'news', 'updates'],
+    breadcrumb: { label: 'Blog' },
+    openGraph: {
+      title: 'Blog - Latest Articles & Tutorials',
+      description: 'Explore our latest articles, tutorials, and insights',
+      type: 'website',
+      images: [
+        {
+          url: '/og-blog.svg',
+          width: 1200,
+          height: 630,
+          alt: 'Blog - Latest Articles & Tutorials',
+          type: 'image/svg+xml',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Blog - Latest Articles & Tutorials',
+      description: 'Explore our latest articles, tutorials, and insights',
+      images: ['/og-blog.svg'],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      maxImagePreview: 'large',
+      maxSnippet: 160,
+    },
+  },
+
+  '/blog/:slug': {
+    title: '{postTitle}',
+    description: '{postExcerpt}',
+    keywords: ['blog', 'article', '{postTitle}'],
+    breadcrumb: { label: '{postTitle}', dynamic: true },
+    openGraph: {
+      title: '{postTitle}',
+      description: '{postExcerpt}',
+      type: 'article',
+      images: [
+        {
+          url: '{postImage}',
+          width: 1200,
+          height: 630,
+          alt: '{postTitle}',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: '{postTitle}',
+      description: '{postExcerpt}',
+      images: ['{postImage}'],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      maxImagePreview: 'large',
+      maxSnippet: 160,
+    },
+  },
+
   // Customer Account pages (Storefront)
   '/account/login': {
     title: 'Customer Login | Storefront',
@@ -178,10 +246,70 @@ export const metadataConfig: Record<string, PageMetadata> = {
     },
   },
 
+  '/account/profile': {
+    title: 'Edit Profile | Storefront',
+    description: 'Update your personal information and account details',
+    breadcrumb: { label: 'Profile' },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
+  '/account/addresses': {
+    title: 'Addresses | Storefront',
+    description: 'Manage your shipping and billing addresses',
+    breadcrumb: { label: 'Addresses' },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
+  '/account/payment-methods': {
+    title: 'Payment Methods | Storefront',
+    description: 'Manage your saved payment methods',
+    breadcrumb: { label: 'Payment Methods' },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
+  '/account/settings': {
+    title: 'Account Settings | Storefront',
+    description: 'Manage your account preferences and settings',
+    breadcrumb: { label: 'Settings' },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
+  '/account/wishlist': {
+    title: 'Wishlist | Storefront',
+    description: 'View and manage your wishlist items',
+    breadcrumb: { label: 'Wishlist' },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
   // Dashboard pages
   '/dashboard': {
     title: 'Dashboard',
-    description: 'Your personal dashboard overview',
+    description: 'Your personalized dashboard overview',
     keywords: ['dashboard', 'overview', 'analytics'],
     breadcrumb: { label: 'Dashboard' },
     openGraph: {
@@ -193,11 +321,16 @@ export const metadataConfig: Record<string, PageMetadata> = {
       title: 'Dashboard Overview',
       description: 'Access your personal dashboard with real-time analytics and insights',
     },
+    robots: {
+      index: false,
+      follow: true,
+      noarchive: true,
+    },
   },
 
   '/dashboard/analytics': {
     title: 'Analytics',
-    description: 'View detailed analytics and insights',
+    description: 'Detailed analytics and insights',
     keywords: ['analytics', 'insights', 'metrics', 'reports'],
     breadcrumb: { label: 'Analytics' },
     openGraph: {
@@ -209,6 +342,11 @@ export const metadataConfig: Record<string, PageMetadata> = {
       title: 'Analytics Dashboard',
       description: 'Comprehensive analytics and insights for data-driven decisions',
     },
+    robots: {
+      index: false,
+      follow: true,
+      noarchive: true,
+    },
   },
 
   '/dashboard/data': {
@@ -216,6 +354,34 @@ export const metadataConfig: Record<string, PageMetadata> = {
     description: 'Manage your data and records',
     keywords: ['data', 'management', 'records'],
     breadcrumb: { label: 'Data' },
+  },
+
+  '/dashboard/search': {
+    title: 'Search Results',
+    description: 'Search results across your dashboard',
+    keywords: ['search', 'results', 'find', 'query'],
+    breadcrumb: { label: 'Search' },
+    robots: {
+      index: false,
+      follow: true,
+      noarchive: true,
+    },
+  },
+
+  '/dashboard/media': {
+    title: 'Media Library',
+    description: 'Manage your uploaded files and media assets',
+    keywords: ['media', 'files', 'uploads', 'images', 'documents', 'assets'],
+    breadcrumb: { label: 'Media Library' },
+    openGraph: {
+      title: 'Media Library',
+      description: 'Organize and manage all your uploaded files and media assets',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Media Library',
+      description: 'Organize and manage all your uploaded files and media assets',
+    },
   },
 
   '/dashboard/settings': {
@@ -248,19 +414,41 @@ export const metadataConfig: Record<string, PageMetadata> = {
   },
 
   '/dashboard/settings/landing-page': {
-    title: 'Landing Page Editor',
-    description: 'Customize your landing page sections and content',
-    keywords: ['landing page', 'editor', 'cms', 'content management'],
+    title: 'Landing Page Settings',
+    description: 'Manage your landing page content, header, footer, and analytics',
+    keywords: ['landing page', 'cms', 'content', 'header', 'footer', 'analytics'],
     breadcrumb: { label: 'Landing Page' },
     openGraph: {
-      title: 'Landing Page Editor',
-      description: 'Customize landing page sections, content, and global settings',
+      title: 'Landing Page Settings',
+      description: 'Comprehensive landing page management with content editor, header/footer configuration, and analytics',
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
       title: 'Landing Page Editor',
       description: 'Customize landing page sections, content, and global settings',
+    },
+  },
+
+  '/dashboard/settings/calendar': {
+    title: 'Calendar Settings',
+    description: 'Configure calendar preferences, manage categories, and control permissions',
+    keywords: ['calendar', 'settings', 'events', 'categories', 'permissions'],
+    breadcrumb: { label: 'Calendar' },
+    openGraph: {
+      title: 'Calendar Settings',
+      description: 'Manage calendar settings, event categories, and user permissions',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Calendar Settings',
+      description: 'Manage calendar settings, event categories, and user permissions',
+    },
+    robots: {
+      index: false,
+      follow: true,
+      noarchive: true,
     },
   },
 
@@ -309,12 +497,48 @@ export const metadataConfig: Record<string, PageMetadata> = {
     },
   },
 
-  // Permissions management
+  // Permissions management (Role Management)
   '/dashboard/permissions': {
-    title: 'Permissions',
-    description: 'Manage roles and permissions',
-    keywords: ['permissions', 'roles', 'access control'],
-    breadcrumb: { label: 'Permissions' },
+    title: 'Role Management',
+    description: 'Manage roles, assign permissions, and control user access',
+    keywords: ['rbac', 'roles', 'permissions', 'access control', 'user management'],
+    breadcrumb: { label: 'Role Management' },
+    openGraph: {
+      title: 'Role Management',
+      description: 'Comprehensive role-based access control management for administrators',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Role Management',
+      description: 'Comprehensive role-based access control management for administrators',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+    },
+  },
+
+  // Role management
+  '/dashboard/roles': {
+    title: 'Role Management',
+    description: 'Manage roles, assign permissions, and control user access',
+    keywords: ['rbac', 'roles', 'permissions', 'access control', 'user management'],
+    breadcrumb: { label: 'Roles' },
+    openGraph: {
+      title: 'Role Management',
+      description: 'Comprehensive role-based access control management for administrators',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Role Management',
+      description: 'Comprehensive role-based access control management for administrators',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+    },
   },
 
   // Widgets
@@ -363,6 +587,26 @@ export const metadataConfig: Record<string, PageMetadata> = {
     breadcrumb: { label: 'Profile' },
   },
 
+  '/dashboard/settings/landing-page-old': {
+    title: 'Landing Page Settings Old',
+    description: 'Manage your landing page content, header, footer, and analytics',
+    keywords: ['landing page', 'cms', 'content', 'header', 'footer', 'analytics'],
+    breadcrumb: { label: 'Landing Page' },
+    openGraph: {
+      title: 'Landing Page Settings',
+      description: 'Manage your landing page content, header, footer, and analytics',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Landing Page Settings',
+      description: 'Manage your landing page content, header, footer, and analytics',
+    },
+    robots: {
+      index: false,
+      follow: false,
+    },
+  },
+
   '/dashboard/settings/security': {
     title: 'Security Settings',
     description: 'Manage your password and security preferences',
@@ -391,6 +635,72 @@ export const metadataConfig: Record<string, PageMetadata> = {
     breadcrumb: { label: 'Notifications' },
   },
 
+  '/dashboard/settings/email': {
+    title: 'Email Settings',
+    description: 'Configure SMTP settings and manage email system',
+    keywords: ['email', 'smtp', 'configuration', 'templates', 'notifications'],
+    breadcrumb: { label: 'Email' },
+    openGraph: {
+      title: 'Email Settings',
+      description: 'Configure SMTP settings, manage email templates, and monitor email delivery',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Email Settings',
+      description: 'Configure SMTP settings, manage email templates, and monitor email delivery',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
+  '/dashboard/settings/messaging': {
+    title: 'Messaging Settings',
+    description: 'Configure messaging system settings and preferences',
+    keywords: ['messaging', 'chat', 'settings', 'configuration', 'communication'],
+    breadcrumb: { label: 'Messaging' },
+    openGraph: {
+      title: 'Messaging Settings',
+      description: 'Configure messaging system settings, retention policies, and communication preferences',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Messaging Settings',
+      description: 'Configure messaging system settings, retention policies, and communication preferences',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
+  '/dashboard/settings/legal': {
+    title: 'Legal Pages',
+    description: 'Manage Terms of Service and Privacy Policy',
+    keywords: ['legal', 'terms', 'privacy', 'policy', 'compliance'],
+    breadcrumb: { label: 'Legal Pages' },
+    openGraph: {
+      title: 'Legal Pages Management',
+      description: 'Manage Terms of Service and Privacy Policy for your application',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Legal Pages Management',
+      description: 'Manage Terms of Service and Privacy Policy for your application',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
   // Notifications page
   '/dashboard/notifications': {
     title: 'Notifications',
@@ -408,69 +718,68 @@ export const metadataConfig: Record<string, PageMetadata> = {
     },
   },
 
-  // Blog pages
-  '/blog': {
-    title: 'Blog - Dashboard Starter Kit',
-    description: 'Read our latest articles, tutorials, and insights',
-    keywords: ['blog', 'articles', 'tutorials', 'guides', 'insights'],
-    breadcrumb: { label: 'Blog' },
+  // Calendar pages
+  '/dashboard/calendar': {
+    title: 'Calendar',
+    description: 'Manage your events, schedule, and appointments',
+    keywords: ['calendar', 'events', 'schedule', 'appointments', 'planning'],
+    breadcrumb: { label: 'Calendar' },
     openGraph: {
-      title: 'Blog',
-      description: 'Read our latest articles, tutorials, and insights',
+      title: 'Calendar - Event Management',
+      description: 'Organize your schedule with our comprehensive calendar system',
       type: 'website',
-      images: [
-        {
-          url: '/og-blog.svg',
-          width: 1200,
-          height: 630,
-          alt: 'Blog - Latest articles and tutorials',
-          type: 'image/svg+xml',
-        },
-      ],
     },
     twitter: {
-      card: 'summary_large_image',
-      title: 'Blog',
-      description: 'Read our latest articles, tutorials, and insights',
-      images: ['/og-blog.svg'],
+      title: 'Calendar - Event Management',
+      description: 'Organize your schedule with our comprehensive calendar system',
     },
     robots: {
-      index: true,
+      index: false,
       follow: true,
-      maxImagePreview: 'large',
-      maxSnippet: 160,
+      noarchive: true,
     },
   },
 
-  '/blog/:slug': {
-    title: '{postTitle} - Blog',
-    description: '{postExcerpt}',
-    keywords: ['blog', 'article', 'tutorial'],
-    breadcrumb: { label: '{postTitle}', dynamic: true },
+  '/dashboard/calendar/new': {
+    title: 'Create Event',
+    description: 'Create a new calendar event with optional recurrence and reminders',
+    keywords: ['calendar', 'create', 'event', 'new', 'schedule'],
+    breadcrumb: { label: 'Create Event' },
     openGraph: {
-      title: '{postTitle}',
-      description: '{postExcerpt}',
-      type: 'article',
-      images: [
-        {
-          url: '{postImage}',
-          width: 1200,
-          height: 630,
-          alt: '{postTitle}',
-        },
-      ],
+      title: 'Create Calendar Event',
+      description: 'Create a new event with recurrence patterns and reminders',
+      type: 'website',
     },
     twitter: {
-      card: 'summary_large_image',
-      title: '{postTitle}',
-      description: '{postExcerpt}',
-      images: ['{postImage}'],
+      title: 'Create Calendar Event',
+      description: 'Create a new event with recurrence patterns and reminders',
     },
     robots: {
-      index: true,
-      follow: true,
-      maxImagePreview: 'large',
-      maxSnippet: 160,
+      index: false,
+      follow: false,
+      noarchive: true,
+    },
+  },
+
+  // Activity Log page
+  '/dashboard/activity': {
+    title: 'Activity Log',
+    description: 'View and audit all system activities and user actions',
+    keywords: ['activity', 'audit', 'log', 'history', 'tracking', 'security'],
+    breadcrumb: { label: 'Activity Log' },
+    openGraph: {
+      title: 'Activity Log',
+      description: 'Monitor and audit all system activities and user actions',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Activity Log',
+      description: 'Monitor and audit all system activities and user actions',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
     },
   },
 
@@ -746,6 +1055,27 @@ export const metadataConfig: Record<string, PageMetadata> = {
     },
   },
 
+  '/dashboard/ecommerce/categories': {
+    title: 'Product Categories',
+    description: 'Manage your product categories and organization',
+    keywords: ['categories', 'products', 'organization', 'ecommerce'],
+    breadcrumb: { label: 'Categories' },
+    openGraph: {
+      title: 'Product Categories',
+      description: 'Manage your product categories and organization',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Product Categories',
+      description: 'Manage your product categories and organization',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+    },
+  },
+
   '/dashboard/settings/ecommerce': {
     title: 'E-Commerce Settings',
     description: 'Configure e-commerce store settings',
@@ -803,6 +1133,73 @@ export const metadataConfig: Record<string, PageMetadata> = {
     },
   },
 
+  '/dashboard/settings/cron-jobs': {
+    title: 'Cron Jobs Management',
+    description: 'Monitor and manage scheduled tasks and background jobs',
+    keywords: ['cron', 'jobs', 'scheduled tasks', 'automation', 'background jobs', 'system'],
+    breadcrumb: { label: 'Cron Jobs' },
+    openGraph: {
+      title: 'Cron Jobs Management',
+      description: 'Monitor, schedule, and manage automated background tasks',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Cron Jobs Management',
+      description: 'Monitor, schedule, and manage automated background tasks',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
+  // Admin pages
+  '/admin/header-footer-editor': {
+    title: 'Header & Footer Editor',
+    description: 'Customize your site\'s header and footer configuration',
+    keywords: ['header', 'footer', 'editor', 'navigation', 'branding', 'cms'],
+    breadcrumb: { label: 'Header & Footer' },
+    openGraph: {
+      title: 'Header & Footer Editor',
+      description: 'Customize header navigation, logo, CTAs, and footer content',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Header & Footer Editor',
+      description: 'Customize header navigation, logo, CTAs, and footer content',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
+  '/admin/landing-editor': {
+    title: 'Landing Page Editor',
+    description: 'Edit landing page sections and content',
+    keywords: ['landing page', 'editor', 'cms', 'sections', 'content'],
+    breadcrumb: { label: 'Landing Editor' },
+    openGraph: {
+      title: 'Landing Page Editor',
+      description: 'Customize landing page sections, content, and layout',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Landing Page Editor',
+      description: 'Customize landing page sections, content, and layout',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+
   // Public Storefront
   '/shop': {
     title: 'Shop - Browse Our Products',
@@ -827,6 +1224,39 @@ export const metadataConfig: Record<string, PageMetadata> = {
       card: 'summary_large_image',
       title: 'Shop - Browse Our Products',
       description: 'Browse our complete catalog of products. Filter by category, price, and more.',
+      images: ['/og-shop.svg'],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      maxImagePreview: 'large',
+      maxSnippet: 160,
+    },
+  },
+
+  '/shop/search': {
+    title: 'Search Results for "{searchQuery}"',
+    description: 'Search results for "{searchQuery}" - Find products in our catalog',
+    keywords: ['search', '{searchQuery}', 'products', 'shop', 'find', 'ecommerce'],
+    breadcrumb: { label: 'Search' },
+    openGraph: {
+      title: 'Search Results for "{searchQuery}"',
+      description: 'Search results for "{searchQuery}" - Find products in our catalog',
+      type: 'website',
+      images: [
+        {
+          url: '/og-shop.svg',
+          width: 1200,
+          height: 630,
+          alt: 'Search results for {searchQuery}',
+          type: 'image/svg+xml',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Search Results for "{searchQuery}"',
+      description: 'Search results for "{searchQuery}" - Find products in our catalog',
       images: ['/og-shop.svg'],
     },
     robots: {
@@ -968,6 +1398,28 @@ export const metadataConfig: Record<string, PageMetadata> = {
       follow: true,
       maxImagePreview: 'large',
       maxSnippet: 160,
+    },
+  },
+
+  // Search page
+  '/search': {
+    title: 'Search Results',
+    description: 'Search across all content including users, products, orders, pages, and blog posts',
+    keywords: ['search', 'find', 'results', 'query'],
+    breadcrumb: { label: 'Search' },
+    openGraph: {
+      title: 'Search Results',
+      description: 'Search across all content including users, products, orders, pages, and blog posts',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Search Results',
+      description: 'Search across all content including users, products, orders, pages, and blog posts',
+    },
+    robots: {
+      index: false,
+      follow: true,
+      noarchive: true,
     },
   },
 
@@ -1163,4 +1615,82 @@ function resolveTemplate(template: string, values: Record<string, string>): stri
   return template.replace(/\{(\w+)\}/g, (match, key) => {
     return values[key] || match;
   });
+}
+
+/**
+ * Apply branding to metadata
+ * 
+ * Replaces default brand name with custom brand name in titles and descriptions
+ * 
+ * @param metadata - Metadata object to apply branding to
+ * @param brandSettings - Brand settings from context
+ * @returns Metadata with branding applied
+ */
+export function applyBrandingToMetadata(
+  metadata: PageMetadata,
+  brandSettings: BrandSettings | null
+): PageMetadata {
+  if (!brandSettings) return metadata;
+
+  const brandName = brandSettings.brandName || DEFAULT_BRANDING.brandName;
+  const description = brandSettings.description || defaultMetadata.description;
+  const siteName = brandName;
+
+  const branded = { ...metadata };
+
+  // Replace brand name in title (always a string in PageMetadata)
+  if (branded.title && typeof branded.title === 'string') {
+    branded.title = branded.title.replace(/Dashboard Application/g, brandName);
+    branded.title = branded.title.replace(/Dashboard/g, brandName);
+  }
+
+  // Replace brand name in description
+  if (branded.description) {
+    branded.description = branded.description.replace(/Dashboard Application/g, brandName);
+    if (brandSettings.description) {
+      branded.description = brandSettings.description;
+    }
+  }
+
+  // Update Open Graph metadata
+  if (branded.openGraph) {
+    branded.openGraph = {
+      ...branded.openGraph,
+      siteName,
+      title: branded.openGraph.title?.replace(/Dashboard Application/g, brandName),
+      description: branded.openGraph.description?.replace(/Dashboard Application/g, brandName) || description,
+    };
+  }
+
+  // Update Twitter metadata
+  if (branded.twitter) {
+    branded.twitter = {
+      ...branded.twitter,
+      title: branded.twitter.title?.replace(/Dashboard Application/g, brandName),
+      description: branded.twitter.description?.replace(/Dashboard Application/g, brandName) || description,
+    };
+  }
+
+  return branded;
+}
+
+/**
+ * Get favicon links for metadata
+ * 
+ * @param brandSettings - Brand settings from context
+ * @returns Array of favicon link objects
+ */
+export function getFaviconLinks(brandSettings: BrandSettings | null) {
+  const faviconUrl = brandSettings?.faviconUrl || DEFAULT_BRANDING.faviconUrl;
+
+  return [
+    {
+      rel: 'icon',
+      url: faviconUrl,
+    },
+    {
+      rel: 'apple-touch-icon',
+      url: faviconUrl,
+    },
+  ];
 }

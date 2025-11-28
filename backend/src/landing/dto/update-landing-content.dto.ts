@@ -2,6 +2,8 @@ import {
   IsArray,
   IsOptional,
   IsObject,
+  IsString,
+  IsIn,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -20,4 +22,17 @@ export class UpdateLandingContentDto {
   @ValidateNested()
   @Type(() => GlobalSettingsDto)
   settings?: GlobalSettingsDto;
+
+  @IsString()
+  @IsOptional()
+  headerConfigId?: string;
+
+  @IsString()
+  @IsOptional()
+  footerConfigId?: string;
+
+  @IsString()
+  @IsIn(['light', 'dark', 'auto', 'toggle'])
+  @IsOptional()
+  themeMode?: string;
 }

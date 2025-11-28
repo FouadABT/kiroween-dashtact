@@ -1,10 +1,14 @@
-import { Controller, Post, Get, Body, Query } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
 import { CheckoutService } from './checkout.service';
 import { CheckoutDto, AddressDto } from './dto';
 import { Public } from '../auth/decorators/public.decorator';
+import { FeatureGuard } from '../common/guards/feature.guard';
+import { FeatureEnabled } from '../common/decorators/feature-enabled.decorator';
 
 @Controller('checkout')
 @Public() // All checkout endpoints are public
+@UseGuards(FeatureGuard)
+@FeatureEnabled('ecommerce')
 export class CheckoutController {
   constructor(private readonly checkoutService: CheckoutService) {}
 

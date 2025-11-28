@@ -7,10 +7,33 @@
 'use client';
 
 import Link from 'next/link';
-import { Github, Twitter, Linkedin } from 'lucide-react';
+import Image from 'next/image';
+import { Github, Twitter, Linkedin, Facebook, Instagram, Mail } from 'lucide-react';
+import { useBranding } from '@/hooks/useBranding';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getDefaultLogoUrl } from '@/lib/constants/branding';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { resolvedTheme } = useTheme();
+  const { 
+    getLogoUrl, 
+    getBrandName, 
+    getTagline, 
+    getDescription,
+    getSupportEmail, 
+    getSocialLinks 
+  } = useBranding();
+
+  // Get branding info
+  const isDark = resolvedTheme === 'dark';
+  const logoUrl = getLogoUrl(isDark) || getDefaultLogoUrl(isDark);
+  const brandName = getBrandName();
+  const tagline = getTagline();
+  const description = getDescription() || tagline || 'Professional dashboard starter kit with comprehensive features.';
+  const supportEmail = getSupportEmail();
+  const socialLinks = getSocialLinks();
+  const brandInitial = brandName.charAt(0).toUpperCase();
 
   return (
     <footer className="bg-muted/50 border-t border-border">
@@ -19,14 +42,34 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">D</span>
-              </div>
-              <span className="font-bold text-xl text-foreground">Dashboard</span>
+              {logoUrl.endsWith('.svg') || logoUrl.endsWith('.png') || logoUrl.endsWith('.jpg') || logoUrl.endsWith('.jpeg') || logoUrl.endsWith('.webp') ? (
+                <div className="w-8 h-8">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={logoUrl}
+                    alt={`${brandName} logo`}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-lg">{brandInitial}</span>
+                </div>
+              )}
+              <span className="font-bold text-xl text-foreground">{brandName}</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Professional dashboard starter kit with comprehensive features.
+              {description}
             </p>
+            {supportEmail && (
+              <a 
+                href={`mailto:${supportEmail}`}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+              >
+                <Mail className="w-4 h-4" />
+                {supportEmail}
+              </a>
+            )}
           </div>
 
           {/* Product Links */}
@@ -79,27 +122,68 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-foreground mb-4">Connect</h3>
             <div className="flex space-x-4">
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="GitHub"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
+              {socialLinks?.twitter && (
+                <a
+                  href={socialLinks.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Twitter"
+                >
+                  <Twitter className="w-5 h-5" />
+                </a>
+              )}
+              {socialLinks?.linkedin && (
+                <a
+                  href={socialLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin className="w-5 h-5" />
+                </a>
+              )}
+              {socialLinks?.facebook && (
+                <a
+                  href={socialLinks.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+              )}
+              {socialLinks?.instagram && (
+                <a
+                  href={socialLinks.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+              )}
+              {!socialLinks?.twitter && !socialLinks?.linkedin && !socialLinks?.facebook && !socialLinks?.instagram && (
+                <>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Twitter"
+                  >
+                    <Twitter className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -107,7 +191,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t border-border">
           <p className="text-sm text-muted-foreground text-center">
-            © {currentYear} Dashboard. All rights reserved.
+            © {currentYear} {brandName}. All rights reserved.
           </p>
         </div>
       </div>

@@ -41,15 +41,17 @@ export class CustomerAuthController {
    */
   @Public()
   @Post('login')
-  async login(
-    @Body() dto: LoginCustomerDto,
-    @Body('sessionId') sessionId?: string,
-  ) {
+  async login(@Body() dto: LoginCustomerDto) {
     const result = await this.customerAuthService.login(dto);
 
     // Merge guest cart if sessionId provided
-    if (sessionId) {
-      await this.cartService.mergeCart(sessionId, result.customer.id);
+    if (dto.sessionId) {
+      try {
+        await this.cartService.mergeCart(dto.sessionId, result.customer.id);
+      } catch (error) {
+        // Log error but don't fail login
+        console.error('Failed to merge cart:', error);
+      }
     }
 
     return result;

@@ -61,6 +61,7 @@ const categoryIcons: Record<NotificationCategory, React.ComponentType<{ classNam
   WORKFLOW: GitBranch,
   SOCIAL: Users,
   CUSTOM: Bell,
+  CALENDAR: Bell,
 };
 
 /**

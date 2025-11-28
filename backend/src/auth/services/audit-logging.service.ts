@@ -30,6 +30,9 @@ export enum AuditEventType {
   EMAIL_CHANGED = 'EMAIL_CHANGED',
   ACCOUNT_LOCKED = 'ACCOUNT_LOCKED',
   ACCOUNT_UNLOCKED = 'ACCOUNT_UNLOCKED',
+  
+  // Search events
+  SENSITIVE_SEARCH = 'SENSITIVE_SEARCH',
 }
 
 /**
@@ -149,6 +152,12 @@ export class AuditLoggingService {
 
   /**
    * Log a token refresh attempt
+   * 
+   * NOTE: Token refresh is intentionally NOT logged by default to reduce database bloat.
+   * Token refreshes happen every ~13 minutes and provide minimal security value.
+   * Only enable this for debugging or compliance requirements.
+   * 
+   * To enable: Set AUDIT_LOG_TOKEN_REFRESH=true in environment
    */
   logTokenRefresh(
     userId: string,
@@ -157,7 +166,9 @@ export class AuditLoggingService {
     userAgent?: string,
     errorMessage?: string,
   ): void {
-    if (!authConfig.security.enableAuditLogging) return;
+    // Skip token refresh logging unless explicitly enabled
+    const shouldLogTokenRefresh = process.env.AUDIT_LOG_TOKEN_REFRESH === 'true';
+    if (!shouldLogTokenRefresh || !authConfig.security.enableAuditLogging) return;
 
     const entry: AuditLogEntry = {
       timestamp: new Date(),
@@ -311,6 +322,39 @@ export class AuditLoggingService {
       userAgent,
       action: 'password_changed',
       success: true,
+    };
+
+    this.logEntry(entry);
+  }
+
+  /**
+   * Log a sensitive search event
+   * Used for searches on users, customers, and orders
+   */
+  logSensitiveSearch(
+    userId: string,
+    entityType: string,
+    query: string,
+    resultCount: number,
+    ipAddress?: string,
+    userAgent?: string,
+  ): void {
+    if (!authConfig.security.enableAuditLogging) return;
+
+    const entry: AuditLogEntry = {
+      timestamp: new Date(),
+      eventType: AuditEventType.SENSITIVE_SEARCH,
+      userId,
+      ipAddress,
+      userAgent,
+      action: 'sensitive_search',
+      resource: entityType,
+      success: true,
+      metadata: {
+        query,
+        resultCount,
+        entityType,
+      },
     };
 
     this.logEntry(entry);

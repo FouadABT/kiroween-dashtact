@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateLayoutDto } from './dto/create-layout.dto';
 import { UpdateLayoutDto } from './dto/update-layout.dto';
 import { AddWidgetDto } from './dto/add-widget.dto';
-import { UpdateWidgetDto } from './dto/update-widget.dto';
+import { UpdateLayoutWidgetDto } from './dto/update-widget.dto';
 import { ReorderWidgetsDto } from './dto/reorder-widgets.dto';
 import { LayoutFiltersDto } from './dto/layout-filters.dto';
 import { LayoutResponseDto } from './dto/layout-response.dto';
@@ -376,7 +376,7 @@ export class DashboardLayoutsService {
   /**
    * Update a widget in a layout
    */
-  async updateWidget(layoutId: string, widgetId: string, dto: any): Promise<any> {
+  async updateWidget(layoutId: string, widgetId: string, dto: UpdateLayoutWidgetDto): Promise<any> {
     const widget = await this.prisma.widgetInstance.findUnique({
       where: { id: widgetId },
       include: { widgetDefinition: true },

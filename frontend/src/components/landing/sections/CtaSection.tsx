@@ -12,9 +12,10 @@ import { resolveCtaLink } from '@/lib/landing-helpers';
 
 interface CtaSectionProps {
   section: LandingPageSection;
+  maxWidth?: 'full' | 'container' | 'narrow';
 }
 
-export function CtaSection({ section }: CtaSectionProps) {
+export function CtaSection({ section, maxWidth = 'container' }: CtaSectionProps) {
   const data = section.data as CtaSectionData;
 
   // Determine alignment class
@@ -47,12 +48,14 @@ export function CtaSection({ section }: CtaSectionProps) {
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Primary CTA */}
-          <Link
-            href={resolveCtaLink(data.primaryCta)}
-            className="inline-flex items-center justify-center px-8 py-3 text-base font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            {data.primaryCta.text}
-          </Link>
+          {data.primaryCta && (
+            <Link
+              href={resolveCtaLink(data.primaryCta)}
+              className="inline-flex items-center justify-center px-8 py-3 text-base font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              {data.primaryCta.text}
+            </Link>
+          )}
 
           {/* Secondary CTA (optional) */}
           {data.secondaryCta && (

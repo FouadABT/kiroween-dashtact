@@ -113,7 +113,8 @@ export function BlogImageUpload({
     }
 
     const data = await response.json();
-    return `${API_BASE_URL}${data.url}`;
+    // API already returns full URL, don't prepend API_BASE_URL
+    return data.url;
   };
 
   /**

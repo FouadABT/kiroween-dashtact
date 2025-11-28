@@ -23,6 +23,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { Permissions } from '../auth/decorators/permissions.decorator';
 import { Public } from '../auth/decorators/public.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UploadsService } from '../uploads/uploads.service';
 
 @Controller('pages')
@@ -206,20 +207,37 @@ export class PagesController {
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('pages:write')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFeaturedImage(@UploadedFile() file: Express.Multer.File) {
+  async uploadFeaturedImage(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: any,
+  ) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
 
-    const uploadResult = await this.uploadsService.uploadFile(file, {
-      type: 'image',
-    });
+    const baseUrl = process.env.APP_URL || 'http://localhost:3001';
+    
+    // Create upload record using new system
+    // Featured images should be PUBLIC so page visitors can see them
+    const upload = await this.uploadsService.create(
+      {
+        filename: file.filename,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        size: file.size,
+        url: `${baseUrl}/files/${file.filename}`,
+        path: file.path,
+        type: 'IMAGE',
+        visibility: 'PUBLIC', // Public for page featured images
+      },
+      user.id,
+    );
 
     return {
-      url: uploadResult.url,
-      filename: uploadResult.filename,
-      size: uploadResult.size,
-      mimetype: uploadResult.mimetype,
+      url: upload.url,
+      filename: upload.filename,
+      size: upload.size,
+      mimetype: upload.mimeType,
     };
   }
 }

@@ -81,6 +81,11 @@ const CATEGORY_INFO: Record<NotificationCategory, { label: string; description: 
     description: 'Custom notifications and integrations',
     icon: <Bell className="h-4 w-4" />,
   },
+  [NotificationCategory.CALENDAR]: {
+    label: 'Calendar',
+    description: 'Event reminders, invitations, and calendar updates',
+    icon: <Bell className="h-4 w-4" />,
+  },
 };
 
 /**

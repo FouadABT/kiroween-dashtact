@@ -49,6 +49,11 @@ export class StorefrontQueryDto {
   isFeatured?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  inStock?: boolean;
+
+  @IsOptional()
   @IsEnum(SortBy)
   sortBy?: SortBy;
 

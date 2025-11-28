@@ -13,9 +13,10 @@ import * as Icons from 'lucide-react';
 
 interface FooterSectionProps {
   section: LandingPageSection;
+  maxWidth?: 'full' | 'container' | 'narrow';
 }
 
-export function FooterSection({ section }: FooterSectionProps) {
+export function FooterSection({ section, maxWidth = 'container' }: FooterSectionProps) {
   const data = section.data as FooterSectionData;
 
   // Sort links by order
@@ -41,7 +42,7 @@ export function FooterSection({ section }: FooterSectionProps) {
             </p>
             
             {/* Social Links */}
-            {data.socialLinks.length > 0 && (
+            {data.socialLinks && data.socialLinks.length > 0 && (
               <div className="flex gap-4">
                 {data.socialLinks.map((social, index) => (
                   <a

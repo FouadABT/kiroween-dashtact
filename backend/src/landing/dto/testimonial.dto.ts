@@ -1,9 +1,9 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, Min, Max } from 'class-validator';
 
 export class TestimonialDto {
   @IsString()
-  @IsNotEmpty()
-  id: string;
+  @IsOptional()
+  id?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -26,5 +26,12 @@ export class TestimonialDto {
   avatar?: string;
 
   @IsNumber()
-  order: number;
+  @IsOptional()
+  @Min(1)
+  @Max(5)
+  rating?: number;
+
+  @IsNumber()
+  @IsOptional()
+  order?: number;
 }

@@ -17,10 +17,33 @@ import {
   VariantResponseDto,
 } from './dto';
 import { ProductStatus } from '@prisma/client';
+import { ActivityLogService } from '../activity-log/activity-log.service';
+import { UsageTracker } from '../uploads/helpers/usage-tracker';
 
+/**
+ * Products Service with Activity Logging Integration
+ * 
+ * This service demonstrates how to integrate the ActivityLogService
+ * to track user actions on products.
+ * 
+ * Integration Pattern:
+ * 1. Import ActivityLogModule in your module
+ * 2. Inject ActivityLogService in your service constructor
+ * 3. Pass userId from controller to service methods
+ * 4. Call appropriate activity log methods after successful operations:
+ *    - activityLogService.logEntityCreated() for create operations
+ *    - activityLogService.logEntityUpdated() for update operations
+ *    - activityLogService.logEntityDeleted() for delete operations
+ * 
+ * The activity logging is graceful - if it fails, it won't crash your app.
+ */
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLogService: ActivityLogService,
+    private readonly usageTracker: UsageTracker,
+  ) {}
 
   /**
    * Generate a URL-friendly slug from a string
@@ -276,8 +299,10 @@ export class ProductsService {
 
   /**
    * Create a new product with slug generation
+   * @param dto Product creation data
+   * @param userId User ID for activity logging
    */
-  async create(dto: CreateProductDto): Promise<ProductResponseDto> {
+  async create(dto: CreateProductDto, userId?: string): Promise<ProductResponseDto> {
     // Generate slug from name
     const baseSlug = this.generateSlug(dto.name);
     const slug = await this.ensureUniqueSlug(baseSlug);
@@ -346,6 +371,35 @@ export class ProductsService {
       },
     });
 
+    // Log activity to database (example integration)
+    if (userId) {
+      await this.activityLogService.logEntityCreated(
+        'Product',
+        product.id,
+        userId,
+        {
+          productName: product.name,
+          sku: product.sku,
+          status: product.status,
+          basePrice: Number(product.basePrice),
+        },
+      );
+    }
+
+    // Track image usage
+    const imageIds: string[] = [];
+    if (dto.featuredImage) imageIds.push(dto.featuredImage);
+    if (dto.images && Array.isArray(dto.images)) {
+      imageIds.push(...dto.images.filter((id) => typeof id === 'string'));
+    }
+    if (imageIds.length > 0) {
+      await this.usageTracker.trackMultipleUsages(
+        imageIds,
+        'products',
+        product.id,
+      );
+    }
+
     return {
       ...product,
       basePrice: Number(product.basePrice),
@@ -358,10 +412,14 @@ export class ProductsService {
 
   /**
    * Update a product
+   * @param id Product ID
+   * @param dto Product update data
+   * @param userId User ID for activity logging
    */
   async update(
     id: string,
     dto: UpdateProductDto,
+    userId?: string,
   ): Promise<ProductResponseDto> {
     // Check if product exists
     const existing = await this.prisma.product.findUnique({
@@ -372,11 +430,15 @@ export class ProductsService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
+    // Track changes for activity log
+    const changes: Record<string, any> = {};
+
     // Generate new slug if name changed
     let slug = existing.slug;
     if (dto.name && dto.name !== existing.name) {
       const baseSlug = this.generateSlug(dto.name);
       slug = await this.ensureUniqueSlug(baseSlug, id);
+      changes.name = { old: existing.name, new: dto.name };
     }
 
     // Check if SKU is being changed and if it's already taken
@@ -388,6 +450,7 @@ export class ProductsService {
       if (skuTaken) {
         throw new ConflictException('SKU is already taken');
       }
+      changes.sku = { old: existing.sku, new: dto.sku };
     }
 
     // Set publishedAt if status is being changed to PUBLISHED
@@ -397,6 +460,7 @@ export class ProductsService {
       existing.status !== ProductStatus.PUBLISHED
     ) {
       publishedAt = new Date();
+      changes.status = { old: existing.status, new: dto.status };
     }
 
     // Build update data
@@ -464,6 +528,32 @@ export class ProductsService {
         },
       },
     });
+
+    // Log activity to database (example integration)
+    if (userId && Object.keys(changes).length > 0) {
+      await this.activityLogService.logEntityUpdated(
+        'Product',
+        product.id,
+        userId,
+        changes,
+      );
+    }
+
+    // Track image usage if images were updated
+    if (dto.featuredImage || dto.images) {
+      const imageIds: string[] = [];
+      if (dto.featuredImage) imageIds.push(dto.featuredImage);
+      if (dto.images && Array.isArray(dto.images)) {
+        imageIds.push(...dto.images.filter((id) => typeof id === 'string'));
+      }
+      if (imageIds.length > 0) {
+        await this.usageTracker.trackMultipleUsages(
+          imageIds,
+          'products',
+          product.id,
+        );
+      }
+    }
 
     return {
       ...product,
@@ -672,5 +762,36 @@ export class ProductsService {
     });
 
     return { count: result.count };
+  }
+
+  /**
+   * Get all product categories
+   */
+  async getCategories() {
+    return this.prisma.productCategory.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
+
+  /**
+   * Get all product tags
+   */
+  async getTags() {
+    return this.prisma.productTag.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
   }
 }

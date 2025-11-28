@@ -50,3 +50,13 @@ export interface TokenResponse {
   accessToken: string;
   expiresIn: number;
 }
+
+/**
+ * Two-Factor Required Response Interface
+ * Response returned when 2FA verification is required
+ */
+export interface TwoFactorRequiredResponse {
+  requiresTwoFactor: true;
+  userId: string;
+  message: string;
+}

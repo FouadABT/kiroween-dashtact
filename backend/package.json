@@ -28,6 +28,7 @@
     "db:setup": "node setup-database.js",
     "generate:permission-docs": "ts-node ../.kiro/scripts/generate-permission-docs.ts",
     "migrate:permissions": "ts-node src/scripts/migrate-to-permissions.ts",
+    "cleanup:logs": "ts-node src/scripts/cleanup-activity-logs.ts",
     "cleanup:carts": "ts-node scripts/cleanup-expired-carts.ts"
   },
   "dependencies": {
@@ -50,6 +51,7 @@
     "cache-manager": "^7.2.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "nodemailer": "^7.0.10",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.3",
@@ -72,6 +74,7 @@
     "@types/jest": "^30.0.0",
     "@types/multer": "^2.0.0",
     "@types/node": "^22.10.7",
+    "@types/nodemailer": "^7.0.3",
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.15.6",
     "@types/supertest": "^6.0.2",

@@ -109,44 +109,61 @@ export class SettingsController {
     @Body() updateSettingsDto: UpdateSettingsDto,
     @CurrentUser() currentUser: RequestUser,
   ): Promise<SettingsResponseDto> {
-    // First, get the settings to check ownership
-    const settings = await this.settingsService.findOne(id);
+    try {
+      // First, get the settings to check ownership
+      const settings = await this.settingsService.findOne(id);
 
-    // Check if user is updating their own settings or has admin permission
-    const isOwnSettings = settings.userId === currentUser.id;
-    const hasAdminPermission =
-      currentUser.permissions.includes('settings:admin');
+      // Check if user is updating their own settings or has admin permission
+      const isOwnSettings = settings.userId === currentUser.id;
+      const hasAdminPermission =
+        currentUser.permissions.includes('settings:admin');
 
-    // Special case: If user is trying to update global settings (userId is null),
-    // create user-specific settings instead
-    if (settings.userId === null && !hasAdminPermission) {
-      // Check if user already has their own settings
-      try {
-        const userSettings = await this.settingsService.findByUserId(
-          currentUser.id,
-        );
-        // User has their own settings, update those instead
-        return this.settingsService.update(userSettings.id, updateSettingsDto);
-      } catch {
-        // User doesn't have their own settings, create them based on global settings
-        const newUserSettings = await this.settingsService.create({
-          userId: currentUser.id,
-          scope: SettingsScope.USER,
-          themeMode: updateSettingsDto.themeMode ?? settings.themeMode,
-          activeTheme: updateSettingsDto.activeTheme ?? settings.activeTheme,
-          lightPalette: updateSettingsDto.lightPalette ?? settings.lightPalette,
-          darkPalette: updateSettingsDto.darkPalette ?? settings.darkPalette,
-          typography: updateSettingsDto.typography ?? settings.typography,
-        } as CreateSettingsDto);
-        return newUserSettings;
+      // Special case: If user is trying to update global settings (userId is null),
+      // create user-specific settings instead
+      if (settings.userId === null && !hasAdminPermission) {
+        // Check if user already has their own settings
+        try {
+          const userSettings = await this.settingsService.findByUserId(
+            currentUser.id,
+          );
+          // User has their own settings, update those instead
+          return this.settingsService.update(userSettings.id, updateSettingsDto);
+        } catch (error) {
+          // User doesn't have their own settings, create them based on global settings
+          try {
+            const newUserSettings = await this.settingsService.create({
+              userId: currentUser.id,
+              scope: SettingsScope.USER,
+              themeMode: updateSettingsDto.themeMode ?? settings.themeMode,
+              activeTheme: updateSettingsDto.activeTheme ?? settings.activeTheme,
+              lightPalette: updateSettingsDto.lightPalette ?? settings.lightPalette,
+              darkPalette: updateSettingsDto.darkPalette ?? settings.darkPalette,
+              typography: updateSettingsDto.typography ?? settings.typography,
+            } as CreateSettingsDto);
+            return newUserSettings;
+          } catch (createError) {
+            // If creation fails (e.g., duplicate), try to find and update existing
+            try {
+              const existingUserSettings = await this.settingsService.findByUserId(
+                currentUser.id,
+              );
+              return this.settingsService.update(existingUserSettings.id, updateSettingsDto);
+            } catch {
+              throw createError;
+            }
+          }
+        }
       }
-    }
 
-    if (!isOwnSettings && !hasAdminPermission) {
-      throw new ForbiddenException('You can only update your own settings');
-    }
+      if (!isOwnSettings && !hasAdminPermission) {
+        throw new ForbiddenException('You can only update your own settings');
+      }
 
-    return this.settingsService.update(id, updateSettingsDto);
+      return this.settingsService.update(id, updateSettingsDto);
+    } catch (error) {
+      console.error('Settings update error:', error);
+      throw error;
+    }
   }
 
   /**

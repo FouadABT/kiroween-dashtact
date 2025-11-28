@@ -1,13 +1,9 @@
 /**
- * Landing Page Components
+ * Landing CMS Components
  * 
- * Export all landing page components for easy importing.
+ * Export all landing page CMS components
  */
 
-export { LandingPage } from './LandingPage';
-export { LandingLayout } from './LandingLayout';
-export { PublicNavigation } from './PublicNavigation';
-export { Footer } from './Footer';
-export { Hero } from './Hero';
-export { Features } from './Features';
-export { FeatureCard } from './FeatureCard';
+export { VisualEditor } from './VisualEditor';
+export { SectionListSidebar } from './SectionListSidebar';
+export { VisualEditorPreview } from './VisualEditorPreview';

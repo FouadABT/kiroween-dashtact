@@ -41,6 +41,24 @@ export interface Address {
   postalCode: string;
   country: string;
   apartment?: string;
+}
+
+// Customer Address (stored in database)
+// Synced with backend/prisma/schema.prisma Address model
+export interface CustomerAddress {
+  id: string;
+  customerId: string;
+  type: string; // 'shipping' or 'billing'
+  street: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  phone?: string | null;
+  apartment?: string | null;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
 } 
 
 // Customer

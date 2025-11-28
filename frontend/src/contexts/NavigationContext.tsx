@@ -2,13 +2,14 @@
 
 import { createContext, useContext, useState, ReactNode, useMemo, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { NavItem, BreadcrumbItem } from "@/types/dashboard";
+import { NavItem, BreadcrumbItem } from "@/types/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMetadata } from "@/contexts/MetadataContext";
 import { generateBreadcrumbs as generateBreadcrumbsHelper } from "@/lib/breadcrumb-helpers";
 import { getIconByName } from "@/lib/icon-loader";
 import { MenuApi } from "@/lib/api";
 import { MenuItem } from "@/types/menu";
+import { isFeatureEnabled } from "@/config/features.config";
 
 interface NavigationContextType {
   // Sidebar state
@@ -31,6 +32,36 @@ interface NavigationContextType {
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
+
+/**
+ * Filter menu items based on enabled features
+ * 
+ * Maps feature flags to menu items:
+ * - blog -> blog menu
+ * - ecommerce -> ecommerce menu
+ * - calendar -> calendar menu
+ * - crm -> crm menu
+ * - notifications -> notifications menu
+ * - landing -> landing page settings
+ * - customerAccount -> customer account related items
+ */
+function filterMenusByFeatures(menuItems: MenuItem[]): MenuItem[] {
+  return menuItems
+    .filter((item) => {
+      // If no feature flag is set, always show the menu
+      if (!item.featureFlag) {
+        return true;
+      }
+
+      // Check if the feature is enabled
+      return isFeatureEnabled(item.featureFlag as any);
+    })
+    .map((item) => ({
+      ...item,
+      // Recursively filter children
+      children: item.children ? filterMenusByFeatures(item.children) : undefined,
+    }));
+}
 
 /**
  * Convert MenuItem from API to NavItem for sidebar rendering
@@ -91,9 +122,10 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
     fetchMenus();
   }, [isAuthenticated]);
 
-  // Convert menu items to navigation items
+  // Convert menu items to navigation items, filtering by enabled features
   const navigationItems = useMemo(() => {
-    return menuItems.map(convertMenuItemToNavItem);
+    const filteredMenus = filterMenusByFeatures(menuItems);
+    return filteredMenus.map(convertMenuItemToNavItem);
   }, [menuItems]);
 
   // Generate breadcrumbs based on current pathname using metadata config and dynamic values

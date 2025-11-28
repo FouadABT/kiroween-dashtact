@@ -151,7 +151,7 @@ export const authConfig = {
    * Default Role Assignment
    * Role assigned to new users upon registration
    */
-  defaultRole: process.env.DEFAULT_USER_ROLE || 'USER',
+  defaultRole: process.env.DEFAULT_USER_ROLE || 'User',
 
   /**
    * Permission Naming Convention

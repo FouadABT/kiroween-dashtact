@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CacheModule } from '@nestjs/cache-manager';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -31,6 +31,21 @@ import { WidgetsModule } from './widgets/widgets.module';
 import { DashboardLayoutsModule } from './dashboard-layouts/dashboard-layouts.module';
 import { CapabilitiesModule } from './capabilities/capabilities.module';
 import { DashboardMenusModule } from './dashboard-menus/dashboard-menus.module';
+import { ActivityLogModule } from './activity-log/activity-log.module';
+import { EmailModule } from './email/email.module';
+import { LegalPagesModule } from './legal-pages/legal-pages.module';
+import { MessagingSettingsModule } from './messaging-settings/messaging-settings.module';
+import { MessagingModule } from './messaging/messaging.module';
+import { BrandingModule } from './branding/branding.module';
+import { SearchModule } from './search/search.module';
+import { CronJobsModule } from './cron-jobs/cron-jobs.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { CalendarModule } from './calendar/calendar.module';
+import { CustomerAccountModule } from './customer-account/customer-account.module';
+import { ShippingModule } from './shipping/shipping.module';
+import { PaymentMethodsModule } from './payment-methods/payment-methods.module';
+import { SetupModule } from './setup/setup.module';
+import { FeaturesModule } from './features/features.module';
 
 @Module({
   imports: [
@@ -46,6 +61,7 @@ import { DashboardMenusModule } from './dashboard-menus/dashboard-menus.module';
       ttl: 300000, // 5 minutes default TTL in milliseconds
       max: 100, // Maximum number of items in cache
     }),
+    CronJobsModule,
     UsersModule,
     SettingsModule,
     AuthModule,
@@ -70,11 +86,31 @@ import { DashboardMenusModule } from './dashboard-menus/dashboard-menus.module';
     DashboardLayoutsModule,
     CapabilitiesModule,
     DashboardMenusModule,
+    ActivityLogModule,
+    EmailModule,
+    LegalPagesModule,
+    MessagingSettingsModule,
+    MessagingModule,
+    BrandingModule,
+    SearchModule,
+    DashboardModule,
+    CalendarModule,
+    CustomerAccountModule,
+    ShippingModule,
+    PaymentMethodsModule,
+    SetupModule,
+    FeaturesModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     PrismaService,
+    // Global activity logging interceptor
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: require('./activity-log/interceptors/activity-logging.interceptor')
+        .ActivityLoggingInterceptor,
+    },
     // Rate limiting disabled globally - uncomment to enable
     // {
     //   provide: APP_GUARD,

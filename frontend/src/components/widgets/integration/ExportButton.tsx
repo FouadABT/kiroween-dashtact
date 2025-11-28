@@ -179,7 +179,7 @@ export function ExportButton({
   };
 
   const button = (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant={variant}

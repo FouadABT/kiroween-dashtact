@@ -7,6 +7,7 @@
 
 // Dashboard and navigation types
 export * from './dashboard';
+export * from './navigation';
 
 // Component prop types and interfaces
 export * from './components';
@@ -33,11 +34,19 @@ export type {
   // Navigation
   NavItem,
   BreadcrumbItem,
-  
+} from './navigation';
+
+export type {
   // Dashboard
-  DashboardStat,
-  TableRow,
-  ChartData,
+  DashboardStats,
+  Activity,
+  Alert,
+  SystemHealth,
+  RevenueData,
+  SalesData,
+  InventoryData,
+  ContentMetrics,
+  UserMetrics,
 } from './dashboard';
 
 export type {
@@ -101,7 +110,7 @@ export type {
 export type {
   // Form states
   FormState,
-} from './dashboard';
+} from './components';
 
 export type {
   // Settings types

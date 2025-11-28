@@ -7,6 +7,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { passwordSchema, PasswordFormData, validatePasswordStrength } from '@/lib/validation/profile-schema';
@@ -30,6 +31,7 @@ import {
 } from '@/components/ui/alert';
 
 export function PasswordChangeForm() {
+  const router = useRouter();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -296,7 +298,7 @@ export function PasswordChangeForm() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => form.reset()}
+              onClick={() => router.push('/dashboard/profile')}
               disabled={isSubmitting}
             >
               Cancel

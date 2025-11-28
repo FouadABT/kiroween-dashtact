@@ -128,8 +128,12 @@ export function SignupForm(props?: SignupFormProps) {
         name: formData.name,
       };
 
+      console.log('[SignupForm] Submitting registration:', { email: registerData.email, name: registerData.name });
+
       // Call auth context register method
       await register(registerData);
+      
+      console.log('[SignupForm] Registration successful');
       
       // Call success callback if provided
       if (props?.onSuccess) {
@@ -141,11 +145,20 @@ export function SignupForm(props?: SignupFormProps) {
       router.push(redirectTo);
       
     } catch (error) {
-      // Extract error message
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Registration failed. Please try again.';
+      console.error('[SignupForm] Registration error:', error);
       
+      // Extract error message with better handling
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String(error.message);
+      }
+      
+      // Show user-friendly error message
       setErrors({ general: errorMessage });
       
       // Call error callback if provided
@@ -176,7 +189,7 @@ export function SignupForm(props?: SignupFormProps) {
       <AnimatePresence mode="wait">
         {errors.general && (
           <motion.div 
-            className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md"
+            className="p-4 text-sm bg-destructive/10 text-destructive border border-destructive/20 rounded-lg flex items-start gap-3"
             initial={{ opacity: 0, scale: 0.95, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -184,7 +197,24 @@ export function SignupForm(props?: SignupFormProps) {
             role="alert"
             aria-live="polite"
           >
-            {errors.general}
+            <svg 
+              className="w-5 h-5 flex-shrink-0 mt-0.5" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+              />
+            </svg>
+            <div className="flex-1">
+              <p className="font-medium">Registration Failed</p>
+              <p className="mt-1 text-sm opacity-90">{errors.general}</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

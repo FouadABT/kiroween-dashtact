@@ -24,10 +24,13 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { Permissions } from '../auth/decorators/permissions.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { FeatureGuard } from '../common/guards/feature.guard';
+import { FeatureEnabled } from '../common/decorators/feature-enabled.decorator';
 
 @ApiTags('orders')
 @Controller('orders')
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, FeatureGuard)
+@FeatureEnabled('ecommerce')
 @ApiBearerAuth()
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}

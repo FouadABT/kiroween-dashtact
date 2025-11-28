@@ -1,152 +1,129 @@
-# Landing Page Components
+# Landing CMS Visual Editor
 
-This directory contains all components for the public-facing landing page.
+## Overview
+
+The Visual Editor provides a modern, intuitive interface for creating and managing landing page sections with drag-and-drop functionality, real-time preview, and comprehensive editing capabilities.
 
 ## Components
 
-### LandingPage
-Main landing page component that combines all sections.
+### VisualEditor
 
-**Usage:**
-```tsx
-import { LandingPage } from '@/components/landing/LandingPage';
+Main editor component with split-screen layout.
 
-export default function Home() {
-  return <LandingPage />;
+**Features:**
+- ✅ Drag-and-drop section reordering
+- ✅ Real-time preview synchronization
+- ✅ Undo/redo functionality (last 50 changes)
+- ✅ Debounced auto-save (3 seconds)
+- ✅ Responsive preview modes (mobile, tablet, desktop, wide)
+- ✅ Theme toggle (light/dark)
+- ✅ Keyboard shortcuts (Ctrl+Z, Ctrl+Shift+Z, Ctrl+S)
+- ✅ Section visibility toggle
+- ✅ Section duplication
+- ✅ Section deletion
+
+**Props:**
+```typescript
+interface VisualEditorProps {
+  initialSections: LandingPageSection[];
+  onSave: (sections: LandingPageSection[]) => Promise<void>;
+  autoSaveEnabled?: boolean;
 }
 ```
 
-### LandingLayout
-Layout wrapper that provides navigation and footer structure.
-
-**Props:**
-- `children: ReactNode` - Content to render between navigation and footer
-
-### PublicNavigation
-Navigation bar with logo and authentication links.
-
-**Features:**
-- Fixed positioning at top
-- Mobile responsive with hamburger menu
-- Links to login and signup pages
-
-### Footer
-Footer component with links and social media icons.
-
-**Features:**
-- Multi-column layout (responsive)
-- Company information
-- Social media links
-- Copyright notice
-
-### Hero
-Hero section with headline, description, and CTA buttons.
-
-**Features:**
-- Animated with Framer Motion
-- Responsive typography
-- Gradient background
-- Feature highlights
-
-### Features
-Grid of feature cards showcasing application capabilities.
-
-**Features:**
-- 10 pre-configured features
-- Responsive grid layout (1/2/3 columns)
-- Animated on scroll
-- Hover effects
-
-### FeatureCard
-Individual feature card component.
-
-**Props:**
-- `icon: LucideIcon` - Icon component from lucide-react
-- `title: string` - Feature title
-- `description: string` - Feature description
-- `index: number` - Card index for staggered animations
-
-## Customization
-
-### Changing Hero Content
-Edit `Hero.tsx`:
+**Usage:**
 ```tsx
-<h1>Your Custom Headline</h1>
-<p>Your custom description</p>
+import { VisualEditor } from '@/components/landing/VisualEditor';
+
+<VisualEditor
+  initialSections={sections}
+  onSave={handleSave}
+  autoSaveEnabled={true}
+/>
 ```
 
-### Adding/Removing Features
-Edit the `features` array in `Features.tsx`:
-```tsx
-const features = [
-  {
-    icon: YourIcon,
-    title: 'Your Feature',
-    description: 'Your description',
-  },
-  // ... more features
-];
+### SectionListSidebar
+
+Sidebar component displaying sections with drag handles and quick actions.
+
+**Features:**
+- ✅ Drag handles for reordering
+- ✅ Visual feedback during drag
+- ✅ Quick action buttons (edit, duplicate, delete, toggle visibility)
+- ✅ Selected section highlighting
+- ✅ Section order display
+- ✅ Empty state message
+
+### PreviewPanel
+
+Preview panel with device frames and real-time updates.
+
+**Features:**
+- ✅ Device frame visualization (mobile, tablet, desktop, wide)
+- ✅ Hover interactions with quick action buttons
+- ✅ Selected section highlighting
+- ✅ Theme-aware rendering
+- ✅ Auto-scroll to selected section
+- ✅ Responsive dimensions
+
+**Device Dimensions:**
+- Mobile: 375x667 (iPhone SE)
+- Tablet: 768x1024 (iPad)
+- Desktop: 1440x900
+- Wide: 1920x1080
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + Z` | Undo |
+| `Ctrl/Cmd + Shift + Z` | Redo |
+| `Ctrl/Cmd + Y` | Redo (alternative) |
+| `Ctrl/Cmd + S` | Save |
+
+## Section Structure
+
+```typescript
+interface LandingPageSection {
+  id: string;
+  type: string;
+  content: any;
+  design?: SectionDesign;
+  layout?: SectionLayout;
+  animation?: SectionAnimation;
+  advanced?: SectionAdvanced;
+  visible: boolean;
+  order: number;
+}
 ```
 
-### Customizing Navigation
-Edit `PublicNavigation.tsx` to add/remove links or change branding.
+## History Management
 
-### Customizing Footer
-Edit `Footer.tsx` to modify footer sections, links, or social media icons.
+The editor maintains a history stack of up to 50 changes, allowing users to undo and redo modifications. Each history entry includes:
+- Complete section state
+- Timestamp
 
-## SEO Integration
+## Auto-Save
 
-The landing page is integrated with the metadata system:
-
-- **Title**: "Dashboard Starter Kit - Build Amazing Dashboards Faster"
-- **Description**: Comprehensive description for search engines
-- **Keywords**: dashboard, starter kit, nextjs, react, etc.
-- **Open Graph**: Custom OG image at `/og-landing.svg`
-- **Twitter Card**: summary_large_image format
-- **Robots**: Indexed and followed by search engines
-
-Metadata is configured in `frontend/src/lib/metadata-config.ts`.
-
-## Feature Flag
-
-The landing page is controlled by the `NEXT_PUBLIC_ENABLE_LANDING` environment variable:
-
-```env
-# Enable landing page
-NEXT_PUBLIC_ENABLE_LANDING=true
-
-# Disable landing page (redirects to /dashboard or /login)
-NEXT_PUBLIC_ENABLE_LANDING=false
-```
-
-## Animations
-
-All animations use Framer Motion:
-
-- **Hero**: Fade in with staggered delays
-- **Features**: Scroll-triggered animations
-- **Feature Cards**: Staggered entrance animations
-- **Hover Effects**: Smooth transitions on interactive elements
-
-## Responsive Design
-
-All components are fully responsive:
-
-- **Mobile**: Single column layout, hamburger menu
-- **Tablet**: 2-column feature grid
-- **Desktop**: 3-column feature grid, full navigation
+Auto-save is triggered 3 seconds after the last change (debounced). The saving indicator shows the current save status.
 
 ## Accessibility
 
-- Semantic HTML structure
-- ARIA labels on interactive elements
-- Keyboard navigation support
-- Focus indicators
-- Screen reader friendly
+- ✅ Keyboard navigation support
+- ✅ ARIA labels on interactive elements
+- ✅ Focus indicators
+- ✅ Screen reader friendly
 
-## Dependencies
+## Integration
 
-- `framer-motion` - Animations
-- `lucide-react` - Icons
-- `@/components/ui/button` - Button component
-- Next.js Link component for navigation
+To integrate with your API:
+
+```typescript
+const handleSave = async (sections: LandingPageSection[]) => {
+  await ApiClient.put('/landing/content', { sections });
+};
+```
+
+## Example Page
+
+See `frontend/src/app/admin/landing-editor/page.tsx` for a complete implementation example.

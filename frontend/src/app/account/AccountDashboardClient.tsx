@@ -30,6 +30,7 @@ export function AccountDashboardClient() {
     return (
       <AccountLayout>
         <div className="space-y-6">
+          <Skeleton className="h-12 w-48" />
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>

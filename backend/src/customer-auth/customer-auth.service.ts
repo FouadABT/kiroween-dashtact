@@ -221,16 +221,34 @@ export class CustomerAuthService {
       throw new NotFoundException('Customer not found');
     }
 
+    // Check if email is being changed and if it's already taken
+    if (dto.email && dto.email !== account.email) {
+      const existingAccount = await this.prisma.customerAccount.findUnique({
+        where: { email: dto.email },
+      });
+
+      if (existingAccount) {
+        throw new ConflictException('Email already in use');
+      }
+
+      // Update email in customer account
+      await this.prisma.customerAccount.update({
+        where: { id: userId },
+        data: { email: dto.email },
+      });
+    }
+
     // Update customer data
     const updatedCustomer = await this.prisma.customer.update({
       where: { id: account.customerId },
       data: {
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        phone: dto.phone,
-        company: dto.company,
-        shippingAddress: dto.shippingAddress,
-        billingAddress: dto.billingAddress,
+        email: dto.email ?? account.customer.email,
+        firstName: dto.firstName ?? account.customer.firstName,
+        lastName: dto.lastName ?? account.customer.lastName,
+        phone: dto.phone ?? account.customer.phone,
+        company: dto.company ?? account.customer.company,
+        shippingAddress: dto.shippingAddress ?? account.customer.shippingAddress,
+        billingAddress: dto.billingAddress ?? account.customer.billingAddress,
       },
     });
 

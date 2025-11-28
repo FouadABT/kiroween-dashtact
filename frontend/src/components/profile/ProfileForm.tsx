@@ -186,36 +186,28 @@ export function ProfileForm({ profile }: ProfileFormProps) {
             />
 
             {/* Form Actions */}
-            <div className="flex items-center justify-between pt-4 border-t">
-              <Link href="/dashboard/settings/security">
-                <Button type="button" variant="outline">
-                  Change Password
-                </Button>
-              </Link>
-
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => form.reset()}
-                  disabled={!isDirty || isSubmitting}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={!isDirty || isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Changes
-                    </>
-                  )}
-                </Button>
-              </div>
+            <div className="flex items-center justify-end gap-2 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={!isDirty || isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!isDirty || isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
             </div>
           </form>
         </Form>

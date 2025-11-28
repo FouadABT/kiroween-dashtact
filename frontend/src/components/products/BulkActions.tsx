@@ -40,7 +40,7 @@ export function BulkActions({
       </span>
       
       {canWrite && (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
               <MoreHorizontal className="mr-2 h-4 w-4" />

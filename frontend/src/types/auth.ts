@@ -265,8 +265,56 @@ export interface SessionInfo {
 }
 
 /**
+ * Two-Factor Authentication Status
+ * Current 2FA status for a user
+ */
+export interface TwoFactorStatus {
+  /** Whether 2FA is enabled */
+  enabled: boolean;
+
+  /** Last successful verification timestamp (ISO string) */
+  verifiedAt?: string;
+}
+
+/**
+ * Two-Factor Required Response
+ * Response when 2FA verification is required during login
+ */
+export interface TwoFactorRequiredResponse {
+  /** Indicates 2FA is required */
+  requiresTwoFactor: true;
+
+  /** User ID for verification */
+  userId: string;
+
+  /** Message to display to user */
+  message: string;
+}
+
+/**
+ * Verify Two-Factor Request
+ * Data for verifying 2FA code during login
+ */
+export interface VerifyTwoFactorRequest {
+  /** User ID from TwoFactorRequiredResponse */
+  userId: string;
+
+  /** 6-digit verification code from email */
+  code: string;
+}
+
+/**
+ * Resend Two-Factor Request
+ * Data for requesting a new 2FA code
+ */
+export interface ResendTwoFactorRequest {
+  /** User ID from TwoFactorRequiredResponse */
+  userId: string;
+}
+
+/**
  * Two-Factor Authentication Setup Data
- * Data for setting up 2FA
+ * Data for setting up 2FA (TOTP - future implementation)
  */
 export interface TwoFactorSetup {
   /** Secret key for TOTP */
@@ -281,7 +329,7 @@ export interface TwoFactorSetup {
 
 /**
  * Two-Factor Authentication Verification Data
- * Data for verifying 2FA code
+ * Data for verifying 2FA code (TOTP - future implementation)
  */
 export interface TwoFactorVerification {
   /** TOTP code from authenticator app */

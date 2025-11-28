@@ -30,7 +30,7 @@ interface AuthContextType {
   isLoading: boolean;
   
   // Authentication methods
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<AuthResponse | any>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
@@ -403,6 +403,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const data: AuthResponse = await response.json();
+      
+      // Check if 2FA is required - return response without setting auth state
+      if ('requiresTwoFactor' in data && (data as any).requiresTwoFactor) {
+        return data; // Return 2FA response to caller
+      }
+      
       console.log('[AuthContext] Login response received:', {
         hasUser: !!data.user,
         userId: data.user?.id,
@@ -431,6 +437,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       scheduleTokenRefresh(data.accessToken);
       
       console.log('[AuthContext] Login complete, user authenticated');
+      return data;
     } catch (error) {
       console.error('[AuthContext] Login error:', error);
       throw error;
@@ -573,8 +580,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Refresh user profile data
    */
   const refreshUser = useCallback(async () => {
-    if (!isAuthenticated || !accessToken) {
-      console.log('[AuthContext] Cannot refresh user - not authenticated or no token');
+    // Get token from ApiClient (more reliable than state)
+    const token = ApiClient.getAccessToken();
+    
+    if (!token) {
+      console.log('[AuthContext] Cannot refresh user - no token available');
       return;
     }
     
@@ -584,7 +594,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         `${authConfig.api.baseUrl}${authConfig.endpoints.profile}`,
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${token}`,
           },
         }
       );
@@ -605,11 +615,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
       
       setUser(userProfile);
+      setIsAuthenticated(true);
       console.log('[AuthContext] User state updated with new profile data');
     } catch (error) {
       console.error('[AuthContext] Failed to refresh user:', error);
     }
-  }, [isAuthenticated, accessToken, user?.avatarUrl]);
+  }, [user?.avatarUrl]);
 
   /**
    * Get current user

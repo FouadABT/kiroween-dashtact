@@ -182,7 +182,7 @@ export function BulkActions({
 
         {/* Dropdown for additional actions */}
         {dropdownActions.length > 0 && (
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
@@ -283,7 +283,7 @@ export function CompactBulkActions({
         {selectedIds.length}
       </Badge>
       
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"

@@ -12,7 +12,12 @@ import { RolesGuard } from './guards/roles.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenBlacklistCleanupService } from './services/token-blacklist-cleanup.service';
 import { AuditLoggingService } from './services/audit-logging.service';
+import { PasswordResetService } from './services/password-reset.service';
+import { TwoFactorService } from './services/two-factor.service';
+import { TwoFactorCleanupService } from './services/two-factor-cleanup.service';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { ActivityLogModule } from '../activity-log/activity-log.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -25,6 +30,8 @@ import { NotificationsModule } from '../notifications/notifications.module';
     }),
     forwardRef(() => PermissionsModule),
     forwardRef(() => NotificationsModule),
+    forwardRef(() => ActivityLogModule),
+    forwardRef(() => EmailModule),
   ],
   controllers: [AuthController],
   providers: [
@@ -36,6 +43,9 @@ import { NotificationsModule } from '../notifications/notifications.module';
     PrismaService,
     TokenBlacklistCleanupService,
     AuditLoggingService,
+    PasswordResetService,
+    TwoFactorService,
+    TwoFactorCleanupService,
   ],
   exports: [
     AuthService,

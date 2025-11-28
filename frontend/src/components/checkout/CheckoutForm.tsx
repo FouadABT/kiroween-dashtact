@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { CheckoutFormState, PaymentMethodOption, ShippingMethodOption } from '@/types/storefront';
 import { Cart } from '@/types/ecommerce';
 import { CheckoutApi } from '@/lib/api';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { ShippingAddressForm } from './ShippingAddressForm';
 import { BillingAddressForm } from './BillingAddressForm';
 import { ShippingMethodSelector } from './ShippingMethodSelector';
@@ -34,6 +35,7 @@ export function CheckoutForm({
   onShippingMethodsLoad,
 }: CheckoutFormProps) {
   const router = useRouter();
+  const { user: customer } = useCustomerAuth();
   const [isCalculating, setIsCalculating] = useState(false);
 
   // Load shipping methods when shipping address is complete
@@ -154,6 +156,7 @@ export function CheckoutForm({
       // Create order
       const order = await CheckoutApi.createOrder({
         sessionId,
+        userId: customer?.id, // Include userId if customer is logged in
         shippingAddress: transformAddress(formState.shippingAddress),
         billingAddress: formState.sameAsBilling
           ? transformAddress(formState.shippingAddress)

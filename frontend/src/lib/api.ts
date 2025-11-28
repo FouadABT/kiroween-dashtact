@@ -431,6 +431,105 @@ export class UserApi {
   }
 
   /**
+   * Request password reset email
+   * @param email User's email address
+   * @returns Success message
+   */
+  static async forgotPassword(email: string): Promise<{ message: string }> {
+    // Use fetch directly without auth token (public endpoint)
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new ApiError(
+        error.message || 'Failed to send reset email',
+        response.status,
+        error
+      );
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Validate reset token
+   * @param token Reset token from email
+   * @returns Validation result
+   */
+  static async validateResetToken(token: string): Promise<{ valid: boolean; message?: string }> {
+    // Use fetch directly without auth token (public endpoint)
+    const response = await fetch(`${API_BASE_URL}/auth/validate-reset-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new ApiError(
+        error.message || 'Failed to validate token',
+        response.status,
+        error
+      );
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Reset password with token
+   * @param token Reset token from email
+   * @param newPassword New password
+   * @returns Success message
+   */
+  static async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    // Use fetch directly without auth token (public endpoint)
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new ApiError(
+        error.message || 'Failed to reset password',
+        response.status,
+        error
+      );
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Check if email system is enabled
+   * @returns true if email system is configured and enabled
+   */
+  static async isEmailSystemEnabled(): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/email/configuration/status`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) return false;
+      
+      const data = await response.json();
+      
+      // Check if email is configured (exists in database)
+      return data?.isConfigured === true;
+    } catch (error) {
+      console.error('Failed to check email system:', error);
+      return false;
+    }
+  }
+
+  /**
    * Get all users (admin only)
    */
   static async getUsers(params?: UserQueryParams): Promise<UsersListResponse> {
@@ -478,6 +577,57 @@ export class UserApi {
   static async getRoles(): Promise<UserRole[]> {
     const response = await ApiClient.get<{ data: UserRole[] }>('/users/roles');
     return response.data;
+  }
+
+  /**
+   * Verify two-factor authentication code during login
+   * @param userId User ID from TwoFactorRequiredResponse
+   * @param code 6-digit verification code from email
+   * @returns Authentication response with tokens
+   */
+  static async verifyTwoFactorCode(userId: string, code: string): Promise<AuthResponse> {
+    // Use fetch directly without auth token (public endpoint during login)
+    const response = await fetch(`${API_BASE_URL}/auth/verify-2fa`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, code }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new ApiError(
+        error.message || 'Failed to verify code',
+        response.status,
+        error
+      );
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Resend two-factor authentication code
+   * @param userId User ID from TwoFactorRequiredResponse
+   * @returns Success message
+   */
+  static async resendTwoFactorCode(userId: string): Promise<{ message: string }> {
+    // Use fetch directly without auth token (public endpoint during login)
+    const response = await fetch(`${API_BASE_URL}/auth/resend-2fa`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new ApiError(
+        error.message || 'Failed to resend code',
+        response.status,
+        error
+      );
+    }
+
+    return response.json();
   }
 }
 
@@ -573,7 +723,8 @@ export class UploadApi {
   ): Promise<import('@/types/upload').UploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('type', data.type);
+    // Don't send type - backend determines it from MIME type for security
+    // formData.append('type', data.type);
     if (data.description) {
       formData.append('description', data.description);
     }
@@ -781,6 +932,98 @@ export class SettingsApi {
    */
   static async delete(id: string): Promise<void> {
     return ApiClient.delete<void>(`/settings/${id}`);
+  }
+}
+
+/**
+ * Calendar API endpoints
+ */
+export class CalendarApi {
+  /**
+   * Get all events with optional filters
+   */
+  static async getEvents(params?: {
+    categories?: string[];
+    users?: string[];
+    statuses?: string[];
+    startDate?: string;
+    endDate?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<import('@/types/calendar').CalendarEvent[]> {
+    const response = await ApiClient.get<{ events: import('@/types/calendar').CalendarEvent[]; total: number; page?: number; limit: number }>('/calendar/events', params);
+    return response.events;
+  }
+
+  /**
+   * Get event by ID
+   */
+  static async getEventById(id: string): Promise<import('@/types/calendar').CalendarEvent> {
+    return ApiClient.get<import('@/types/calendar').CalendarEvent>(`/calendar/events/${id}`);
+  }
+
+  /**
+   * Create new event
+   */
+  static async createEvent(data: import('@/types/calendar').CreateEventDto): Promise<import('@/types/calendar').CalendarEvent> {
+    return ApiClient.post<import('@/types/calendar').CalendarEvent>('/calendar/events', data);
+  }
+
+  /**
+   * Update event
+   */
+  static async updateEvent(id: string, data: import('@/types/calendar').UpdateEventDto): Promise<import('@/types/calendar').CalendarEvent> {
+    return ApiClient.put<import('@/types/calendar').CalendarEvent>(`/calendar/events/${id}`, data);
+  }
+
+  /**
+   * Delete event
+   */
+  static async deleteEvent(id: string): Promise<void> {
+    return ApiClient.delete<void>(`/calendar/events/${id}`);
+  }
+
+  /**
+   * Get all categories
+   */
+  static async getCategories(): Promise<import('@/types/calendar').EventCategory[]> {
+    return ApiClient.get<import('@/types/calendar').EventCategory[]>('/calendar/categories');
+  }
+
+  /**
+   * Create category (admin only)
+   */
+  static async createCategory(data: import('@/types/calendar').CreateCategoryDto): Promise<import('@/types/calendar').EventCategory> {
+    return ApiClient.post<import('@/types/calendar').EventCategory>('/calendar/categories', data);
+  }
+
+  /**
+   * Update category (admin only)
+   */
+  static async updateCategory(id: string, data: import('@/types/calendar').UpdateCategoryDto): Promise<import('@/types/calendar').EventCategory> {
+    return ApiClient.put<import('@/types/calendar').EventCategory>(`/calendar/categories/${id}`, data);
+  }
+
+  /**
+   * Delete category (admin only)
+   */
+  static async deleteCategory(id: string): Promise<void> {
+    return ApiClient.delete<void>(`/calendar/categories/${id}`);
+  }
+
+  /**
+   * Get calendar settings
+   */
+  static async getSettings(): Promise<import('@/types/calendar').CalendarSettings> {
+    return ApiClient.get<import('@/types/calendar').CalendarSettings>('/calendar/settings');
+  }
+
+  /**
+   * Update calendar settings
+   */
+  static async updateSettings(data: import('@/types/calendar').UpdateCalendarSettingsDto): Promise<import('@/types/calendar').CalendarSettings> {
+    return ApiClient.put<import('@/types/calendar').CalendarSettings>('/calendar/settings', data);
   }
 }
 
@@ -1414,6 +1657,30 @@ export class ProfileApi {
   static async changePassword(data: import('@/types/profile').ChangePasswordData): Promise<{ message: string }> {
     return ApiClient.post<{ message: string }>('/profile/password', data);
   }
+
+  /**
+   * Get two-factor authentication status
+   * @returns 2FA status with enabled flag and last verification timestamp
+   */
+  static async getTwoFactorStatus(): Promise<import('@/types/auth').TwoFactorStatus> {
+    return ApiClient.get<import('@/types/auth').TwoFactorStatus>('/profile/two-factor/status');
+  }
+
+  /**
+   * Enable two-factor authentication
+   * @returns Success message
+   */
+  static async enableTwoFactor(): Promise<{ message: string }> {
+    return ApiClient.post<{ message: string }>('/profile/two-factor/enable', {});
+  }
+
+  /**
+   * Disable two-factor authentication
+   * @returns Success message
+   */
+  static async disableTwoFactor(): Promise<{ message: string }> {
+    return ApiClient.post<{ message: string }>('/profile/two-factor/disable', {});
+  }
 }
 
 /**
@@ -1468,6 +1735,168 @@ export class LandingApi {
     onProgress?: (progress: import('@/types/upload').UploadProgress) => void
   ): Promise<import('@/types/upload').UploadResponse> {
     return UploadApi.uploadFile(file, { type: 'image' }, onProgress);
+  }
+
+  /**
+   * Get section templates
+   * @param category Optional category filter
+   * @returns List of section templates
+   */
+  static async getTemplates(category?: string): Promise<import('@/types/landing-cms').SectionTemplate[]> {
+    const params = category ? { category } : undefined;
+    return ApiClient.get<import('@/types/landing-cms').SectionTemplate[]>('/landing/templates', params as Record<string, unknown>);
+  }
+
+  /**
+   * Get template by ID
+   * @param id Template ID
+   * @returns Section template
+   */
+  static async getTemplateById(id: string): Promise<import('@/types/landing-cms').SectionTemplate> {
+    return ApiClient.get<import('@/types/landing-cms').SectionTemplate>(`/landing/templates/${id}`);
+  }
+
+  /**
+   * Create custom template
+   * Requires landing:write permission
+   * @param data Template creation data
+   * @returns Created template
+   */
+  static async createTemplate(data: import('@/types/landing-cms').CreateSectionTemplateDto): Promise<import('@/types/landing-cms').SectionTemplate> {
+    return ApiClient.post<import('@/types/landing-cms').SectionTemplate>('/landing/templates', data);
+  }
+
+  /**
+   * Update custom template
+   * Requires landing:write permission
+   * @param id Template ID
+   * @param data Template update data
+   * @returns Updated template
+   */
+  static async updateTemplate(id: string, data: import('@/types/landing-cms').UpdateSectionTemplateDto): Promise<import('@/types/landing-cms').SectionTemplate> {
+    return ApiClient.put<import('@/types/landing-cms').SectionTemplate>(`/landing/templates/${id}`, data);
+  }
+
+  /**
+   * Delete custom template
+   * Requires landing:write permission
+   * @param id Template ID
+   * @returns Success message
+   */
+  static async deleteTemplate(id: string): Promise<{ message: string }> {
+    return ApiClient.delete<{ message: string }>(`/landing/templates/${id}`);
+  }
+
+  /**
+   * Export template
+   * @param id Template ID
+   * @returns Template JSON data
+   */
+  static async exportTemplate(id: string): Promise<{ data: string }> {
+    return ApiClient.get<{ data: string }>(`/landing/templates/${id}/export`);
+  }
+
+  /**
+   * Import template
+   * Requires landing:write permission
+   * @param data Template JSON data
+   * @returns Imported template
+   */
+  static async importTemplate(data: string): Promise<import('@/types/landing-cms').SectionTemplate> {
+    return ApiClient.post<import('@/types/landing-cms').SectionTemplate>('/landing/templates/import', { data });
+  }
+
+  /**
+   * Get header configuration
+   * @returns Header configuration
+   */
+  static async getHeaderConfig(): Promise<import('@/types/landing-cms').HeaderConfig> {
+    return ApiClient.get<import('@/types/landing-cms').HeaderConfig>('/landing/header');
+  }
+
+  /**
+   * Update header configuration
+   * Requires landing:write permission
+   * @param data Header configuration data
+   * @returns Updated header configuration
+   */
+  static async updateHeaderConfig(data: import('@/types/landing-cms').UpdateHeaderConfigDto): Promise<import('@/types/landing-cms').HeaderConfig> {
+    return ApiClient.put<import('@/types/landing-cms').HeaderConfig>('/landing/header', data);
+  }
+
+  /**
+   * Get footer configuration
+   * @returns Footer configuration
+   */
+  static async getFooterConfig(): Promise<import('@/types/landing-cms').FooterConfig> {
+    return ApiClient.get<import('@/types/landing-cms').FooterConfig>('/landing/footer');
+  }
+
+  /**
+   * Update footer configuration
+   * Requires landing:write permission
+   * @param data Footer configuration data
+   * @returns Updated footer configuration
+   */
+  static async updateFooterConfig(data: import('@/types/landing-cms').UpdateFooterConfigDto): Promise<import('@/types/landing-cms').FooterConfig> {
+    return ApiClient.put<import('@/types/landing-cms').FooterConfig>('/landing/footer', data);
+  }
+
+  /**
+   * Get landing page settings
+   * Requires landing:read permission
+   * @returns Landing page settings
+   */
+  static async getSettings(): Promise<import('@/types/landing-cms').LandingSettings> {
+    return ApiClient.get<import('@/types/landing-cms').LandingSettings>('/landing/settings');
+  }
+
+  /**
+   * Update landing page settings
+   * Requires landing:write permission
+   * @param data Settings update data
+   * @returns Updated landing page content
+   */
+  static async updateSettings(data: Partial<import('@/types/landing-cms').LandingSettings>): Promise<any> {
+    return ApiClient.patch<any>('/landing/settings', data);
+  }
+
+  /**
+   * Get theme configuration
+   * @returns Theme configuration
+   */
+  static async getThemeConfig(): Promise<{ themeMode: string; colors: any }> {
+    return ApiClient.get<{ themeMode: string; colors: any }>('/landing/theme');
+  }
+
+  /**
+   * Update theme configuration
+   * Requires landing:write permission
+   * @param data Theme configuration data
+   * @returns Updated theme configuration
+   */
+  static async updateThemeConfig(data: { themeMode?: string; colors?: any }): Promise<any> {
+    return ApiClient.put<any>('/landing/theme', data);
+  }
+
+  /**
+   * Sync branding settings with landing page
+   * Requires landing:write permission
+   * @param brandSettings Branding settings to sync
+   * @returns Success message
+   */
+  static async syncBranding(brandSettings: any): Promise<{ message: string }> {
+    return ApiClient.post<{ message: string }>('/landing/sync-branding', brandSettings);
+  }
+
+  /**
+   * Apply branding to all landing pages
+   * Requires landing:write permission
+   * @param brandSettings Branding settings to apply
+   * @returns Update result with count
+   */
+  static async applyBrandingToAll(brandSettings: any): Promise<{ updated: number; message: string }> {
+    return ApiClient.post<{ updated: number; message: string }>('/landing/apply-branding-all', brandSettings);
   }
 }
 
@@ -2628,6 +3057,74 @@ export class CapabilitiesApi {
 }
 
 /**
+ * Dashboard API endpoints
+ */
+export class DashboardApi {
+  /**
+   * Get dashboard statistics for current user's role
+   */
+  static async getStats(): Promise<import('@/types/dashboard').DashboardStats> {
+    return ApiClient.get<import('@/types/dashboard').DashboardStats>('/dashboard/stats');
+  }
+
+  /**
+   * Get recent activity feed for current user's role
+   */
+  static async getRecentActivity(limit: number = 10): Promise<import('@/types/dashboard').Activity[]> {
+    return ApiClient.get<import('@/types/dashboard').Activity[]>(`/dashboard/recent-activity?limit=${limit}`);
+  }
+
+  /**
+   * Get role-specific alerts
+   */
+  static async getAlerts(): Promise<import('@/types/dashboard').Alert[]> {
+    return ApiClient.get<import('@/types/dashboard').Alert[]>('/dashboard/alerts');
+  }
+
+  /**
+   * Get system health metrics (Super Admin only)
+   */
+  static async getSystemHealth(): Promise<import('@/types/dashboard').SystemHealth> {
+    return ApiClient.get<import('@/types/dashboard').SystemHealth>('/dashboard/system-health');
+  }
+
+  /**
+   * Get revenue analytics data
+   */
+  static async getRevenue(startDate: string, endDate: string): Promise<import('@/types/dashboard').RevenueData> {
+    return ApiClient.get<import('@/types/dashboard').RevenueData>(`/dashboard/revenue?startDate=${startDate}&endDate=${endDate}`);
+  }
+
+  /**
+   * Get sales analytics data
+   */
+  static async getSales(startDate: string, endDate: string): Promise<import('@/types/dashboard').SalesData> {
+    return ApiClient.get<import('@/types/dashboard').SalesData>(`/dashboard/sales?startDate=${startDate}&endDate=${endDate}`);
+  }
+
+  /**
+   * Get inventory monitoring data
+   */
+  static async getInventory(): Promise<import('@/types/dashboard').InventoryData> {
+    return ApiClient.get<import('@/types/dashboard').InventoryData>('/dashboard/inventory');
+  }
+
+  /**
+   * Get content management metrics (Admin only)
+   */
+  static async getContent(): Promise<import('@/types/dashboard').ContentMetrics> {
+    return ApiClient.get<import('@/types/dashboard').ContentMetrics>('/dashboard/content');
+  }
+
+  /**
+   * Get user management metrics (Super Admin/Admin only)
+   */
+  static async getUsers(): Promise<import('@/types/dashboard').UserMetrics> {
+    return ApiClient.get<import('@/types/dashboard').UserMetrics>('/dashboard/users');
+  }
+}
+
+/**
  * Widget API endpoints
  */
 export class WidgetApi {
@@ -2808,3 +3305,531 @@ export const deleteMenu = MenuApi.deleteMenu;
 export const reorderMenus = MenuApi.reorderMenus;
 export const toggleMenuActive = MenuApi.toggleMenuActive;
 export const getMenuByRoute = MenuApi.getMenuByRoute;
+
+/**
+ * Role API endpoints
+ */
+export class RoleApi {
+  /**
+   * Get all roles
+   */
+  static async getAll(): Promise<UserRole[]> {
+    return ApiClient.get<UserRole[]>('/users/roles');
+  }
+
+  /**
+   * Get role by ID
+   */
+  static async getById(id: string): Promise<UserRole> {
+    return ApiClient.get<UserRole>(`/users/roles/${id}`);
+  }
+
+  /**
+   * Create new role (super admin only)
+   */
+  static async create(data: { name: string; description?: string; isActive?: boolean }): Promise<UserRole> {
+    return ApiClient.post<UserRole>('/users/roles', data);
+  }
+
+  /**
+   * Update role (super admin only)
+   */
+  static async update(id: string, data: Partial<{ name: string; description?: string; isActive?: boolean }>): Promise<UserRole> {
+    return ApiClient.patch<UserRole>(`/users/roles/${id}`, data);
+  }
+
+  /**
+   * Delete role (super admin only)
+   */
+  static async delete(id: string): Promise<void> {
+    return ApiClient.delete<void>(`/users/roles/${id}`);
+  }
+}
+
+
+/**
+ * Cron Jobs API endpoints
+ */
+export class CronJobsApi {
+  /**
+   * Get all cron jobs
+   * Requires system.cron.manage permission
+   * @returns Array of all cron jobs
+   */
+  static async getAll(): Promise<import('@/types/cron-job').CronJob[]> {
+    return ApiClient.get<import('@/types/cron-job').CronJob[]>('/cron-jobs');
+  }
+
+  /**
+   * Get cron job by ID
+   * Requires system.cron.manage permission
+   * @param id Job ID
+   * @returns Cron job details
+   */
+  static async getById(id: string): Promise<import('@/types/cron-job').CronJob> {
+    return ApiClient.get<import('@/types/cron-job').CronJob>(`/cron-jobs/${id}`);
+  }
+
+  /**
+   * Get execution logs for a cron job
+   * Requires system.cron.manage permission
+   * @param id Job ID
+   * @param filters Optional filters for logs
+   * @returns Array of execution logs
+   */
+  static async getLogs(
+    id: string,
+    filters?: import('@/types/cron-job').LogFilters
+  ): Promise<import('@/types/cron-job').CronLog[]> {
+    return ApiClient.get<import('@/types/cron-job').CronLog[]>(
+      `/cron-jobs/${id}/logs`,
+      filters as Record<string, unknown>
+    );
+  }
+
+  /**
+   * Get statistics for a cron job
+   * Requires system.cron.manage permission
+   * @param id Job ID
+   * @returns Job statistics
+   */
+  static async getStatistics(id: string): Promise<import('@/types/cron-job').JobStatistics> {
+    return ApiClient.get<import('@/types/cron-job').JobStatistics>(`/cron-jobs/${id}/statistics`);
+  }
+
+  /**
+   * Enable a cron job
+   * Requires system.cron.manage permission
+   * @param id Job ID
+   * @returns Updated cron job
+   */
+  static async enable(id: string): Promise<import('@/types/cron-job').CronJob> {
+    return ApiClient.post<import('@/types/cron-job').CronJob>(`/cron-jobs/${id}/enable`, {});
+  }
+
+  /**
+   * Disable a cron job
+   * Requires system.cron.manage permission
+   * @param id Job ID
+   * @returns Updated cron job
+   */
+  static async disable(id: string): Promise<import('@/types/cron-job').CronJob> {
+    return ApiClient.post<import('@/types/cron-job').CronJob>(`/cron-jobs/${id}/disable`, {});
+  }
+
+  /**
+   * Manually trigger a cron job
+   * Requires system.cron.manage permission
+   * @param id Job ID
+   * @returns Success message
+   */
+  static async trigger(id: string): Promise<{ message: string }> {
+    return ApiClient.post<{ message: string }>(`/cron-jobs/${id}/trigger`, {});
+  }
+
+  /**
+   * Update cron job schedule
+   * Requires system.cron.manage permission
+   * @param id Job ID
+   * @param data Schedule update data
+   * @returns Updated cron job
+   */
+  static async updateSchedule(
+    id: string,
+    data: import('@/types/cron-job').UpdateScheduleDto
+  ): Promise<import('@/types/cron-job').CronJob> {
+    return ApiClient.patch<import('@/types/cron-job').CronJob>(`/cron-jobs/${id}/schedule`, data);
+  }
+
+  /**
+   * Validate cron expression
+   * Requires system.cron.manage permission
+   * @param schedule Cron expression to validate
+   * @returns Validation result with next execution times
+   */
+  static async validateSchedule(schedule: string): Promise<import('@/types/cron-job').CronValidationResult> {
+    return ApiClient.post<import('@/types/cron-job').CronValidationResult>('/cron-jobs/validate-schedule', {
+      schedule,
+    });
+  }
+}
+
+// Convenience exports for cron jobs
+export const getCronJobs = CronJobsApi.getAll;
+export const getCronJob = CronJobsApi.getById;
+export const getCronJobLogs = CronJobsApi.getLogs;
+export const getCronJobStatistics = CronJobsApi.getStatistics;
+export const enableCronJob = CronJobsApi.enable;
+export const disableCronJob = CronJobsApi.disable;
+export const triggerCronJob = CronJobsApi.trigger;
+export const updateCronJobSchedule = CronJobsApi.updateSchedule;
+export const validateCronSchedule = CronJobsApi.validateSchedule;
+
+/**
+ * Branding API endpoints
+ */
+export class BrandingApi {
+  /**
+   * Get brand settings (public)
+   * @returns Brand settings
+   */
+  static async getBrandSettings(): Promise<any> {
+    return ApiClient.get<any>('/branding');
+  }
+
+  /**
+   * Update brand settings
+   * Requires branding:manage permission
+   * @param settings Brand settings to update
+   * @returns Updated brand settings
+   */
+  static async updateBrandSettings(settings: any): Promise<any> {
+    return ApiClient.put<any>('/branding', settings);
+  }
+
+  /**
+   * Upload logo
+   * Requires branding:manage permission
+   * @param file Logo file
+   * @returns Upload result with URL
+   */
+  static async uploadLogo(file: File): Promise<{ url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return ApiClient.post<{ url: string }>('/branding/logo', formData);
+  }
+
+  /**
+   * Upload dark mode logo
+   * Requires branding:manage permission
+   * @param file Logo file
+   * @returns Upload result with URL
+   */
+  static async uploadLogoDark(file: File): Promise<{ url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return ApiClient.post<{ url: string }>('/branding/logo-dark', formData);
+  }
+
+  /**
+   * Upload favicon
+   * Requires branding:manage permission
+   * @param file Favicon file
+   * @returns Upload result with URL
+   */
+  static async uploadFavicon(file: File): Promise<{ url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return ApiClient.post<{ url: string }>('/branding/favicon', formData);
+  }
+
+  /**
+   * Reset branding to defaults
+   * Requires branding:manage permission
+   * @returns Default brand settings
+   */
+  static async resetBranding(): Promise<any> {
+    return ApiClient.post<any>('/branding/reset', {});
+  }
+}
+
+/**
+ * Customer Account API endpoints
+ * Requires customer authentication
+ */
+export class CustomerAccountApi {
+  /**
+   * Get current customer profile
+   * @returns Customer profile
+   */
+  static async getProfile(): Promise<import('@/types/ecommerce').Customer> {
+    return ApiClient.get<import('@/types/ecommerce').Customer>('/customer-account/profile');
+  }
+
+  /**
+   * Update customer profile
+   * @param data Profile update data
+   * @returns Updated customer profile
+   */
+  static async updateProfile(data: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    company?: string;
+  }): Promise<import('@/types/ecommerce').Customer> {
+    return ApiClient.patch<import('@/types/ecommerce').Customer>('/customer-account/profile', data);
+  }
+
+  /**
+   * Get all customer addresses
+   * @returns List of addresses
+   */
+  static async getAddresses(): Promise<import('@/types/ecommerce').CustomerAddress[]> {
+    return ApiClient.get<import('@/types/ecommerce').CustomerAddress[]>('/customer-account/addresses');
+  }
+
+  /**
+   * Create new address
+   * @param data Address data
+   * @returns Created address
+   */
+  static async createAddress(data: {
+    type: 'shipping' | 'billing';
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    phone?: string;
+    apartment?: string;
+  }): Promise<import('@/types/ecommerce').CustomerAddress> {
+    return ApiClient.post<import('@/types/ecommerce').CustomerAddress>('/customer-account/addresses', data);
+  }
+
+  /**
+   * Update address
+   * @param addressId Address ID
+   * @param data Address update data
+   * @returns Updated address
+   */
+  static async updateAddress(
+    addressId: string,
+    data: Partial<{
+      type: 'shipping' | 'billing';
+      street: string;
+      city: string;
+      state: string;
+      postalCode: string;
+      country: string;
+      phone: string;
+      apartment: string;
+    }>
+  ): Promise<import('@/types/ecommerce').CustomerAddress> {
+    return ApiClient.patch<import('@/types/ecommerce').CustomerAddress>(`/customer-account/addresses/${addressId}`, data);
+  }
+
+  /**
+   * Delete address
+   * @param addressId Address ID
+   * @returns Success response
+   */
+  static async deleteAddress(addressId: string): Promise<{ message: string }> {
+    return ApiClient.delete<{ message: string }>(`/customer-account/addresses/${addressId}`);
+  }
+
+  /**
+   * Set address as default
+   * @param addressId Address ID
+   * @returns Updated address
+   */
+  static async setDefaultAddress(addressId: string): Promise<import('@/types/ecommerce').CustomerAddress> {
+    return ApiClient.patch<import('@/types/ecommerce').CustomerAddress>(`/customer-account/addresses/${addressId}/default`, {});
+  }
+
+  /**
+   * Get all customer payment methods
+   * @returns List of payment methods
+   */
+  static async getPaymentMethods(): Promise<any[]> {
+    return ApiClient.get<any[]>('/customer-account/payment-methods');
+  }
+
+  /**
+   * Create new payment method
+   * @param data Payment method data
+   * @returns Created payment method
+   */
+  static async createPaymentMethod(data: {
+    type: 'card' | 'cod' | 'bank_transfer';
+    cardNumber?: string;
+    cardExpiry?: string;
+    cardCvc?: string;
+    cardBrand?: string;
+    billingAddressId?: string;
+    isDefault?: boolean;
+  }): Promise<any> {
+    return ApiClient.post<any>('/customer-account/payment-methods', data);
+  }
+
+  /**
+   * Update payment method
+   * @param methodId Payment method ID
+   * @param data Payment method update data
+   * @returns Updated payment method
+   */
+  static async updatePaymentMethod(
+    methodId: string,
+    data: Partial<{
+      cardExpiry: string;
+      billingAddressId: string;
+    }>
+  ): Promise<any> {
+    return ApiClient.patch<any>(`/customer-account/payment-methods/${methodId}`, data);
+  }
+
+  /**
+   * Delete payment method
+   * @param methodId Payment method ID
+   * @returns Success response
+   */
+  static async deletePaymentMethod(methodId: string): Promise<{ message: string }> {
+    return ApiClient.delete<{ message: string }>(`/customer-account/payment-methods/${methodId}`);
+  }
+
+  /**
+   * Set payment method as default
+   * @param methodId Payment method ID
+   * @returns Updated payment method
+   */
+  static async setDefaultPaymentMethod(methodId: string): Promise<any> {
+    return ApiClient.patch<any>(`/customer-account/payment-methods/${methodId}/default`, {});
+  }
+
+  /**
+   * Get account settings
+   * @returns Account settings
+   */
+  static async getSettings(): Promise<import('@/types/account-settings').AccountSettings> {
+    return ApiClient.get<import('@/types/account-settings').AccountSettings>('/customer-account/settings');
+  }
+
+  /**
+   * Update account settings
+   * @param data Settings update data
+   * @returns Updated settings
+   */
+  static async updateSettings(
+    data: import('@/types/account-settings').UpdateAccountSettingsRequest
+  ): Promise<import('@/types/account-settings').AccountSettings> {
+    return ApiClient.patch<import('@/types/account-settings').AccountSettings>('/customer-account/settings', data);
+  }
+
+  /**
+   * Change password
+   * @param oldPassword Current password
+   * @param newPassword New password
+   * @returns Success response
+   */
+  static async changePassword(
+    oldPassword: string,
+    newPassword: string
+  ): Promise<{ message: string }> {
+    return ApiClient.post<{ message: string }>('/customer-account/password/change', {
+      oldPassword,
+      newPassword,
+    });
+  }
+
+  /**
+   * Enable two-factor authentication
+   * @returns Setup data with QR code and secret
+   */
+  static async enable2FA(): Promise<{ secret: string; qrCode: string }> {
+    return ApiClient.post<{ secret: string; qrCode: string }>('/customer-account/2fa/enable', {});
+  }
+
+  /**
+   * Verify and confirm two-factor authentication
+   * @param code Verification code from authenticator app
+   * @returns Success response
+   */
+  static async verify2FA(code: string): Promise<{ message: string }> {
+    return ApiClient.post<{ message: string }>('/customer-account/2fa/verify', { code });
+  }
+
+  /**
+   * Disable two-factor authentication
+   * @param code Verification code from authenticator app
+   * @returns Success response
+   */
+  static async disable2FA(code: string): Promise<{ message: string }> {
+    return ApiClient.post<{ message: string }>('/customer-account/2fa/disable', { code });
+  }
+
+  /**
+   * Get customer's wishlist
+   * @returns Wishlist with items
+   */
+  static async getWishlist(): Promise<import('@/types/ecommerce').Wishlist> {
+    return ApiClient.get<import('@/types/ecommerce').Wishlist>('/customer-account/wishlist');
+  }
+
+  /**
+   * Add item to wishlist
+   * @param productId Product ID
+   * @param productVariantId Optional product variant ID
+   * @returns Updated wishlist
+   */
+  static async addToWishlist(
+    productId: string,
+    productVariantId?: string
+  ): Promise<import('@/types/ecommerce').Wishlist> {
+    return ApiClient.post<import('@/types/ecommerce').Wishlist>('/customer-account/wishlist/items', {
+      productId,
+      productVariantId,
+    });
+  }
+
+  /**
+   * Remove item from wishlist
+   * @param productId Product ID
+   * @returns Updated wishlist
+   */
+  static async removeFromWishlist(productId: string): Promise<import('@/types/ecommerce').Wishlist> {
+    return ApiClient.delete<import('@/types/ecommerce').Wishlist>(`/customer-account/wishlist/items/${productId}`);
+  }
+
+  /**
+   * Check if product is in wishlist
+   * @param productId Product ID
+   * @returns Boolean indicating if product is in wishlist
+   */
+  static async isInWishlist(productId: string): Promise<{ inWishlist: boolean }> {
+    return ApiClient.get<{ inWishlist: boolean }>(`/customer-account/wishlist/items/${productId}`);
+  }
+
+  /**
+   * Get customer's order history
+   * @param page Page number (default: 1)
+   * @param limit Items per page (default: 10)
+   * @returns Paginated order list
+   */
+  static async getOrders(page = 1, limit = 10): Promise<import('@/types/ecommerce').OrderListResponse> {
+    return ApiClient.get<import('@/types/ecommerce').OrderListResponse>('/customer-account/orders', {
+      page,
+      limit,
+    });
+  }
+
+  /**
+   * Delete account
+   * @param password Account password for confirmation
+   * @returns Success response
+   */
+  static async deleteAccount(password: string): Promise<{ message: string }> {
+    return ApiClient.post<{ message: string }>('/customer-account/delete', { password });
+  }
+}
+
+// Convenience exports for customer account operations
+export const getCustomerAddresses = CustomerAccountApi.getAddresses;
+export const createCustomerAddress = CustomerAccountApi.createAddress;
+export const updateCustomerAddress = CustomerAccountApi.updateAddress;
+export const deleteCustomerAddress = CustomerAccountApi.deleteAddress;
+export const setDefaultCustomerAddress = CustomerAccountApi.setDefaultAddress;
+export const getCustomerPaymentMethods = CustomerAccountApi.getPaymentMethods;
+export const createCustomerPaymentMethod = CustomerAccountApi.createPaymentMethod;
+export const updateCustomerPaymentMethod = CustomerAccountApi.updatePaymentMethod;
+export const deleteCustomerPaymentMethod = CustomerAccountApi.deletePaymentMethod;
+export const setDefaultCustomerPaymentMethod = CustomerAccountApi.setDefaultPaymentMethod;
+export const getCustomerAccountSettings = CustomerAccountApi.getSettings;
+export const updateCustomerAccountSettings = CustomerAccountApi.updateSettings;
+export const changeCustomerAccountPassword = CustomerAccountApi.changePassword;
+export const enableCustomerAccount2FA = CustomerAccountApi.enable2FA;
+export const verifyCustomerAccount2FA = CustomerAccountApi.verify2FA;
+export const disableCustomerAccount2FA = CustomerAccountApi.disable2FA;
+export const getCustomerWishlist = CustomerAccountApi.getWishlist;
+export const addToCustomerWishlist = CustomerAccountApi.addToWishlist;
+export const removeFromCustomerWishlist = CustomerAccountApi.removeFromWishlist;
+export const isProductInCustomerWishlist = CustomerAccountApi.isInWishlist;
+export const deleteCustomerAccount = CustomerAccountApi.deleteAccount;

@@ -27,170 +27,136 @@ export enum SettingsScope {
 }
 
 /**
- * Color palette DTO with OKLCH format validation
- * All colors must be in OKLCH format: oklch(L C H) or oklch(L C H / A)
+ * Color palette DTO with HSL format validation
+ * All colors must be in HSL format: "H S% L%" (e.g., "240 5.9% 10%")
  */
 export class ColorPaletteDto {
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, {
-    message: 'Color must be in OKLCH format: oklch(L C H) or oklch(L C H / A)',
-  })
   background: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   foreground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   card: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   cardForeground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   popover: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   popoverForeground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   primary: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   primaryForeground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   secondary: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   secondaryForeground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   muted: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   mutedForeground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   accent: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   accentForeground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   destructive: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   destructiveForeground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   border: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   input: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   ring: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   chart1: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   chart2: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   chart3: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   chart4: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   chart5: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   sidebar: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   sidebarForeground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   sidebarPrimary: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   sidebarPrimaryForeground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   sidebarAccent: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   sidebarAccentForeground: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   sidebarBorder: string;
 
   @IsString()
   @IsNotEmpty()
-  @Matches(/^oklch\([^)]+\)$/, { message: 'Color must be in OKLCH format' })
   sidebarRing: string;
 
   @IsString()

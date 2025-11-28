@@ -43,13 +43,14 @@ export class PermissionsGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    // Check if user has all required permissions
-    const hasAllPermissions = await this.permissionsService.userHasAllPermissions(
+    // Check if user has any of the required permissions (OR logic)
+    // This allows endpoints to accept multiple permission options
+    const hasAnyPermission = await this.permissionsService.userHasAnyPermission(
       user.id,
       requiredPermissions,
     );
 
-    if (!hasAllPermissions) {
+    if (!hasAnyPermission) {
       // Log permission denial (if audit service is available)
       if (this.auditLoggingService) {
         const resource = request.url || 'unknown';

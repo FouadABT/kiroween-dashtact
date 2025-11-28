@@ -1,10 +1,63 @@
 import { PrismaClient } from '@prisma/client';
 import { DEFAULT_PERMISSIONS, DEFAULT_ROLES } from './seed-data/auth.seed';
+import {
+  MESSAGING_PERMISSIONS,
+  DEFAULT_MESSAGING_SETTINGS,
+} from './seed-data/messaging.seed';
+import { seedLandingCMS } from './seed-data/landing-cms.seed';
+import { seedProducts } from './seed-data/products.seed';
+import { seedFeatureFlags } from './seed-data/feature-flags.seed';
 
 const prisma = new PrismaClient();
 
+/**
+ * Feature Flags Configuration
+ * Read from environment variables to control which features are seeded
+ */
+interface FeatureFlags {
+  landing: boolean;
+  blog: boolean;
+  ecommerce: boolean;
+  calendar: boolean;
+  crm: boolean;
+  notifications: boolean;
+  customerAccount: boolean;
+}
+
+function getFeatureFlags(): FeatureFlags {
+  // Read feature flags from environment variables
+  // These are passed by the CLI setup tool
+  const flags = {
+    landing: process.env.ENABLE_LANDING === 'true',
+    blog: process.env.ENABLE_BLOG === 'true',
+    ecommerce: process.env.ENABLE_ECOMMERCE === 'true',
+    calendar: process.env.ENABLE_CALENDAR === 'true',
+    crm: process.env.ENABLE_CRM === 'true',
+    notifications: process.env.ENABLE_NOTIFICATIONS === 'true',
+    customerAccount: process.env.ENABLE_CUSTOMER_ACCOUNT === 'true',
+  };
+
+  // Log the flags being used for debugging
+  console.log('📋 Feature Flags (from environment):');
+  console.log(`  Landing: ${flags.landing} (ENABLE_LANDING=${process.env.ENABLE_LANDING})`);
+  console.log(`  Blog: ${flags.blog} (ENABLE_BLOG=${process.env.ENABLE_BLOG})`);
+  console.log(`  E-commerce: ${flags.ecommerce} (ENABLE_ECOMMERCE=${process.env.ENABLE_ECOMMERCE})`);
+  console.log(`  Calendar: ${flags.calendar} (ENABLE_CALENDAR=${process.env.ENABLE_CALENDAR})`);
+  console.log(`  CRM: ${flags.crm} (ENABLE_CRM=${process.env.ENABLE_CRM})`);
+  console.log(`  Notifications: ${flags.notifications} (ENABLE_NOTIFICATIONS=${process.env.ENABLE_NOTIFICATIONS})`);
+  console.log(`  Customer Account: ${flags.customerAccount} (ENABLE_CUSTOMER_ACCOUNT=${process.env.ENABLE_CUSTOMER_ACCOUNT})`);
+
+  return flags;
+}
+
 async function main() {
   console.log('🌱 Seeding database...');
+
+  // Read feature flags from environment
+  const featureFlags = getFeatureFlags();
+
+  // Seed Feature Flags Configuration
+  await seedFeatureFlags();
 
   // Seed Permissions
   console.log('Creating permissions...');
@@ -520,9 +573,452 @@ async function main() {
   // Seed demo layouts for showcasing different use cases
   await seedDemoLayouts();
 
-  // Seed dashboard menus
+  // Seed dashboard menus with feature flags
   const { seedDashboardMenus } = require('./seed-data/dashboard-menus.seed');
-  await seedDashboardMenus(prisma);
+  await seedDashboardMenus(prisma, featureFlags);
+
+  // Seed default widget instances by role (after users are created)
+  console.log('Seeding default widget instances for role-based dashboards...');
+  try {
+    const { seedDefaultWidgetInstances } = require('./seed-data/dashboard-widgets.seed');
+    await seedDefaultWidgetInstances(prisma, featureFlags);
+  } catch (error) {
+    console.log('⚠️  Could not seed default widget instances (users may not exist yet):', error.message);
+  }
+
+  // Seed default dashboard layouts for each role
+  console.log('Seeding default dashboard layouts...');
+  try {
+    const { defaultLayoutsSeed } = require('./seed-data/default-layouts.seed');
+    
+    // Get all users grouped by role
+    const users = await prisma.user.findMany({
+      include: { role: true },
+    });
+
+    let createdLayoutsCount = 0;
+    let createdInstancesCount = 0;
+    
+    for (const user of users) {
+      const roleName = user.role.name;
+      const userLayouts = defaultLayoutsSeed.filter(layout => layout.role === roleName);
+      
+      // Group by page
+      const pageGroups = new Map<string, typeof userLayouts>();
+      for (const layout of userLayouts) {
+        if (!pageGroups.has(layout.page)) {
+          pageGroups.set(layout.page, []);
+        }
+        pageGroups.get(layout.page)!.push(layout);
+      }
+      
+      // Create layout and instances for each page
+      for (const [page, layouts] of pageGroups) {
+        // Find or create dashboard layout
+        let dashboardLayout = await prisma.dashboardLayout.findUnique({
+          where: {
+            pageId_userId: {
+              pageId: page,
+              userId: user.id,
+            },
+          },
+        });
+
+        if (!dashboardLayout) {
+          dashboardLayout = await prisma.dashboardLayout.create({
+            data: {
+              pageId: page,
+              userId: user.id,
+              scope: 'user',
+              name: `${roleName} ${page} Layout`,
+              description: `Default ${page} layout for ${roleName} role`,
+              isActive: true,
+              isDefault: true,
+            },
+          });
+          createdLayoutsCount++;
+        }
+
+        // Create widget instances
+        for (const layout of layouts) {
+          // Check if instance already exists
+          const existing = await prisma.widgetInstance.findFirst({
+            where: {
+              layoutId: dashboardLayout.id,
+              widgetKey: layout.widgetKey,
+            },
+          });
+
+          if (!existing) {
+            await prisma.widgetInstance.create({
+              data: {
+                layoutId: dashboardLayout.id,
+                widgetKey: layout.widgetKey,
+                position: layout.position,
+                gridSpan: layout.gridSpan,
+                config: layout.config,
+              },
+            });
+            createdInstancesCount++;
+          }
+        }
+      }
+    }
+    
+    console.log(`✅ Created ${createdLayoutsCount} dashboard layouts and ${createdInstancesCount} widget instances for ${users.length} users`);
+  } catch (error) {
+    console.log('⚠️  Could not seed default layouts:', error.message);
+    console.error(error);
+  }
+
+  // Seed email permissions and templates
+  console.log('Seeding email system...');
+  const { EMAIL_PERMISSIONS, DEFAULT_EMAIL_TEMPLATES } = require('./seed-data/email.seed');
+  
+  // Create email permissions
+  for (const permission of EMAIL_PERMISSIONS) {
+    const existing = await prisma.permission.findUnique({
+      where: { name: permission.name },
+    });
+
+    if (!existing) {
+      await prisma.permission.create({
+        data: permission,
+      });
+      console.log(`✅ Created email permission: ${permission.name}`);
+    } else {
+      console.log(`⏭️  Email permission already exists: ${permission.name}`);
+    }
+  }
+
+  // Assign email permissions to SUPER_ADMIN role
+  const superAdminRole = await prisma.userRole.findUnique({
+    where: { name: 'SUPER_ADMIN' },
+  });
+
+  if (superAdminRole) {
+    for (const permissionDef of EMAIL_PERMISSIONS) {
+      const permission = await prisma.permission.findUnique({
+        where: { name: permissionDef.name },
+      });
+
+      if (permission) {
+        const existingAssignment = await prisma.rolePermission.findUnique({
+          where: {
+            roleId_permissionId: {
+              roleId: superAdminRole.id,
+              permissionId: permission.id,
+            },
+          },
+        });
+
+        if (!existingAssignment) {
+          await prisma.rolePermission.create({
+            data: {
+              roleId: superAdminRole.id,
+              permissionId: permission.id,
+            },
+          });
+          console.log(`  ✅ Assigned email permission to SUPER_ADMIN: ${permissionDef.name}`);
+        }
+      }
+    }
+  }
+
+  // Create default email templates
+  // Get a super admin user for createdBy/updatedBy
+  const superAdmin = await prisma.user.findFirst({
+    where: {
+      role: {
+        name: 'SUPER_ADMIN',
+      },
+    },
+  });
+
+  const systemUserId = superAdmin?.id || 'system';
+
+  for (const template of DEFAULT_EMAIL_TEMPLATES) {
+    const existing = await prisma.emailTemplate.findUnique({
+      where: { slug: template.slug },
+    });
+
+    if (!existing) {
+      await prisma.emailTemplate.create({
+        data: {
+          ...template,
+          createdBy: systemUserId,
+          updatedBy: systemUserId,
+        },
+      });
+      console.log(`✅ Created email template: ${template.name}`);
+    } else {
+      console.log(`⏭️  Email template already exists: ${template.name}`);
+    }
+  }
+
+  // Seed messaging system
+  console.log('Seeding messaging system...');
+  const { MESSAGING_PERMISSIONS, DEFAULT_MESSAGING_SETTINGS } = require('./seed-data/messaging.seed');
+  
+  // Create messaging permissions
+  for (const permission of MESSAGING_PERMISSIONS) {
+    const existing = await prisma.permission.findUnique({
+      where: { name: permission.name },
+    });
+
+    if (!existing) {
+      await prisma.permission.create({
+        data: permission,
+      });
+      console.log(`✅ Created messaging permission: ${permission.name}`);
+    } else {
+      console.log(`⏭️  Messaging permission already exists: ${permission.name}`);
+    }
+  }
+
+  // Assign messaging permissions to roles
+  const roles = await prisma.userRole.findMany({
+    where: {
+      name: {
+        in: ['SUPER_ADMIN', 'ADMIN', 'USER'],
+      },
+    },
+  });
+
+  for (const role of roles) {
+    // SUPER_ADMIN gets all messaging permissions
+    if (role.name === 'SUPER_ADMIN') {
+      for (const permissionDef of MESSAGING_PERMISSIONS) {
+        const permission = await prisma.permission.findUnique({
+          where: { name: permissionDef.name },
+        });
+
+        if (permission) {
+          const existingAssignment = await prisma.rolePermission.findUnique({
+            where: {
+              roleId_permissionId: {
+                roleId: role.id,
+                permissionId: permission.id,
+              },
+            },
+          });
+
+          if (!existingAssignment) {
+            await prisma.rolePermission.create({
+              data: {
+                roleId: role.id,
+                permissionId: permission.id,
+              },
+            });
+            console.log(`  ✅ Assigned messaging permission to ${role.name}: ${permissionDef.name}`);
+          }
+        }
+      }
+    }
+    // ADMIN and USER get messaging:access permission
+    else if (role.name === 'ADMIN' || role.name === 'USER') {
+      const permission = await prisma.permission.findUnique({
+        where: { name: 'messaging:access' },
+      });
+
+      if (permission) {
+        const existingAssignment = await prisma.rolePermission.findUnique({
+          where: {
+            roleId_permissionId: {
+              roleId: role.id,
+              permissionId: permission.id,
+            },
+          },
+        });
+
+        if (!existingAssignment) {
+          await prisma.rolePermission.create({
+            data: {
+              roleId: role.id,
+              permissionId: permission.id,
+            },
+          });
+          console.log(`  ✅ Assigned messaging:access to ${role.name}`);
+        }
+      }
+    }
+  }
+
+  // Create default messaging settings
+  console.log('Creating default messaging settings...');
+  const existingMessagingSettings = await prisma.messagingSettings.findFirst();
+
+  if (!existingMessagingSettings) {
+    await prisma.messagingSettings.create({
+      data: DEFAULT_MESSAGING_SETTINGS,
+    });
+    console.log('✅ Created default messaging settings');
+  } else {
+    console.log('⏭️  Messaging settings already exist');
+  }
+
+  // Seed branding
+  const { seedBranding } = require('./seed-data/branding.seed');
+  await seedBranding(prisma);
+
+  // Seed cron jobs permissions
+  const { seedCronJobsPermissions } = require('./seed-data/cron-jobs.seed');
+  await seedCronJobsPermissions(prisma);
+
+  // Seed legal pages
+  console.log('Creating default legal pages...');
+  
+  const defaultLegalPages = [
+    {
+      pageType: 'TERMS',
+      content: `# Terms of Service
+
+Last updated: ${new Date().toLocaleDateString()}
+
+## 1. Acceptance of Terms
+
+By accessing and using this service, you accept and agree to be bound by the terms and provision of this agreement.
+
+## 2. Use License
+
+Permission is granted to temporarily access the materials on this website for personal, non-commercial transitory viewing only.
+
+## 3. Disclaimer
+
+The materials on this website are provided on an 'as is' basis. We make no warranties, expressed or implied, and hereby disclaim and negate all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+
+## 4. Limitations
+
+In no event shall we or our suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on our website.
+
+## 5. Revisions
+
+We may revise these terms of service at any time without notice. By using this website you are agreeing to be bound by the then current version of these terms of service.
+
+## 6. Governing Law
+
+These terms and conditions are governed by and construed in accordance with the laws and you irrevocably submit to the exclusive jurisdiction of the courts in that location.`,
+    },
+    {
+      pageType: 'PRIVACY',
+      content: `# Privacy Policy
+
+Last updated: ${new Date().toLocaleDateString()}
+
+## 1. Information We Collect
+
+We collect information that you provide directly to us, including when you create an account, use our services, or communicate with us.
+
+### Personal Information
+- Name and contact information
+- Account credentials
+- Payment information
+- Usage data and preferences
+
+## 2. How We Use Your Information
+
+We use the information we collect to:
+- Provide, maintain, and improve our services
+- Process transactions and send related information
+- Send technical notices and support messages
+- Respond to your comments and questions
+- Monitor and analyze trends and usage
+
+## 3. Information Sharing
+
+We do not sell, trade, or rent your personal information to third parties. We may share your information with:
+- Service providers who assist in our operations
+- Law enforcement when required by law
+- Other parties with your consent
+
+## 4. Data Security
+
+We implement appropriate security measures to protect your personal information. However, no method of transmission over the Internet is 100% secure.
+
+## 5. Your Rights
+
+You have the right to:
+- Access your personal information
+- Correct inaccurate data
+- Request deletion of your data
+- Object to processing of your data
+- Export your data
+
+## 6. Cookies
+
+We use cookies and similar tracking technologies to track activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.
+
+## 7. Children's Privacy
+
+Our service is not intended for children under 13. We do not knowingly collect personal information from children under 13.
+
+## 8. Changes to This Policy
+
+We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.
+
+## 9. Contact Us
+
+If you have any questions about this Privacy Policy, please contact us.`,
+    },
+  ];
+
+  for (const legalPage of defaultLegalPages) {
+    const existing = await prisma.legalPage.findUnique({
+      where: { pageType: legalPage.pageType as any },
+    });
+
+    if (!existing) {
+      await prisma.legalPage.create({
+        data: legalPage as any,
+      });
+      console.log(`✅ Created legal page: ${legalPage.pageType}`);
+    } else {
+      console.log(`⏭️  Legal page already exists: ${legalPage.pageType}`);
+    }
+  }
+
+  // Seed Products (conditional on ecommerce feature)
+  if (featureFlags.ecommerce) {
+    console.log('🛍️  Seeding e-commerce data...');
+    await seedProducts();
+
+    // Seed Shipping Methods
+    const { seedShippingMethods } = require('./seed-data/shipping-methods.seed');
+    await seedShippingMethods();
+
+    // Seed Payment Methods
+    const { seedPaymentMethods } = require('./seed-data/payment-methods.seed');
+    await seedPaymentMethods();
+  } else {
+    console.log('⏭️  E-commerce feature disabled, skipping products seed');
+  }
+
+  // Seed Landing CMS enhancements (conditional on landing feature)
+  if (featureFlags.landing) {
+    console.log('🎨 Seeding landing page CMS...');
+    await seedLandingCMS(prisma);
+  } else {
+    console.log('⏭️  Landing feature disabled, skipping landing CMS seed');
+  }
+
+  // Seed Calendar System (conditional on calendar feature)
+  if (featureFlags.calendar) {
+    console.log('📅 Seeding calendar system...');
+    const { seedCalendar } = require('./seed-data/calendar.seed');
+    await seedCalendar(prisma);
+  } else {
+    console.log('⏭️  Calendar feature disabled, skipping calendar seed');
+  }
+
+  // Create default admin account after all seeds complete
+  console.log('👤 Creating default admin account...');
+  try {
+    const { SetupService } = require('../src/setup/setup.service');
+    const setupService = new SetupService(prisma);
+    await setupService.createDefaultAdminAccount();
+  } catch (error) {
+    console.log('⚠️  Could not create default admin account:', error.message);
+  }
 
   console.log('✨ Seeding completed successfully!');
 }

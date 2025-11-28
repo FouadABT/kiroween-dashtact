@@ -5,8 +5,32 @@
  * Features can be enabled/disabled via environment variables.
  */
 
+/**
+ * Feature Flags - Controls which features are available
+ */
+export interface FeatureFlags {
+  landing: boolean;
+  blog: boolean;
+  ecommerce: boolean;
+  calendar: boolean;
+  crm: boolean;
+  notifications: boolean;
+  customerAccount: boolean;
+}
+
+/**
+ * Page Visibility - Controls which pages are visible to users
+ */
+export interface PageVisibility {
+  showHomePage: boolean;
+  showShopPage: boolean;
+  showBlogPage: boolean;
+  showAccountPage: boolean;
+}
+
 export interface LandingPageConfig {
   enabled: boolean;
+  useDynamicHeaderFooter: boolean;
 }
 
 export interface BlogConfig {
@@ -26,6 +50,33 @@ export interface FeaturesConfig {
   blog: BlogConfig;
   ecommerce: EcommerceConfig;
 }
+
+/**
+ * Feature Flags - Controls which features are available
+ * 
+ * Read from NEXT_PUBLIC_ENABLE_* environment variables
+ */
+export const featureFlags: FeatureFlags = {
+  landing: process.env.NEXT_PUBLIC_ENABLE_LANDING === 'true',
+  blog: process.env.NEXT_PUBLIC_ENABLE_BLOG === 'true',
+  ecommerce: process.env.NEXT_PUBLIC_ENABLE_ECOMMERCE === 'true',
+  calendar: process.env.NEXT_PUBLIC_ENABLE_CALENDAR === 'true',
+  crm: process.env.NEXT_PUBLIC_ENABLE_CRM === 'true',
+  notifications: process.env.NEXT_PUBLIC_ENABLE_NOTIFICATIONS === 'true',
+  customerAccount: process.env.NEXT_PUBLIC_ENABLE_CUSTOMER_ACCOUNT === 'true',
+};
+
+/**
+ * Page Visibility - Controls which pages are visible to users
+ * 
+ * Read from NEXT_PUBLIC_SHOW_* environment variables
+ */
+export const pageVisibility: PageVisibility = {
+  showHomePage: process.env.NEXT_PUBLIC_SHOW_HOME_PAGE === 'true',
+  showShopPage: process.env.NEXT_PUBLIC_SHOW_SHOP_PAGE === 'true',
+  showBlogPage: process.env.NEXT_PUBLIC_SHOW_BLOG_PAGE === 'true',
+  showAccountPage: process.env.NEXT_PUBLIC_SHOW_ACCOUNT_PAGE === 'true',
+};
 
 /**
  * Features configuration object
@@ -51,9 +102,13 @@ export const featuresConfig: FeaturesConfig = {
    * 
    * When enabled: Root route (/) shows landing page
    * When disabled: Root route redirects to /dashboard (authenticated) or /login (unauthenticated)
+   * 
+   * useDynamicHeaderFooter: When true, uses header/footer from CMS settings
+   *                         When false, uses hardcoded PublicNavigation and Footer components
    */
   landingPage: {
     enabled: process.env.NEXT_PUBLIC_ENABLE_LANDING === 'true',
+    useDynamicHeaderFooter: process.env.NEXT_PUBLIC_USE_DYNAMIC_HEADER_FOOTER === 'true',
   },
 
   /**
@@ -82,9 +137,9 @@ export const featuresConfig: FeaturesConfig = {
 };
 
 /**
- * Helper function to check if a feature is enabled
+ * Check if a feature is enabled
  * 
- * @param feature - The feature to check ('landingPage' | 'blog')
+ * @param feature - The feature to check
  * @returns boolean indicating if the feature is enabled
  * 
  * @example
@@ -94,7 +149,41 @@ export const featuresConfig: FeaturesConfig = {
  * }
  * ```
  */
-export function isFeatureEnabled(feature: keyof FeaturesConfig): boolean {
+export function isFeatureEnabled(feature: keyof FeatureFlags): boolean {
+  return featureFlags[feature];
+}
+
+/**
+ * Check if a page is visible
+ * 
+ * @param page - The page to check
+ * @returns boolean indicating if the page is visible
+ * 
+ * @example
+ * ```typescript
+ * if (isPageVisible('showBlogPage')) {
+ *   // Blog page is visible
+ * }
+ * ```
+ */
+export function isPageVisible(page: keyof PageVisibility): boolean {
+  return pageVisibility[page];
+}
+
+/**
+ * Helper function to check if a feature is enabled (legacy)
+ * 
+ * @param feature - The feature to check ('landingPage' | 'blog')
+ * @returns boolean indicating if the feature is enabled
+ * 
+ * @example
+ * ```typescript
+ * if (isFeatureEnabledLegacy('blog')) {
+ *   // Blog is enabled
+ * }
+ * ```
+ */
+export function isFeatureEnabledLegacy(feature: keyof FeaturesConfig): boolean {
   return featuresConfig[feature].enabled;
 }
 

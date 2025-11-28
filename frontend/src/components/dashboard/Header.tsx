@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { 
   Menu, 
   Search, 
@@ -27,6 +28,11 @@ import { useNavigation } from "@/contexts/NavigationContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
+import { MessageIcon } from "@/components/messaging/MessageIcon";
+import { MessagePanel } from "@/components/messaging/MessagePanel";
+import { GlobalSearchBar } from "@/components/search/GlobalSearchBar";
+import { SearchDialog } from "@/components/search/SearchDialog";
+import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 
 /**
  * Props for the Header component
@@ -46,7 +52,16 @@ export interface HeaderProps {
 export function Header() {
   const { setSidebarOpen, breadcrumbs } = useNavigation();
   const { user, logout } = useAuth();
+  const [avatarKey, setAvatarKey] = useState(Date.now());
+
+  // Update avatar key when user avatar changes
+  useEffect(() => {
+    console.log('[Header] User avatar changed:', user?.avatarUrl);
+    setAvatarKey(Date.now());
+  }, [user?.avatarUrl]);
   const { resolvedTheme, setThemeMode } = useTheme();
+  const [isMessagePanelOpen, setIsMessagePanelOpen] = useState(false);
+  const { isOpen, openSearch, closeSearch } = useSearchShortcut();
 
   // Log user avatar info for debugging
   console.log('[Header] Rendering with user:', {
@@ -121,26 +136,9 @@ export function Header() {
 
       {/* Right side actions */}
       <div className="flex items-center gap-x-2 sm:gap-x-3 lg:gap-x-4">
-        {/* Search bar - placeholder */}
+        {/* Global Search Bar */}
         <div className="hidden md:flex md:items-center">
-          <div className="relative">
-            <label htmlFor="search-input" className="sr-only">
-              Search dashboard
-            </label>
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 sm:pl-3">
-              <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground/60 transition-colors" aria-hidden="true" />
-            </div>
-            <input
-              id="search-input"
-              type="text"
-              placeholder="Search..."
-              className="block w-32 sm:w-40 lg:w-48 rounded-md border border-input bg-muted/50 py-1.5 pl-8 sm:pl-10 pr-2 sm:pr-3 text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:ring-2 focus:ring-ring focus:scale-[1.02] text-xs sm:text-sm leading-6 transition-all duration-200 focus:outline-none"
-              aria-describedby="search-description"
-            />
-            <div id="search-description" className="sr-only">
-              Search through dashboard content and navigation
-            </div>
-          </div>
+          <GlobalSearchBar />
         </div>
 
         {/* Mobile search button */}
@@ -150,6 +148,7 @@ export function Header() {
           className="md:hidden p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           aria-label="Open search"
           type="button"
+          onClick={openSearch}
         >
           <Search className="h-4 w-4 text-foreground" aria-hidden="true" />
           <span className="sr-only">Search</span>
@@ -175,11 +174,14 @@ export function Header() {
         {/* Notifications */}
         <NotificationCenter />
 
+        {/* Messages */}
+        <MessageIcon onClick={() => setIsMessagePanelOpen(true)} />
+
         {/* Separator */}
         <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-border" />
 
         {/* Profile dropdown */}
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button 
               variant="ghost" 
@@ -188,8 +190,12 @@ export function Header() {
               aria-haspopup="menu"
             >
               <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
-                <AvatarImage src={user?.avatarUrl || undefined} alt={`${user?.name || 'User'} profile picture`} />
-                <AvatarFallback className="bg-blue-600 text-white text-xs sm:text-sm font-semibold">
+                <AvatarImage 
+                  src={user?.avatarUrl ? `${user.avatarUrl}?t=${avatarKey}` : undefined} 
+                  alt={`${user?.name || 'User'} profile picture`}
+                  key={`header-avatar-${avatarKey}`}
+                />
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs sm:text-sm font-semibold">
                   {user?.name 
                     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                     : <User className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
@@ -209,8 +215,12 @@ export function Header() {
             <DropdownMenuLabel className="font-normal p-3">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={user?.avatarUrl || undefined} alt={`${user?.name || 'User'} profile picture`} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-sm font-semibold">
+                  <AvatarImage 
+                    src={user?.avatarUrl ? `${user.avatarUrl}?t=${avatarKey}` : undefined} 
+                    alt={`${user?.name || 'User'} profile picture`}
+                    key={`header-dropdown-avatar-${avatarKey}`}
+                  />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
                     {user?.name 
                       ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                       : <User className="h-5 w-5" aria-hidden="true" />
@@ -274,6 +284,15 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Message Panel */}
+      <MessagePanel 
+        open={isMessagePanelOpen} 
+        onOpenChange={setIsMessagePanelOpen} 
+      />
+
+      {/* Search Dialog */}
+      <SearchDialog open={isOpen} onOpenChange={closeSearch} />
     </header>
   );
 }

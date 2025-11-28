@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ProductStatus } from '@prisma/client';
 import { ProductsService } from './products.service';
 import {
   CreateProductDto,
@@ -22,11 +23,56 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { Permissions } from '../auth/decorators/permissions.decorator';
 import { Public } from '../auth/decorators/public.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { FeatureGuard } from '../common/guards/feature.guard';
+import { FeatureEnabled } from '../common/decorators/feature-enabled.decorator';
 
 @Controller('products')
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, FeatureGuard)
+@FeatureEnabled('ecommerce')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
+
+  /**
+   * Get all product categories (public)
+   * No authentication required - for landing page editor
+   */
+  @Public()
+  @Get('categories')
+  async getCategories() {
+    return this.productsService.getCategories();
+  }
+
+  /**
+   * Get all product tags (public)
+   * No authentication required - for landing page editor
+   */
+  @Public()
+  @Get('tags')
+  async getTags() {
+    return this.productsService.getTags();
+  }
+
+  /**
+   * Get all products with filtering and pagination (public)
+   * No authentication required - for storefront/landing pages
+   */
+  @Public()
+  @Get('public')
+  async findAllPublic(@Query() query: ProductQueryDto) {
+    // Only return published products for public endpoint
+    return this.productsService.findAll({ ...query, status: ProductStatus.PUBLISHED });
+  }
+
+  /**
+   * Get product by slug (public endpoint)
+   * No authentication required
+   */
+  @Public()
+  @Get('slug/:slug')
+  async findBySlug(@Param('slug') slug: string) {
+    return this.productsService.findBySlug(slug);
+  }
 
   /**
    * Get all products with filtering and pagination
@@ -49,23 +95,13 @@ export class ProductsController {
   }
 
   /**
-   * Get product by slug (public endpoint)
-   * No authentication required
-   */
-  @Public()
-  @Get('slug/:slug')
-  async findBySlug(@Param('slug') slug: string) {
-    return this.productsService.findBySlug(slug);
-  }
-
-  /**
    * Create a new product
    * Requires: products:write permission
    */
   @Post()
   @Permissions('products:write')
-  async create(@Body() dto: CreateProductDto) {
-    return this.productsService.create(dto);
+  async create(@Body() dto: CreateProductDto, @CurrentUser('id') userId: string) {
+    return this.productsService.create(dto, userId);
   }
 
   /**
@@ -74,8 +110,8 @@ export class ProductsController {
    */
   @Patch(':id')
   @Permissions('products:write')
-  async update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
-    return this.productsService.update(id, dto);
+  async update(@Param('id') id: string, @Body() dto: UpdateProductDto, @CurrentUser('id') userId: string) {
+    return this.productsService.update(id, dto, userId);
   }
 
   /**

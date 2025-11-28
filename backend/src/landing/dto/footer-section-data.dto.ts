@@ -6,35 +6,44 @@ import {
   IsArray,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { NavLinkDto } from './nav-link.dto';
 import { SocialLinkDto } from './social-link.dto';
 
 export class FooterSectionDataDto {
   @IsString()
-  @IsNotEmpty()
-  companyName: string;
+  @IsOptional()
+  @Transform(({ value }) => value || 'Dashboard Application')
+  companyName?: string;
 
   @IsString()
-  @IsNotEmpty()
-  description: string;
+  @IsOptional()
+  @Transform(({ value }) => value || 'Professional dashboard application')
+  description?: string;
 
   @IsArray()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => NavLinkDto)
-  navLinks: NavLinkDto[];
+  @Transform(({ value }) => value || [])
+  navLinks?: NavLinkDto[];
 
   @IsArray()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => SocialLinkDto)
-  socialLinks: SocialLinkDto[];
+  @Transform(({ value }) => value || [])
+  socialLinks?: SocialLinkDto[];
 
   @IsString()
-  @IsNotEmpty()
-  copyright: string;
+  @IsOptional()
+  @Transform(({ value }) => value || `© ${new Date().getFullYear()} Dashboard Application. All rights reserved.`)
+  copyright?: string;
 
   @IsBoolean()
-  showNewsletter: boolean;
+  @IsOptional()
+  @Transform(({ value }) => value || false)
+  showNewsletter?: boolean;
 
   @IsString()
   @IsOptional()

@@ -11,9 +11,10 @@ import * as Icons from 'lucide-react';
 
 interface StatsSectionProps {
   section: LandingPageSection;
+  maxWidth?: 'full' | 'container' | 'narrow';
 }
 
-export function StatsSection({ section }: StatsSectionProps) {
+export function StatsSection({ section, maxWidth = 'container' }: StatsSectionProps) {
   const data = section.data as StatsSectionData;
 
   // Sort stats by order

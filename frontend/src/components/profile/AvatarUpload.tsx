@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -34,6 +34,7 @@ export function AvatarUpload({ currentAvatarUrl, userName }: AvatarUploadProps) 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [cacheKey, setCacheKey] = useState(Date.now());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadMutation = useAvatarUpload();
@@ -41,6 +42,12 @@ export function AvatarUpload({ currentAvatarUrl, userName }: AvatarUploadProps) 
 
   const isUploading = uploadMutation.isPending;
   const isDeleting = deleteMutation.isPending;
+
+  // Update cache key when avatar URL changes
+  useEffect(() => {
+    console.log('[AvatarUpload] Avatar URL changed:', currentAvatarUrl);
+    setCacheKey(Date.now());
+  }, [currentAvatarUrl]);
 
   // Get user initials for fallback
   const getInitials = (name: string) => {
@@ -155,7 +162,16 @@ export function AvatarUpload({ currentAvatarUrl, userName }: AvatarUploadProps) 
     });
   }, [deleteMutation]);
 
-  const displayUrl = previewUrl || currentAvatarUrl;
+  // Force re-render when avatar URL changes by adding a cache-busting timestamp
+  const displayUrl = previewUrl || (currentAvatarUrl ? `${currentAvatarUrl}?t=${cacheKey}` : null);
+
+  console.log('[AvatarUpload] Rendering with:', {
+    currentAvatarUrl,
+    previewUrl,
+    displayUrl,
+    cacheKey,
+    isUploading,
+  });
 
   return (
     <div className="space-y-4">
@@ -171,7 +187,11 @@ export function AvatarUpload({ currentAvatarUrl, userName }: AvatarUploadProps) 
         onClick={handleClickUpload}
       >
         <Avatar className="h-32 w-32 mx-auto">
-          <AvatarImage src={displayUrl || undefined} alt={userName} />
+          <AvatarImage 
+            src={displayUrl || undefined} 
+            alt={userName}
+            key={`${currentAvatarUrl}-${cacheKey}`} // Force re-render when URL or cache key changes
+          />
           <AvatarFallback className="text-2xl">{getInitials(userName)}</AvatarFallback>
         </Avatar>
 

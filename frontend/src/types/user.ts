@@ -164,10 +164,20 @@ export interface AuthResponse {
  * User list response for admin/management interfaces
  */
 export interface UsersListResponse {
-  users: UserProfile[];
-  total: number;
-  page: number;
-  limit: number;
+  statusCode?: number;
+  message?: string;
+  data?: {
+    users: UserProfile[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+  // Legacy format support
+  users?: UserProfile[];
+  total?: number;
+  page?: number;
+  limit?: number;
 }
 
 /**

@@ -9,8 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
-import { LoginCredentials } from '@/types/auth';
+import { LoginCredentials, TwoFactorRequiredResponse } from '@/types/auth';
 import { authConfig } from '@/config/auth.config';
+import { UserApi } from '@/lib/api';
+import { TwoFactorVerification } from './TwoFactorVerification';
 
 interface LoginFormErrors {
   email?: string;
@@ -55,6 +57,7 @@ export function LoginForm(props?: LoginFormProps) {
   });
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [twoFactorRequired, setTwoFactorRequired] = useState<TwoFactorRequiredResponse | null>(null);
 
   const validateForm = (): boolean => {
     const newErrors: LoginFormErrors = {};
@@ -88,8 +91,15 @@ export function LoginForm(props?: LoginFormProps) {
     setErrors({});
 
     try {
-      // Call auth context login method
-      await login(formData);
+      // Use auth context login method - it handles the API call
+      // This makes only ONE API call to avoid duplicate logs
+      const response = await login(formData);
+      
+      // Check if 2FA is required
+      if (response && 'requiresTwoFactor' in response && response.requiresTwoFactor) {
+        setTwoFactorRequired(response as unknown as TwoFactorRequiredResponse);
+        return;
+      }
       
       // Call success callback if provided
       if (props?.onSuccess) {
@@ -103,11 +113,20 @@ export function LoginForm(props?: LoginFormProps) {
       router.push(redirectTo);
       
     } catch (error) {
-      // Extract error message
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Invalid email or password. Please try again.';
+      console.error('[LoginForm] Login error:', error);
       
+      // Extract error message with better handling
+      let errorMessage = 'Invalid email or password. Please try again.';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String(error.message);
+      }
+      
+      // Show user-friendly error message
       setErrors({ general: errorMessage });
       
       // Call error callback if provided
@@ -119,6 +138,20 @@ export function LoginForm(props?: LoginFormProps) {
     }
   };
 
+  const handleTwoFactorSuccess = async (accessToken: string, refreshToken: string) => {
+    // Tokens are already stored by TwoFactorVerification component
+    // Reload the page to trigger AuthContext initialization with new tokens
+    const redirectTo = props?.redirectTo || 
+                      searchParams.get('redirect') || 
+                      authConfig.redirects.afterLogin;
+    window.location.href = redirectTo;
+  };
+
+  const handleTwoFactorCancel = () => {
+    setTwoFactorRequired(null);
+    setFormData(prev => ({ ...prev, password: '' }));
+  };
+
   const handleInputChange = (field: keyof LoginCredentials, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
@@ -126,6 +159,17 @@ export function LoginForm(props?: LoginFormProps) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
+
+  // Show 2FA verification if required
+  if (twoFactorRequired) {
+    return (
+      <TwoFactorVerification
+        userId={twoFactorRequired.userId}
+        onSuccess={handleTwoFactorSuccess}
+        onCancel={handleTwoFactorCancel}
+      />
+    );
+  }
 
   return (
     <motion.form 
@@ -138,7 +182,7 @@ export function LoginForm(props?: LoginFormProps) {
       <AnimatePresence mode="wait">
         {errors.general && (
           <motion.div 
-            className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md"
+            className="p-4 text-sm bg-destructive/10 text-destructive border border-destructive/20 rounded-lg flex items-start gap-3"
             initial={{ opacity: 0, scale: 0.95, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -146,7 +190,24 @@ export function LoginForm(props?: LoginFormProps) {
             role="alert"
             aria-live="polite"
           >
-            {errors.general}
+            <svg 
+              className="w-5 h-5 flex-shrink-0 mt-0.5" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+              />
+            </svg>
+            <div className="flex-1">
+              <p className="font-medium">Login Failed</p>
+              <p className="mt-1 text-sm opacity-90">{errors.general}</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -254,7 +315,7 @@ export function LoginForm(props?: LoginFormProps) {
         {authConfig.features.passwordReset && (
           <Link
             href="/forgot-password"
-            className="text-sm text-primary hover:underline transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
+            className="text-sm text-primary hover:underline transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-1"
           >
             Forgot password?
           </Link>

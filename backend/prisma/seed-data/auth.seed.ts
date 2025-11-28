@@ -412,6 +412,76 @@ export const DEFAULT_PERMISSIONS: PermissionDefinition[] = [
     description: 'Delete navigation items',
   },
 
+  // Activity Log / Audit Log Permissions
+  {
+    name: 'activity-logs:read',
+    resource: 'activity-logs',
+    action: 'read',
+    description: 'View activity logs and audit trail',
+  },
+  {
+    name: 'activity-logs:write',
+    resource: 'activity-logs',
+    action: 'write',
+    description: 'Create activity log entries',
+  },
+  {
+    name: 'activity-logs:delete',
+    resource: 'activity-logs',
+    action: 'delete',
+    description: 'Delete activity log entries',
+  },
+  {
+    name: 'activity-logs:*',
+    resource: 'activity-logs',
+    action: '*',
+    description: 'All activity log operations',
+  },
+
+  // Media Library Permissions
+  {
+    name: 'media:view',
+    resource: 'media',
+    action: 'view',
+    description: 'View media library and own files',
+  },
+  {
+    name: 'media:view:all',
+    resource: 'media',
+    action: 'view:all',
+    description: 'View all files in media library regardless of ownership',
+  },
+  {
+    name: 'media:upload',
+    resource: 'media',
+    action: 'upload',
+    description: 'Upload files to media library',
+  },
+  {
+    name: 'media:edit:own',
+    resource: 'media',
+    action: 'edit:own',
+    description: 'Edit metadata of own uploaded files',
+  },
+  {
+    name: 'media:edit:all',
+    resource: 'media',
+    action: 'edit:all',
+    description: 'Edit metadata of any file in media library',
+  },
+  {
+    name: 'media:delete:own',
+    resource: 'media',
+    action: 'delete:own',
+    description: 'Delete own uploaded files',
+  },
+  {
+    name: 'media:delete:all',
+    resource: 'media',
+    action: 'delete:all',
+    description: 'Delete any file in media library',
+  },
+
   // E-Commerce Permissions
   // Products
   {
@@ -522,6 +592,130 @@ export const DEFAULT_PERMISSIONS: PermissionDefinition[] = [
     action: '*',
     description: 'All customer operations',
   },
+
+  // Email System Permissions
+  {
+    name: 'email:configure',
+    resource: 'email',
+    action: 'configure',
+    description: 'Configure SMTP settings and email system',
+  },
+  {
+    name: 'email:send',
+    resource: 'email',
+    action: 'send',
+    description: 'Send emails through the system',
+  },
+  {
+    name: 'email:view_logs',
+    resource: 'email',
+    action: 'view_logs',
+    description: 'View email delivery logs and statistics',
+  },
+  {
+    name: 'email:manage_templates',
+    resource: 'email',
+    action: 'manage_templates',
+    description: 'Create, edit, and delete email templates',
+  },
+  {
+    name: 'email:*',
+    resource: 'email',
+    action: '*',
+    description: 'All email system operations',
+  },
+
+  // Legal Pages Management Permissions
+  {
+    name: 'legal-pages:read',
+    resource: 'legal-pages',
+    action: 'read',
+    description: 'View legal pages (Terms, Privacy)',
+  },
+  {
+    name: 'legal-pages:write',
+    resource: 'legal-pages',
+    action: 'write',
+    description: 'Create and edit legal pages',
+  },
+  {
+    name: 'legal-pages:delete',
+    resource: 'legal-pages',
+    action: 'delete',
+    description: 'Delete legal pages',
+  },
+  {
+    name: 'legal-pages:*',
+    resource: 'legal-pages',
+    action: '*',
+    description: 'All legal pages management operations',
+  },
+
+  // Messaging System Permissions
+  {
+    name: 'messaging:access',
+    resource: 'messaging',
+    action: 'access',
+    description: 'Access messaging system to send and receive messages',
+  },
+  {
+    name: 'messaging:settings:read',
+    resource: 'messaging',
+    action: 'settings:read',
+    description: 'View messaging system settings',
+  },
+  {
+    name: 'messaging:settings:write',
+    resource: 'messaging',
+    action: 'settings:write',
+    description: 'Configure messaging system settings',
+  },
+  {
+    name: 'messaging:*',
+    resource: 'messaging',
+    action: '*',
+    description: 'All messaging system operations',
+  },
+
+  // Branding Management Permissions
+  {
+    name: 'branding:manage',
+    resource: 'branding',
+    action: 'manage',
+    description: 'Manage brand settings, logos, and assets',
+  },
+
+  // Calendar Permissions
+  {
+    name: 'calendar:create',
+    resource: 'calendar',
+    action: 'create',
+    description: 'Create calendar events',
+  },
+  {
+    name: 'calendar:read',
+    resource: 'calendar',
+    action: 'read',
+    description: 'View calendar events',
+  },
+  {
+    name: 'calendar:update',
+    resource: 'calendar',
+    action: 'update',
+    description: 'Edit calendar events',
+  },
+  {
+    name: 'calendar:delete',
+    resource: 'calendar',
+    action: 'delete',
+    description: 'Delete calendar events',
+  },
+  {
+    name: 'calendar:admin',
+    resource: 'calendar',
+    action: 'admin',
+    description: 'Manage calendar settings and categories',
+  },
 ];
 
 /**
@@ -582,12 +776,23 @@ export const DEFAULT_ROLES: Record<string, RoleDefinition> = {
       'layouts:read',
       'layouts:write',
       'layouts:delete',
+      'activity-logs:read',
+      'activity-logs:write',
+      'activity-logs:delete',
       'navigation:read',
       'navigation:write',
       'navigation:delete',
       'menu:read',
       'menu:write',
       'menu:delete',
+      // Media Library Permissions (Full Access)
+      'media:view',
+      'media:view:all',
+      'media:upload',
+      'media:edit:own',
+      'media:edit:all',
+      'media:delete:own',
+      'media:delete:all',
       // E-Commerce Permissions (Full Access)
       'customers:read',
       'customers:write',
@@ -602,6 +807,15 @@ export const DEFAULT_ROLES: Record<string, RoleDefinition> = {
       'orders:fulfill',
       'inventory:read',
       'inventory:write',
+      // Messaging Permissions
+      'messaging:access',
+      'messaging:settings:read',
+      'messaging:settings:write',
+      // Calendar Permissions
+      'calendar:create',
+      'calendar:read',
+      'calendar:update',
+      'calendar:delete',
     ],
     isSystemRole: true,
   },
@@ -626,6 +840,7 @@ export const DEFAULT_ROLES: Record<string, RoleDefinition> = {
       'layouts:write',
       'navigation:read',
       'menu:read',
+      'activity-logs:read',
       // E-Commerce Permissions (Read/Write, No Delete)
       'customers:read',
       'customers:write',
@@ -637,6 +852,12 @@ export const DEFAULT_ROLES: Record<string, RoleDefinition> = {
       'orders:fulfill',
       'inventory:read',
       'inventory:write',
+      // Messaging Permissions
+      'messaging:access',
+      // Calendar Permissions
+      'calendar:create',
+      'calendar:read',
+      'calendar:update',
     ],
     isSystemRole: false,
   },
@@ -655,6 +876,14 @@ export const DEFAULT_ROLES: Record<string, RoleDefinition> = {
       'widgets:read',
       'layouts:read',
       'layouts:write', // Users can customize their own layouts
+      // Media Library Permissions (Basic Access)
+      'media:view',
+      'media:upload',
+      // Messaging Permissions
+      'messaging:access',
+      // Calendar Permissions
+      'calendar:create',
+      'calendar:read',
     ],
     isSystemRole: true,
   },

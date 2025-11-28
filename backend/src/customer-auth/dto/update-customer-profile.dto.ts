@@ -10,6 +10,10 @@ export class UpdateCustomerProfileDto {
   lastName?: string;
 
   @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
   @IsString()
   phone?: string;
 

@@ -19,6 +19,7 @@ import { ProfileResponseDto } from './dto/profile-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UploadsService } from '../uploads/uploads.service';
+import { AuthService } from '../auth/auth.service';
 
 @Controller('profile')
 @UseGuards(JwtAuthGuard)
@@ -26,6 +27,7 @@ export class ProfileController {
   constructor(
     private readonly profileService: ProfileService,
     private readonly uploadsService: UploadsService,
+    private readonly authService: AuthService,
   ) {}
 
   @Get()
@@ -47,7 +49,7 @@ export class ProfileController {
   async uploadAvatar(
     @CurrentUser() user: any,
     @UploadedFile() file: Express.Multer.File,
-  ): Promise<ProfileResponseDto> {
+  ): Promise<{ url: string; filename: string; size: number; mimeType: string }> {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
@@ -64,14 +66,33 @@ export class ProfileController {
       throw new BadRequestException('File size exceeds 5MB limit');
     }
 
-    // Upload and optimize avatar
-    const uploadResult = await this.uploadsService.uploadAvatar(
-      file,
+    const baseUrl = process.env.APP_URL || 'http://localhost:3001';
+    
+    // Create upload record using uploads service
+    // Note: Static files are served at /files/ prefix (see main.ts)
+    const upload = await this.uploadsService.create(
+      {
+        filename: file.filename,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        size: file.size,
+        url: `${baseUrl}/files/${file.filename}`,
+        path: file.path,
+        type: 'AVATAR',
+      },
       user.id,
     );
 
     // Update user profile with new avatar URL
-    return this.profileService.uploadAvatar(user.id, uploadResult.url);
+    await this.profileService.uploadAvatar(user.id, upload.url);
+    
+    // Return avatar upload response matching frontend expectations
+    return {
+      url: upload.url,
+      filename: file.filename,
+      size: file.size,
+      mimeType: file.mimetype,
+    };
   }
 
   @Delete('avatar')
@@ -87,5 +108,30 @@ export class ProfileController {
   ): Promise<{ message: string }> {
     await this.profileService.changePassword(user.id, changePasswordDto);
     return { message: 'Password changed successfully. Please log in again.' };
+  }
+
+  @Get('two-factor/status')
+  async getTwoFactorStatus(
+    @CurrentUser() user: any,
+  ): Promise<{ enabled: boolean; verifiedAt?: string }> {
+    return this.profileService.getTwoFactorStatus(user.id);
+  }
+
+  @Post('two-factor/enable')
+  @Throttle({ default: { limit: 5, ttl: 3600000 } }) // 5 attempts per hour
+  async enableTwoFactor(
+    @CurrentUser() user: any,
+  ): Promise<{ message: string }> {
+    await this.authService.enableTwoFactor(user.id);
+    return { message: 'Two-factor authentication has been enabled successfully.' };
+  }
+
+  @Post('two-factor/disable')
+  @Throttle({ default: { limit: 5, ttl: 3600000 } }) // 5 attempts per hour
+  async disableTwoFactor(
+    @CurrentUser() user: any,
+  ): Promise<{ message: string }> {
+    await this.authService.disableTwoFactor(user.id);
+    return { message: 'Two-factor authentication has been disabled successfully.' };
   }
 }

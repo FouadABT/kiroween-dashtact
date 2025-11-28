@@ -32,32 +32,36 @@ export function FeaturesSectionEditor({ data, onChange }: FeaturesSectionEditorP
   };
 
   const handleAddFeature = () => {
+    const features = data.features || [];
     const newFeature: FeatureCard = {
       id: `feature-${Date.now()}`,
       icon: 'star',
       title: 'New Feature',
       description: 'Feature description',
-      order: data.features.length,
+      order: features.length,
     };
-    handleChange('features', [...data.features, newFeature]);
+    handleChange('features', [...features, newFeature]);
   };
 
   const handleUpdateFeature = (id: string, updated: FeatureCard): void => {
+    const features = data.features || [];
     handleChange(
       'features',
-      data.features.map((f) => (f.id === id ? updated : f))
+      features.map((f) => (f.id === id ? updated : f))
     );
   };
 
   const handleDeleteFeature = (id: string) => {
+    const features = data.features || [];
     handleChange(
       'features',
-      data.features.filter((f) => f.id !== id)
+      features.filter((f) => f.id !== id)
     );
   };
 
   const handleReorderFeature = (fromIndex: number, toIndex: number) => {
-    const newFeatures = [...data.features];
+    const features = data.features || [];
+    const newFeatures = [...features];
     const [moved] = newFeatures.splice(fromIndex, 1);
     newFeatures.splice(toIndex, 0, moved);
     
@@ -69,7 +73,7 @@ export function FeaturesSectionEditor({ data, onChange }: FeaturesSectionEditorP
     handleChange('features', reordered);
   };
 
-  const sortedFeatures = [...data.features].sort((a, b) => a.order - b.order);
+  const sortedFeatures = [...(data.features || [])].sort((a, b) => a.order - b.order);
 
   return (
     <div className="space-y-4">
@@ -114,7 +118,7 @@ export function FeaturesSectionEditor({ data, onChange }: FeaturesSectionEditorP
         <div className="space-y-2">
           <Label htmlFor="columns">Columns</Label>
           <Select
-            value={data.columns.toString()}
+            value={(data.columns || 3).toString()}
             onValueChange={(value) => handleChange('columns', parseInt(value))}
           >
             <SelectTrigger id="columns">

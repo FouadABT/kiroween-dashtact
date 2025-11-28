@@ -217,8 +217,30 @@ export class CheckoutService {
       throw new BadRequestException(validation.errors.join(', '));
     }
 
-    // Get cart
-    const cart = await this.cartService.getOrCreateCart(dto.sessionId, dto.userId);
+    // Get cart with full product details
+    let cart = await this.prisma.cart.findFirst({
+      where: {
+        OR: [
+          dto.sessionId ? { sessionId: dto.sessionId } : {},
+          dto.userId ? { userId: dto.userId } : {},
+        ].filter((condition) => Object.keys(condition).length > 0),
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+            productVariant: true,
+          },
+        },
+      },
+    });
+
+    if (!cart) {
+      throw new BadRequestException('Cart not found');
+    }
+
+    // Format cart response for compatibility
+    const cartResponse = await this.cartService.getOrCreateCart(dto.sessionId, dto.userId);
 
     // Calculate totals
     const totals = await this.calculateOrderTotals(
@@ -236,7 +258,34 @@ export class CheckoutService {
         where: { id: dto.userId },
         include: { customer: true },
       });
-      customer = account?.customer;
+      
+      if (!account) {
+        throw new BadRequestException('Customer account not found');
+      }
+
+      customer = account.customer;
+
+      // If customer doesn't exist, create one
+      if (!customer) {
+        customer = await this.prisma.customer.create({
+          data: {
+            email: account.email,
+            firstName: dto.shippingAddress.firstName,
+            lastName: dto.shippingAddress.lastName,
+            phone: dto.shippingAddress.phone,
+            shippingAddress: dto.shippingAddress as any,
+            billingAddress: (dto.sameAsShipping
+              ? dto.shippingAddress
+              : dto.billingAddress) as any,
+          },
+        });
+
+        // Link customer to account
+        await this.prisma.customerAccount.update({
+          where: { id: dto.userId },
+          data: { customerId: customer.id },
+        });
+      }
     } else {
       // Create guest customer
       customer = await this.prisma.customer.create({
@@ -281,18 +330,6 @@ export class CheckoutService {
         customerName: `${customer.firstName} ${customer.lastName}`,
         customerPhone: customer.phone,
         customerNotes: dto.customerNotes,
-        items: {
-          create: cart.items.map((item) => ({
-            productId: item.productId,
-            productVariantId: item.productVariantId,
-            productName: item.product?.name || 'Unknown Product',
-            variantName: item.productVariant?.name,
-            sku: item.productVariant?.id || item.product?.id,
-            quantity: item.quantity,
-            unitPrice: item.priceSnapshot,
-            totalPrice: Number(item.priceSnapshot) * item.quantity,
-          })),
-        },
       },
       include: {
         items: true,
@@ -300,13 +337,35 @@ export class CheckoutService {
       },
     });
 
+    // Create order items separately to ensure product data is loaded
+    for (const item of cart.items) {
+      await this.prisma.orderItem.create({
+        data: {
+          orderId: order.id,
+          productId: item.productId,
+          productVariantId: item.productVariantId || null,
+          productName: item.product?.name || 'Unknown Product',
+          variantName: item.productVariant?.name || null,
+          sku: item.productVariant?.id || item.product?.id || item.productId,
+          quantity: item.quantity,
+          unitPrice: item.priceSnapshot,
+          totalPrice: (Number(item.priceSnapshot) * item.quantity).toString(),
+        },
+      });
+    }
+
     // Reserve inventory
     for (const item of cart.items) {
       if (item.productVariantId) {
-        await this.inventoryService.reserveStock({
-          productVariantId: item.productVariantId,
-          quantity: item.quantity,
-        });
+        try {
+          await this.inventoryService.reserveStock({
+            productVariantId: item.productVariantId,
+            quantity: item.quantity,
+          });
+        } catch (error) {
+          // Log error but don't fail order creation
+          console.error('Failed to reserve stock:', error);
+        }
       }
     }
 

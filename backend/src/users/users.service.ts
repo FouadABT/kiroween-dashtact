@@ -11,6 +11,7 @@ import { UserQueryDto } from './dto/user-query.dto';
 import * as bcrypt from 'bcrypt';
 import { NotificationsService } from '../notifications/notifications.service';
 import { createSecurityAlertNotification, createUserActionNotification } from '../notifications/notification-helpers';
+import { UsageTracker } from '../uploads/helpers/usage-tracker';
 
 // Default role IDs from migration
 const DEFAULT_ROLE_IDS = {
@@ -24,6 +25,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
+    private usageTracker: UsageTracker,
   ) {}
 
   /**
@@ -295,6 +297,11 @@ export class UsersService {
       } catch (notificationError) {
         console.error('Failed to send profile update notification:', notificationError);
       }
+    }
+
+    // Track avatar usage if updated
+    if (updateData.avatarUrl && updateData.avatarUrl !== existingUser.avatarUrl) {
+      await this.usageTracker.trackUsage(updateData.avatarUrl, 'avatars', user.id);
     }
 
     // Remove password

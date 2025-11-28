@@ -8,10 +8,11 @@
 /**
  * File upload request data
  * Matches backend UploadFileDto
+ * Note: type is optional as backend determines it from MIME type for security
  */
 export interface UploadFileData {
-  /** Type of file being uploaded */
-  type: 'image' | 'document';
+  /** Type of file being uploaded (optional - backend determines from MIME type) */
+  type?: 'image' | 'document';
   /** Optional description of the file */
   description?: string;
 }

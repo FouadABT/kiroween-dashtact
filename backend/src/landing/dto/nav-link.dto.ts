@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsEnum, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class NavLinkDto {
   @IsString()
@@ -10,8 +11,11 @@ export class NavLinkDto {
   url: string;
 
   @IsEnum(['url', 'page'])
-  linkType: 'url' | 'page';
+  @IsOptional()
+  @Transform(({ value }) => value || 'url')
+  linkType?: 'url' | 'page';
 
   @IsNumber()
-  order: number;
+  @IsOptional()
+  order?: number;
 }

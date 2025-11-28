@@ -9,10 +9,14 @@ import { UpdateBlogPostDto } from './dto/update-blog-post.dto';
 import { BlogQueryDto } from './dto/blog-query.dto';
 import { PostStatus, Prisma } from '@prisma/client';
 import { generateExcerpt } from './utils/excerpt-generator';
+import { UsageTracker } from '../uploads/helpers/usage-tracker';
 
 @Injectable()
 export class BlogService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly usageTracker: UsageTracker,
+  ) {}
 
   /**
    * Generate URL-friendly slug from title
@@ -125,7 +129,7 @@ export class BlogService {
     const finalExcerpt = excerpt || generateExcerpt(content, 200);
 
     // Create blog post with relations
-    return this.prisma.blogPost.create({
+    const post = await this.prisma.blogPost.create({
       data: {
         title,
         slug,
@@ -160,6 +164,13 @@ export class BlogService {
         tags: true,
       },
     });
+
+    // Track featured image usage
+    if (featuredImage) {
+      await this.usageTracker.trackUsage(featuredImage, 'blogPosts', post.id);
+    }
+
+    return post;
   }
 
   /**
@@ -386,7 +397,7 @@ export class BlogService {
       }
     }
 
-    return this.prisma.blogPost.update({
+    const post = await this.prisma.blogPost.update({
       where: { id },
       data: {
         ...updateData,
@@ -414,6 +425,13 @@ export class BlogService {
         tags: true,
       },
     });
+
+    // Track featured image usage if updated
+    if (updateData.featuredImage && updateData.featuredImage !== existingPost.featuredImage) {
+      await this.usageTracker.trackUsage(updateData.featuredImage, 'blogPosts', post.id);
+    }
+
+    return post;
   }
 
   /**

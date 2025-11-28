@@ -11,13 +11,14 @@ import { LandingPageSection, TestimonialsSectionData } from '@/types/landing-pag
 
 interface TestimonialsSectionProps {
   section: LandingPageSection;
+  maxWidth?: 'full' | 'container' | 'narrow';
 }
 
-export function TestimonialsSection({ section }: TestimonialsSectionProps) {
+export function TestimonialsSection({ section, maxWidth = 'container' }: TestimonialsSectionProps) {
   const data = section.data as TestimonialsSectionData;
 
   // Sort testimonials by order
-  const sortedTestimonials = [...data.testimonials].sort((a, b) => a.order - b.order);
+  const sortedTestimonials = [...(data.testimonials || [])].sort((a, b) => a.order - b.order);
 
   // Determine layout classes
   const layoutClass = data.layout === 'carousel'

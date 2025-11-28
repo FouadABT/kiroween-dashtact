@@ -11,33 +11,74 @@ import { LandingPageSection, ContentSectionData } from '@/types/landing-page';
 
 interface ContentSectionProps {
   section: LandingPageSection;
+  maxWidth?: 'full' | 'container' | 'narrow';
 }
 
-export function ContentSection({ section }: ContentSectionProps) {
+export function ContentSection({ section, maxWidth = 'container' }: ContentSectionProps) {
   const data = section.data as ContentSectionData;
 
   // Determine if we have an image
   const hasImage = data.image && data.layout === 'two-column';
 
+  // Determine container width based on global setting
+  const getContainerClass = () => {
+    // If section has specific contentWidth, use it; otherwise use global maxWidth
+    if (data.contentWidth) {
+      switch (data.contentWidth) {
+        case 'full':
+          return 'w-full';
+        case 'wide':
+          return 'max-w-6xl mx-auto';
+        case 'narrow':
+          return 'max-w-3xl mx-auto';
+        case 'standard':
+        default:
+          return 'max-w-4xl mx-auto';
+      }
+    }
+    
+    // Use global maxWidth setting
+    return maxWidth === 'full'
+      ? 'w-full'
+      : maxWidth === 'narrow'
+      ? 'max-w-4xl mx-auto'
+      : 'max-w-7xl mx-auto'; // container (default)
+  };
+
   // Determine image position classes
   const getLayoutClasses = () => {
     if (!hasImage) {
-      return 'max-w-4xl mx-auto';
+      return getContainerClass();
     }
 
     const baseClasses = 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center';
+    const containerClass = getContainerClass();
     
     if (data.imagePosition === 'right') {
-      return baseClasses;
+      return `${containerClass} ${baseClasses}`;
     } else if (data.imagePosition === 'left') {
-      return `${baseClasses} md:grid-flow-dense`;
+      return `${containerClass} ${baseClasses} md:grid-flow-dense`;
     }
     
-    return baseClasses;
+    return `${containerClass} ${baseClasses}`;
   };
 
+  // Generate unique section ID for CSS scoping
+  const sectionId = `content-section-${section.id}`;
+
   return (
-    <section data-section-type="content" className="py-16 px-4 sm:px-6 lg:px-8">
+    <section 
+      id={sectionId}
+      data-section-type="content" 
+      className="py-16 px-4 sm:px-6 lg:px-8"
+    >
+      {/* Custom CSS scoped to this section */}
+      {data.customCSS && (
+        <style dangerouslySetInnerHTML={{ 
+          __html: `#${sectionId} { ${data.customCSS} }` 
+        }} />
+      )}
+
       <div className="max-w-7xl mx-auto">
         {/* Title (optional) */}
         {data.title && (
@@ -82,7 +123,7 @@ export function ContentSection({ section }: ContentSectionProps) {
 
             {/* Render content as HTML (sanitized on backend) */}
             <div
-              className="text-foreground"
+              className="text-foreground content-html"
               dangerouslySetInnerHTML={{ __html: data.content }}
             />
 
