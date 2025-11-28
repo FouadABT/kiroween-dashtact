@@ -18,6 +18,8 @@ out/
 .env*.local
 .env.development
 .env.production
+deployment/production.env.backend
+deployment/production.env.frontend
 
 # Logs
 logs/
