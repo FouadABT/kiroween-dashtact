@@ -991,8 +991,70 @@ async function main() {
 
   const environment = await selectEnvironment();
 
-  // Step 3: Database configuration
-  log('\nStep 3: Database Configuration', 'bright');
+  // Step 3: Feature selection
+  log('\nStep 3: Feature Selection', 'bright');
+  log('─────────────────────────────────────────────────────────────\n', 'cyan');
+
+  const features = await selectFeatures();
+
+  log('\n📝 Selected Features:', 'bright');
+  for (const [key, enabled] of Object.entries(features)) {
+    const status = enabled ? '✅' : '❌';
+    log(`  ${status} ${key}`, enabled ? 'green' : 'dim');
+  }
+
+  // Step 4: Theme configuration
+  log('\nStep 4: Theme Configuration', 'bright');
+  log('─────────────────────────────────────────────────────────────', 'cyan');
+
+  const theme = await configureTheme();
+
+  // Step 5: Branding configuration
+  log('\nStep 5: Branding Configuration', 'bright');
+  log('─────────────────────────────────────────────────────────────', 'cyan');
+
+  const branding = await configureBranding();
+
+  // Step 6: Update environment files
+  log('\nStep 6: Updating Environment Files', 'bright');
+  log('─────────────────────────────────────────────────────────────\n', 'cyan');
+
+  try {
+    updateEnvFile(`backend/${environment.envFile}`, features, true);
+    log(`✅ Updated backend/${environment.envFile}`, 'green');
+
+    updateEnvFile('frontend/.env.local', features, false);
+    log('✅ Updated frontend/.env.local', 'green');
+  } catch (error) {
+    log(`❌ Failed to update environment files: ${error.message}`, 'red');
+    process.exit(1);
+  }
+
+  // Step 7: Install dependencies (MOVED BEFORE DATABASE TESTING)
+  log('\nStep 7: Installing Dependencies', 'bright');
+  log('─────────────────────────────────────────────────────────────\n', 'cyan');
+
+  log('💡 Installing backend dependencies first (required for database operations)...', 'yellow');
+  if (!runCommand('npm install', 'backend')) {
+    log('⚠️  Backend dependencies installation had issues', 'yellow');
+    log('   Database operations may fail without pg module', 'dim');
+  } else {
+    log('✅ Backend dependencies installed', 'green');
+  }
+
+  const installFrontend = await confirm('\nInstall frontend dependencies now?');
+  if (installFrontend) {
+    if (!runCommand('npm install', 'frontend')) {
+      log('⚠️  Frontend dependencies installation had issues', 'yellow');
+    } else {
+      log('✅ Frontend dependencies installed', 'green');
+    }
+  } else {
+    log('⏭️  Skipping frontend dependencies (you can install later with: cd frontend && npm install)', 'yellow');
+  }
+
+  // Step 8: Database configuration (MOVED AFTER DEPENDENCIES)
+  log('\nStep 8: Database Configuration', 'bright');
   log('─────────────────────────────────────────────────────────────', 'cyan');
 
   const dbSetup = await configureDatabaseConnection();
@@ -1008,59 +1070,6 @@ async function main() {
       );
       fs.writeFileSync(envPath, envContent);
       log(`\n✅ Updated ${environment.envFile} with database connection`, 'green');
-    }
-  }
-
-  // Step 4: Feature selection
-  log('\nStep 4: Feature Selection', 'bright');
-  log('─────────────────────────────────────────────────────────────\n', 'cyan');
-
-  const features = await selectFeatures();
-
-  log('\n📝 Selected Features:', 'bright');
-  for (const [key, enabled] of Object.entries(features)) {
-    const status = enabled ? '✅' : '❌';
-    log(`  ${status} ${key}`, enabled ? 'green' : 'dim');
-  }
-
-  // Step 5: Theme configuration
-  log('\nStep 5: Theme Configuration', 'bright');
-  log('─────────────────────────────────────────────────────────────', 'cyan');
-
-  const theme = await configureTheme();
-
-  // Step 6: Branding configuration
-  log('\nStep 6: Branding Configuration', 'bright');
-  log('─────────────────────────────────────────────────────────────', 'cyan');
-
-  const branding = await configureBranding();
-
-  // Step 7: Update environment files
-  log('\nStep 7: Updating Environment Files', 'bright');
-  log('─────────────────────────────────────────────────────────────\n', 'cyan');
-
-  try {
-    updateEnvFile(`backend/${environment.envFile}`, features, true);
-    log(`✅ Updated backend/${environment.envFile}`, 'green');
-
-    updateEnvFile('frontend/.env.local', features, false);
-    log('✅ Updated frontend/.env.local', 'green');
-  } catch (error) {
-    log(`❌ Failed to update environment files: ${error.message}`, 'red');
-    process.exit(1);
-  }
-
-  // Step 8: Install dependencies
-  log('\nStep 8: Installing Dependencies', 'bright');
-  log('─────────────────────────────────────────────────────────────\n', 'cyan');
-
-  const installDeps = await confirm('Install npm dependencies?');
-  if (installDeps) {
-    if (!runCommand('npm install', 'backend')) {
-      log('⚠️  Backend dependencies installation had issues', 'yellow');
-    }
-    if (!runCommand('npm install', 'frontend')) {
-      log('⚠️  Frontend dependencies installation had issues', 'yellow');
     }
   }
 
