@@ -22,12 +22,14 @@ CREATE TABLE "user_roles" (
 -- Step 2: Create unique index on role name
 CREATE UNIQUE INDEX "user_roles_name_key" ON "user_roles"("name");
 
--- Step 3: Insert default roles (preserving the original enum values)
+-- Step 3: Insert default roles (using proper case names to match seed data)
+-- Note: These will be replaced by seed data with proper permissions
+-- Keeping minimal roles here for migration compatibility
 INSERT INTO "user_roles" ("id", "name", "description", "isActive", "created_at", "updated_at")
 VALUES 
-    ('cldefault_user', 'USER', 'Standard user with basic permissions', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('cldefault_admin', 'ADMIN', 'Administrator with full system access', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('cldefault_moderator', 'MODERATOR', 'Moderator with content management permissions', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    ('cldefault_user', 'User', 'Standard user with basic permissions', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('cldefault_admin', 'Admin', 'Administrator with full system access', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('cldefault_moderator', 'Manager', 'Manager with content management permissions', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Step 4: Add new columns to users table (with temporary nullable constraint)
 ALTER TABLE "users" 
@@ -36,11 +38,12 @@ ADD COLUMN "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
 ADD COLUMN "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP;
 
 -- Step 5: Migrate existing role data to role_id
+-- Map old enum values to new role IDs (cast enum to text first)
 UPDATE "users" 
 SET "role_id" = CASE 
-    WHEN "role" = 'USER' THEN 'cldefault_user'
-    WHEN "role" = 'ADMIN' THEN 'cldefault_admin'
-    WHEN "role" = 'MODERATOR' THEN 'cldefault_moderator'
+    WHEN UPPER("role"::text) = 'USER' THEN 'cldefault_user'
+    WHEN UPPER("role"::text) = 'ADMIN' THEN 'cldefault_admin'
+    WHEN UPPER("role"::text) = 'MODERATOR' THEN 'cldefault_moderator'
     ELSE 'cldefault_user'
 END;
 

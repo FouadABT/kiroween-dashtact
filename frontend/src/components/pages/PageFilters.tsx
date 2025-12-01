@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Filter, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { PageStatus } from '@/types/pages';
+import { PageStatus, PageVisibility } from '@/types/pages';
 import type { PageQueryDto, CustomPage } from '@/types/pages';
 import { PagesApi } from '@/lib/api';
 
@@ -31,36 +31,32 @@ interface PageFiltersProps {
 
 export function PageFilters({ filters, onFilterChange }: PageFiltersProps) {
   const [parentPages, setParentPages] = useState<CustomPage[]>([]);
-  const [isLoadingParents, setIsLoadingParents] = useState(false);
+  const hasFetchedRef = useRef(false);
 
   // Fetch parent pages only once on mount
   useEffect(() => {
-    let isMounted = true;
+    console.log('[PageFilters] useEffect triggered, hasFetched:', hasFetchedRef.current);
+    
+    if (hasFetchedRef.current) {
+      console.log('[PageFilters] Already fetched, skipping');
+      return;
+    }
+    
+    hasFetchedRef.current = true;
+    console.log('[PageFilters] ===== MAKING API CALL FOR PARENT PAGES =====');
     
     const fetchParentPages = async () => {
-      if (isLoadingParents) return; // Prevent duplicate calls
-      
       try {
-        setIsLoadingParents(true);
         const response = await PagesApi.getAll({ status: PageStatus.PUBLISHED, limit: 50 });
-        if (isMounted) {
-          setParentPages(response.data);
-        }
+        console.log('[PageFilters] Received', response.data.length, 'parent pages');
+        setParentPages(response.data);
       } catch (error) {
         console.error('Failed to fetch parent pages:', error);
-      } finally {
-        if (isMounted) {
-          setIsLoadingParents(false);
-        }
       }
     };
 
     fetchParentPages();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []); // Empty dependency array - only run once
+  }, []);
 
   // Calculate active filters count (memoized calculation, no state update)
   const activeFiltersCount = (() => {
@@ -101,7 +97,7 @@ export function PageFilters({ filters, onFilterChange }: PageFiltersProps) {
           <DropdownMenuRadioGroup
             value={filters.status || 'all'}
             onValueChange={(value) =>
-              onFilterChange({ status: value === 'all' ? undefined : value as any })
+              onFilterChange({ status: value === 'all' ? undefined : (value as PageStatus) })
             }
           >
             <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
@@ -116,7 +112,7 @@ export function PageFilters({ filters, onFilterChange }: PageFiltersProps) {
           <DropdownMenuRadioGroup
             value={filters.visibility || 'all'}
             onValueChange={(value) =>
-              onFilterChange({ visibility: value === 'all' ? undefined : value as any })
+              onFilterChange({ visibility: value === 'all' ? undefined : (value as PageVisibility) })
             }
           >
             <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
@@ -172,7 +168,10 @@ export function PageFilters({ filters, onFilterChange }: PageFiltersProps) {
         value={`${filters.sortBy || 'updatedAt'}-${filters.sortOrder || 'desc'}`}
         onValueChange={(value) => {
           const [sortBy, sortOrder] = value.split('-');
-          onFilterChange({ sortBy: sortBy as any, sortOrder: sortOrder as any });
+          onFilterChange({ 
+            sortBy: sortBy as 'createdAt' | 'updatedAt' | 'title' | 'displayOrder', 
+            sortOrder: sortOrder as 'asc' | 'desc' 
+          });
         }}
       >
         <SelectTrigger className="w-[180px]">

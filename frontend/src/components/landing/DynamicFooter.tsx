@@ -25,9 +25,10 @@ import {
   Github,
   Youtube,
   Mail,
+  type LucideIcon,
 } from 'lucide-react';
 
-const socialIcons: Record<string, any> = {
+const socialIcons: Record<string, LucideIcon> = {
   facebook: Facebook,
   twitter: Twitter,
   instagram: Instagram,
@@ -191,6 +192,9 @@ export function DynamicFooter() {
           {config.newsletter.enabled && (
             <div className="space-y-4">
               <h3 className="font-semibold text-lg text-foreground">{config.newsletter.title}</h3>
+              {config.newsletter.description && (
+                <p className="text-sm text-muted-foreground">{config.newsletter.description}</p>
+              )}
               <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
                 <Input
                   type="email"

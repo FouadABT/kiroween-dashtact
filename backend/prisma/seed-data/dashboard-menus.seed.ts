@@ -37,9 +37,16 @@ export async function seedDashboardMenus(
   if (!flags.blog) disabledFeatures.push('blog');
   if (!flags.calendar) disabledFeatures.push('calendar');
   if (!flags.ecommerce) {
-    disabledFeatures.push('ecommerce', 'ecommerce-products', 'ecommerce-orders', 
-      'ecommerce-customers', 'ecommerce-inventory', 'ecommerce-categories', 
-      'ecommerce-payments', 'ecommerce-shipping');
+    disabledFeatures.push(
+      'ecommerce',
+      'ecommerce-products',
+      'ecommerce-orders',
+      'ecommerce-customers',
+      'ecommerce-inventory',
+      'ecommerce-categories',
+      'ecommerce-payments',
+      'ecommerce-shipping',
+    );
   }
   if (!flags.landing) disabledFeatures.push('settings-landing-page');
   if (!flags.notifications) disabledFeatures.push('settings-notifications');
@@ -47,11 +54,13 @@ export async function seedDashboardMenus(
   if (!flags.ecommerce) disabledFeatures.push('settings-ecommerce');
 
   if (disabledFeatures.length > 0) {
-    console.log(`🗑️  Cleaning up menus for disabled features: ${disabledFeatures.join(', ')}`);
+    console.log(
+      `🗑️  Cleaning up menus for disabled features: ${disabledFeatures.join(', ')}`,
+    );
     await db.dashboardMenu.deleteMany({
       where: {
-        key: { in: disabledFeatures }
-      }
+        key: { in: disabledFeatures },
+      },
     });
   }
 
@@ -91,7 +100,7 @@ export async function seedDashboardMenus(
     {
       key: 'analytics',
       label: 'Analytics',
-      icon: 'BarChart3',
+      icon: 'ChartLine',
       route: '/dashboard/analytics',
       order: 5,
       permissions: [],
@@ -223,7 +232,7 @@ export async function seedDashboardMenus(
     {
       key: 'widgets',
       label: 'Widgets',
-      icon: 'Grid',
+      icon: 'Boxes',
       route: '/dashboard/widgets',
       order: 75,
       permissions: ['widgets:read'],
@@ -320,7 +329,7 @@ export async function seedDashboardMenus(
     {
       key: 'settings-landing-page',
       label: 'Landing Page',
-      icon: 'Home',
+      icon: 'House',
       route: '/dashboard/settings/landing-page',
       order: 6,
       permissions: ['landing:write'],
@@ -400,7 +409,9 @@ export async function seedDashboardMenus(
   for (const item of settingsItems) {
     // Skip if feature is disabled
     if (item.feature && !flags[item.feature as keyof FeatureFlags]) {
-      console.log(`⏭️  Skipping settings item: ${item.label} (feature disabled)`);
+      console.log(
+        `⏭️  Skipping settings item: ${item.label} (feature disabled)`,
+      );
       continue;
     }
 
@@ -528,8 +539,12 @@ export async function seedDashboardMenus(
       });
     }
   } else if (!flags.ecommerce) {
-    console.log('⏭️  E-commerce feature disabled, skipping ecommerce sub-items');
+    console.log(
+      '⏭️  E-commerce feature disabled, skipping ecommerce sub-items',
+    );
   }
 
-  console.log('✅ Dashboard menus seeded successfully with role-based access control');
+  console.log(
+    '✅ Dashboard menus seeded successfully with role-based access control',
+  );
 }

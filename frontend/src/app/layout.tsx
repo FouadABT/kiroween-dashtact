@@ -3,6 +3,144 @@ import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
 import { Toaster } from "@/components/ui/sonner";
 import { BrandingApi } from "@/lib/api/branding";
+import { 
+  Inter, 
+  Roboto, 
+  Open_Sans, 
+  Lato, 
+  Poppins, 
+  Montserrat, 
+  Source_Sans_3,
+  Nunito,
+  Merriweather,
+  Playfair_Display,
+  Lora,
+  PT_Serif,
+  Crimson_Text,
+  Source_Serif_4,
+  Fira_Code,
+  JetBrains_Mono,
+  Source_Code_Pro,
+  IBM_Plex_Mono
+} from "next/font/google";
+
+// Sans Serif Fonts
+const inter = Inter({ 
+  subsets: ["latin"], 
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const roboto = Roboto({ 
+  weight: ["300", "400", "500", "700"],
+  subsets: ["latin"], 
+  variable: "--font-roboto",
+  display: "swap",
+});
+
+const openSans = Open_Sans({ 
+  subsets: ["latin"], 
+  variable: "--font-open-sans",
+  display: "swap",
+});
+
+const lato = Lato({ 
+  weight: ["300", "400", "700"],
+  subsets: ["latin"], 
+  variable: "--font-lato",
+  display: "swap",
+});
+
+const poppins = Poppins({ 
+  weight: ["300", "400", "500", "600", "700"],
+  subsets: ["latin"], 
+  variable: "--font-poppins",
+  display: "swap",
+});
+
+const montserrat = Montserrat({ 
+  subsets: ["latin"], 
+  variable: "--font-montserrat",
+  display: "swap",
+});
+
+const sourceSans = Source_Sans_3({ 
+  subsets: ["latin"], 
+  variable: "--font-source-sans",
+  display: "swap",
+});
+
+const nunito = Nunito({ 
+  subsets: ["latin"], 
+  variable: "--font-nunito",
+  display: "swap",
+});
+
+// Serif Fonts
+const merriweather = Merriweather({ 
+  weight: ["300", "400", "700"],
+  subsets: ["latin"], 
+  variable: "--font-merriweather",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({ 
+  subsets: ["latin"], 
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const lora = Lora({ 
+  subsets: ["latin"], 
+  variable: "--font-lora",
+  display: "swap",
+});
+
+const ptSerif = PT_Serif({ 
+  weight: ["400", "700"],
+  subsets: ["latin"], 
+  variable: "--font-pt-serif",
+  display: "swap",
+});
+
+const crimsonText = Crimson_Text({ 
+  weight: ["400", "600", "700"],
+  subsets: ["latin"], 
+  variable: "--font-crimson-text",
+  display: "swap",
+});
+
+const sourceSerif = Source_Serif_4({ 
+  subsets: ["latin"], 
+  variable: "--font-source-serif",
+  display: "swap",
+});
+
+// Monospace Fonts
+const firaCode = Fira_Code({ 
+  subsets: ["latin"], 
+  variable: "--font-fira-code",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({ 
+  subsets: ["latin"], 
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+const sourceCodePro = Source_Code_Pro({ 
+  subsets: ["latin"], 
+  variable: "--font-source-code-pro",
+  display: "swap",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({ 
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"], 
+  variable: "--font-ibm-plex-mono",
+  display: "swap",
+});
 
 async function getBrandingMetadata() {
   try {
@@ -68,8 +206,33 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Combine all font variables for the html element
+  const fontVariables = [
+    // Sans Serif
+    inter.variable,
+    roboto.variable,
+    openSans.variable,
+    lato.variable,
+    poppins.variable,
+    montserrat.variable,
+    sourceSans.variable,
+    nunito.variable,
+    // Serif
+    merriweather.variable,
+    playfair.variable,
+    lora.variable,
+    ptSerif.variable,
+    crimsonText.variable,
+    sourceSerif.variable,
+    // Monospace
+    firaCode.variable,
+    jetbrainsMono.variable,
+    sourceCodePro.variable,
+    ibmPlexMono.variable,
+  ].join(' ');
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={fontVariables}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

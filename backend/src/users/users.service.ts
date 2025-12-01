@@ -13,12 +13,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { createSecurityAlertNotification, createUserActionNotification } from '../notifications/notification-helpers';
 import { UsageTracker } from '../uploads/helpers/usage-tracker';
 
-// Default role IDs from migration
-const DEFAULT_ROLE_IDS = {
-  USER: 'cldefault_user',
-  ADMIN: 'cldefault_admin',
-  MODERATOR: 'cldefault_moderator',
-};
+// Default role name for new users
+const DEFAULT_ROLE_NAME = 'User';
 
 @Injectable()
 export class UsersService {
@@ -43,16 +39,28 @@ export class UsersService {
       throw new ConflictException('User with this email already exists');
     }
 
-    // Use provided roleId or default to USER role
-    const finalRoleId = roleId || DEFAULT_ROLE_IDS.USER;
+    // If roleId not provided, get default role by name
+    let finalRoleId = roleId;
+    
+    if (!finalRoleId) {
+      const defaultRole = await this.prisma.userRole.findUnique({
+        where: { name: DEFAULT_ROLE_NAME },
+      });
+      
+      if (!defaultRole) {
+        throw new BadRequestException(`Default role "${DEFAULT_ROLE_NAME}" not found`);
+      }
+      
+      finalRoleId = defaultRole.id;
+    } else {
+      // Verify provided role exists
+      const roleExists = await this.prisma.userRole.findUnique({
+        where: { id: finalRoleId },
+      });
 
-    // Verify role exists
-    const roleExists = await this.prisma.userRole.findUnique({
-      where: { id: finalRoleId },
-    });
-
-    if (!roleExists) {
-      throw new BadRequestException('Invalid role ID');
+      if (!roleExists) {
+        throw new BadRequestException('Invalid role ID');
+      }
     }
 
     // Hash password

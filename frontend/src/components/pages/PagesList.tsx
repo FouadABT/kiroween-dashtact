@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Plus, Grid, List as ListIcon } from 'lucide-react';
@@ -26,11 +26,45 @@ export function PagesList() {
     limit: 20,
     sortBy: 'updatedAt',
     sortOrder: 'desc',
+    // Don't include search in initial state
   });
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const fetchingRef = useRef(false);
 
   useEffect(() => {
+    console.log('[PagesList] useEffect triggered');
+    console.log('[PagesList] fetchingRef.current:', fetchingRef.current);
+    console.log('[PagesList] filters:', JSON.stringify(filters));
+    
+    if (fetchingRef.current) {
+      console.log('[PagesList] Already fetching, skipping');
+      return;
+    }
+
+    const fetchPages = async () => {
+      fetchingRef.current = true;
+      console.log('[PagesList] ===== MAKING API CALL =====');
+      console.log('[PagesList] API params:', filters);
+      
+      try {
+        setIsLoading(true);
+        const response = await PagesApi.getAll(filters);
+        console.log('[PagesList] API response received:', response.data.length, 'pages');
+        
+        setPages(response.data);
+        setTotalCount(response.total);
+        setTotalPages(response.totalPages);
+      } catch (error) {
+        console.error('Failed to fetch pages:', error);
+        toast.error('Failed to load pages. Please try again.');
+      } finally {
+        setIsLoading(false);
+        fetchingRef.current = false;
+        console.log('[PagesList] Fetch complete, reset fetchingRef');
+      }
+    };
+
     fetchPages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -67,7 +101,13 @@ export function PagesList() {
   };
 
   const handleSearchChange = (search: string) => {
-    setFilters((prev) => ({ ...prev, search, page: 1 }));
+    console.log('[PagesList] handleSearchChange called with:', search);
+    console.log('[PagesList] Current filters before update:', filters);
+    setFilters((prev) => {
+      const newFilters = { ...prev, search, page: 1 };
+      console.log('[PagesList] New filters after update:', newFilters);
+      return newFilters;
+    });
     setSelectedPages(new Set());
   };
 
@@ -88,19 +128,17 @@ export function PagesList() {
     });
   };
 
-  const handleSelectAll = (selected: boolean) => {
-    if (selected) {
-      setSelectedPages(new Set(pages.map((p) => p.id)));
-    } else {
-      setSelectedPages(new Set());
-    }
+
+
+  const refreshPages = () => {
+    fetchPages();
   };
 
   const handleDelete = async (pageId: string) => {
     try {
       await PagesApi.delete(pageId);
       toast.success('Page deleted successfully');
-      fetchPages();
+      refreshPages();
     } catch (error) {
       console.error('Failed to delete page:', error);
       toast.error('Failed to delete page. Please try again.');
@@ -111,7 +149,7 @@ export function PagesList() {
     try {
       await PagesApi.publish(pageId);
       toast.success('Page published successfully');
-      fetchPages();
+      refreshPages();
     } catch (error) {
       console.error('Failed to publish page:', error);
       toast.error('Failed to publish page. Please try again.');
@@ -122,7 +160,7 @@ export function PagesList() {
     try {
       await PagesApi.unpublish(pageId);
       toast.success('Page unpublished successfully');
-      fetchPages();
+      refreshPages();
     } catch (error) {
       console.error('Failed to unpublish page:', error);
       toast.error('Failed to unpublish page. Please try again.');
@@ -150,7 +188,7 @@ export function PagesList() {
 
       await PagesApi.create(duplicatedPage);
       toast.success('Page duplicated successfully');
-      fetchPages();
+      refreshPages();
     } catch (error) {
       console.error('Failed to duplicate page:', error);
       toast.error('Failed to duplicate page. Please try again.');
@@ -173,7 +211,7 @@ export function PagesList() {
       }
       
       setSelectedPages(new Set());
-      fetchPages();
+      refreshPages();
     } catch (error) {
       console.error('Failed to perform bulk action:', error);
       toast.error('Failed to perform bulk action. Please try again.');
@@ -232,7 +270,7 @@ export function PagesList() {
       )}
 
       {/* View Tabs */}
-      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'grid' | 'list' | 'hierarchy')}>
         <TabsList className="hidden">
           <TabsTrigger value="grid">Grid</TabsTrigger>
           <TabsTrigger value="list">List</TabsTrigger>

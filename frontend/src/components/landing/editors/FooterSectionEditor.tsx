@@ -4,8 +4,10 @@
  * Footer Section Editor
  * 
  * Edit footer section with nav/social links.
+ * Social links can auto-sync with branding settings or be customized.
  */
 
+import { useState, useEffect } from 'react';
 import { FooterSectionData, NavLink, SocialLink } from '@/types/landing-page';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,8 +16,11 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, RefreshCw, Info } from 'lucide-react';
 import { PageSelector } from '../shared/PageSelector';
+import { BrandingApi } from '@/lib/api/branding';
+import { toast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface FooterSectionEditorProps {
   data: FooterSectionData;
@@ -23,6 +28,58 @@ interface FooterSectionEditorProps {
 }
 
 export function FooterSectionEditor({ data, onChange }: FooterSectionEditorProps) {
+  const [useBrandingSocial, setUseBrandingSocial] = useState(true);
+  const [brandingSocialLinks, setBrandingSocialLinks] = useState<any>(null);
+  const [isLoadingBranding, setIsLoadingBranding] = useState(false);
+  // Load branding social links on mount
+  useEffect(() => {
+    loadBrandingSocialLinks();
+  }, []);
+
+  const loadBrandingSocialLinks = async () => {
+    try {
+      setIsLoadingBranding(true);
+      const branding = await BrandingApi.getBrandSettings();
+      setBrandingSocialLinks(branding.socialLinks);
+    } catch (error) {
+      console.error('Failed to load branding social links:', error);
+    } finally {
+      setIsLoadingBranding(false);
+    }
+  };
+
+  const syncWithBranding = () => {
+    if (!brandingSocialLinks) {
+      toast.error('No branding social links available');
+      return;
+    }
+
+    // Convert branding social links to footer format
+    const converted: SocialLink[] = [];
+    const iconMap: Record<string, string> = {
+      twitter: 'Twitter',
+      linkedin: 'Linkedin',
+      facebook: 'Facebook',
+      instagram: 'Instagram',
+      github: 'Github',
+      youtube: 'Youtube',
+    };
+
+    Object.entries(brandingSocialLinks).forEach(([platform, url]) => {
+      if (url && typeof url === 'string' && url.trim()) {
+        converted.push({
+          platform,
+          url: url as string,
+          icon: iconMap[platform] || platform,
+        });
+      }
+    });
+
+    handleChange('socialLinks', converted);
+    setUseBrandingSocial(true);
+    toast.success('Social links synced with branding settings');
+  };
+
   const handleChange = (field: keyof FooterSectionData, value: any) => {
     onChange({ ...data, [field]: value });
   };
@@ -64,6 +121,7 @@ export function FooterSectionEditor({ data, onChange }: FooterSectionEditorProps
 
   const handleDeleteSocialLink = (index: number) => {
     handleChange('socialLinks', data.socialLinks.filter((_, i) => i !== index));
+    setUseBrandingSocial(false);
   };
 
   return (
@@ -153,11 +211,38 @@ export function FooterSectionEditor({ data, onChange }: FooterSectionEditorProps
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label>Social Links</Label>
-          <Button onClick={handleAddSocialLink} size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Link
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={syncWithBranding} 
+              size="sm" 
+              variant="outline"
+              className="gap-2"
+              disabled={isLoadingBranding}
+            >
+              <RefreshCw className="h-4 w-4" />
+              Sync with Branding
+            </Button>
+            <Button 
+              onClick={() => {
+                handleAddSocialLink();
+                setUseBrandingSocial(false);
+              }} 
+              size="sm" 
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add Link
+            </Button>
+          </div>
         </div>
+        
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            Social links auto-sync with <strong>Branding Settings</strong>. Click "Sync with Branding" to update, or add custom links to override.
+          </AlertDescription>
+        </Alert>
+        
         <div className="space-y-2">
           {data.socialLinks.map((link, index) => (
             <Card key={index} className="p-3">

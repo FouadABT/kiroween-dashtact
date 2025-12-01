@@ -123,7 +123,7 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
 
       {/* Main content area */}
       <div className={`transition-all duration-300 ${
-        sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
+        sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-72'
       }`}>
         {/* Header */}
         <Header />

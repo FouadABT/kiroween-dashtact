@@ -238,7 +238,7 @@ export function Sidebar() {
 
   const contentVariants = {
     expanded: {
-      width: "16rem",
+      width: "18rem", // Increased from 16rem to 18rem for better brand name display
       transition: {
         type: "spring" as const,
         stiffness: 300,
@@ -304,7 +304,12 @@ export function Sidebar() {
                       <span className="text-sidebar-primary-foreground font-bold text-xs sm:text-sm">{brandInitial}</span>
                     </div>
                   )}
-                  <span className="text-lg sm:text-xl font-semibold text-sidebar-foreground truncate">{brandName}</span>
+                  <span 
+                    className="text-lg sm:text-xl font-semibold text-sidebar-foreground line-clamp-2 leading-tight"
+                    title={brandName}
+                  >
+                    {brandName}
+                  </span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -388,7 +393,7 @@ export function Sidebar() {
       <motion.div
         variants={sidebarVariants}
         animate={sidebarOpen ? "open" : "closed"}
-        className="fixed inset-y-0 z-50 flex w-64 flex-col lg:hidden"
+        className="fixed inset-y-0 z-50 flex w-72 flex-col lg:hidden"
       >
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-sidebar px-6 pb-4 border-r border-sidebar-border">
           {/* Mobile header with close button */}
@@ -408,7 +413,12 @@ export function Sidebar() {
                   <span className="text-sidebar-primary-foreground font-bold text-xs sm:text-sm">{brandInitial}</span>
                 </div>
               )}
-              <span className="text-lg sm:text-xl font-semibold text-sidebar-foreground truncate">{brandName}</span>
+              <span 
+                className="text-lg sm:text-xl font-semibold text-sidebar-foreground line-clamp-2 leading-tight"
+                title={brandName}
+              >
+                {brandName}
+              </span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}

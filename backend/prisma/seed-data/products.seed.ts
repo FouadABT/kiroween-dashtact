@@ -69,8 +69,8 @@ export async function seedProducts() {
       isVisible: true,
       isFeatured: false,
       category: yogaCategory,
-      featuredImage: 'https://images.unsplash.com/photo-1575521521318-4c8d440b52cf?w=500&h=500&fit=crop',
-      images: ['https://images.unsplash.com/photo-1575521521318-4c8d440b52cf?w=500&h=500&fit=crop'],
+      featuredImage: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?w=500&h=500&fit=crop',
+      images: ['https://images.unsplash.com/photo-1519861531473-9200262188bf?w=500&h=500&fit=crop'],
     },
     {
       name: 'Yoga Strap',
@@ -125,8 +125,8 @@ export async function seedProducts() {
       isVisible: true,
       isFeatured: false,
       category: fitnessCategory,
-      featuredImage: 'https://images.unsplash.com/photo-1517836357463-d25ddfcbf042?w=500&h=500&fit=crop',
-      images: ['https://images.unsplash.com/photo-1517836357463-d25ddfcbf042?w=500&h=500&fit=crop'],
+      featuredImage: 'https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=500&h=500&fit=crop',
+      images: ['https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=500&h=500&fit=crop'],
     },
     {
       name: 'Basketball Official',
@@ -139,8 +139,8 @@ export async function seedProducts() {
       isVisible: true,
       isFeatured: false,
       category: sportsCategory,
-      featuredImage: 'https://images.unsplash.com/photo-1546519638-68711109d298?w=500&h=500&fit=crop',
-      images: ['https://images.unsplash.com/photo-1546519638-68711109d298?w=500&h=500&fit=crop'],
+      featuredImage: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=500&h=500&fit=crop',
+      images: ['https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=500&h=500&fit=crop'],
     },
     {
       name: 'Tennis Racket Pro',
@@ -153,8 +153,8 @@ export async function seedProducts() {
       isVisible: true,
       isFeatured: true,
       category: sportsCategory,
-      featuredImage: 'https://images.unsplash.com/photo-1554068865-24cecd4e34c8?w=500&h=500&fit=crop',
-      images: ['https://images.unsplash.com/photo-1554068865-24cecd4e34c8?w=500&h=500&fit=crop'],
+      featuredImage: 'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=500&h=500&fit=crop',
+      images: ['https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=500&h=500&fit=crop'],
     },
   ];
 

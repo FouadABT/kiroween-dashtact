@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { OKLCHColorPicker } from '@/components/settings/OKLCHColorPicker';
-import { SidebarColorTest } from './test-sidebar-colors';
+import { FontVerification } from './font-verification';
+// import { SidebarColorTest } from './test-sidebar-colors';
 
 // Helper function to convert ColorPalette key to CSS variable name
 function getCSSVariableName(key: keyof ColorPalette): string {
@@ -152,14 +153,21 @@ export default function ThemeSettingsPage() {
     toast.info('Changes discarded');
   }, [paletteMode, resolvedTheme, settings, lightColors, darkColors]);
 
-  const handleTypographyChange = (category: string, key: string, value: any) => {
-    setTypography(prev => ({
-      ...prev,
-      [category]: {
-        ...(prev[category as keyof TypographyConfig] || {}),
-        [key]: value,
-      },
-    }));
+  const handleTypographyChange = (category: string, key: string, value: string | number | string[]) => {
+    setTypography(prev => {
+      // Get the current category object from either local state or settings
+      const currentCategory = prev[category as keyof TypographyConfig] || 
+                             settings?.typography[category as keyof TypographyConfig] || 
+                             {};
+      
+      return {
+        ...prev,
+        [category]: {
+          ...currentCategory,
+          [key]: value,
+        },
+      };
+    });
   };
 
   const handleSaveTypography = async () => {
@@ -171,7 +179,10 @@ export default function ThemeSettingsPage() {
         return;
       }
 
-      await updateTypography(typography);
+      // Get the complete merged typography to send to backend
+      const completeTypography = getCurrentTypography();
+      
+      await updateTypography(completeTypography);
       setTypography({});
       toast.success('Typography updated successfully');
     } catch (error) {
@@ -211,10 +222,32 @@ export default function ThemeSettingsPage() {
 
   const getCurrentTypography = useCallback(() => {
     if (!settings) return {} as TypographyConfig;
-    return {
-      ...settings.typography,
-      ...typography,
+    
+    // Deep merge typography changes with settings
+    const merged: TypographyConfig = {
+      fontFamily: {
+        ...settings.typography.fontFamily,
+        ...(typography.fontFamily || {}),
+      },
+      fontSize: {
+        ...settings.typography.fontSize,
+        ...(typography.fontSize || {}),
+      },
+      fontWeight: {
+        ...settings.typography.fontWeight,
+        ...(typography.fontWeight || {}),
+      },
+      lineHeight: {
+        ...settings.typography.lineHeight,
+        ...(typography.lineHeight || {}),
+      },
+      letterSpacing: {
+        ...settings.typography.letterSpacing,
+        ...(typography.letterSpacing || {}),
+      },
     };
+    
+    return merged;
   }, [settings, typography]);
 
   const hasUnsavedChanges = Object.keys(lightColors).length > 0 || 
@@ -244,7 +277,7 @@ export default function ThemeSettingsPage() {
         }}
       />
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'mode' | 'colors' | 'typography')} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="mode" className="flex items-center gap-2">
             <Sun className="w-4 h-4" />
@@ -449,6 +482,9 @@ export default function ThemeSettingsPage() {
             </Button>
           </div>
 
+          {/* Font Verification */}
+          <FontVerification />
+
           <TypographyEditor
             typography={getCurrentTypography()}
             onChange={handleTypographyChange}
@@ -600,166 +636,455 @@ function TypographyEditor({
   onChange,
 }: {
   typography: TypographyConfig;
-  onChange: (category: string, key: string, value: any) => void;
+  onChange: (category: string, key: string, value: string | number | string[]) => void;
 }) {
+  // Popular font choices with good UI/UX
+  // These fonts are loaded via Next.js font optimization in layout.tsx
+  const popularFonts = {
+    sans: [
+      { value: 'var(--font-inter), system-ui, sans-serif', label: 'Inter' },
+      { value: 'var(--font-roboto), system-ui, sans-serif', label: 'Roboto' },
+      { value: 'var(--font-open-sans), system-ui, sans-serif', label: 'Open Sans' },
+      { value: 'var(--font-lato), system-ui, sans-serif', label: 'Lato' },
+      { value: 'var(--font-poppins), system-ui, sans-serif', label: 'Poppins' },
+      { value: 'var(--font-montserrat), system-ui, sans-serif', label: 'Montserrat' },
+      { value: 'var(--font-source-sans), system-ui, sans-serif', label: 'Source Sans 3' },
+      { value: 'var(--font-nunito), system-ui, sans-serif', label: 'Nunito' },
+      { value: 'system-ui, -apple-system, sans-serif', label: 'System Default' },
+    ],
+    serif: [
+      { value: 'Georgia, serif', label: 'Georgia' },
+      { value: 'var(--font-merriweather), Georgia, serif', label: 'Merriweather' },
+      { value: 'var(--font-playfair), Georgia, serif', label: 'Playfair Display' },
+      { value: 'var(--font-lora), Georgia, serif', label: 'Lora' },
+      { value: 'var(--font-pt-serif), Georgia, serif', label: 'PT Serif' },
+      { value: 'var(--font-crimson-text), Georgia, serif', label: 'Crimson Text' },
+      { value: 'var(--font-source-serif), Georgia, serif', label: 'Source Serif 4' },
+    ],
+    mono: [
+      { value: 'var(--font-fira-code), monospace', label: 'Fira Code' },
+      { value: 'var(--font-jetbrains-mono), monospace', label: 'JetBrains Mono' },
+      { value: 'var(--font-source-code-pro), monospace', label: 'Source Code Pro' },
+      { value: 'var(--font-ibm-plex-mono), monospace', label: 'IBM Plex Mono' },
+      { value: 'Consolas, monospace', label: 'Consolas' },
+      { value: 'Monaco, monospace', label: 'Monaco' },
+      { value: 'Courier New, monospace', label: 'Courier New' },
+    ],
+  };
+
   return (
     <div className="space-y-6">
       {/* Font Families */}
       <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Font Families</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="font-sans">Sans Serif</Label>
-            <Input
-              id="font-sans"
-              type="text"
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground">Font Families</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Choose professional fonts for different text types
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Sans Serif */}
+          <div className="space-y-3">
+            <Label htmlFor="font-sans" className="text-sm font-medium">
+              Sans Serif (Body Text)
+            </Label>
+            <Select
               value={typography.fontFamily.sans.join(', ')}
-              onChange={(e) => onChange('fontFamily', 'sans', e.target.value.split(',').map(s => s.trim()))}
-              placeholder="Inter, system-ui, sans-serif"
-            />
+              onValueChange={(value) => onChange('fontFamily', 'sans', value.split(',').map(s => s.trim()))}
+            >
+              <SelectTrigger id="font-sans">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {popularFonts.sans.map((font) => (
+                  <SelectItem key={font.value} value={font.value}>
+                    <span style={{ fontFamily: font.value }}>{font.label}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div 
+              className="p-3 bg-muted/50 rounded border border-border"
+              style={{ fontFamily: typography.fontFamily.sans.join(', ') }}
+            >
+              <p className="text-sm text-foreground">The quick brown fox jumps over the lazy dog</p>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="font-serif">Serif</Label>
-            <Input
-              id="font-serif"
-              type="text"
+
+          {/* Serif */}
+          <div className="space-y-3">
+            <Label htmlFor="font-serif" className="text-sm font-medium">
+              Serif (Headings)
+            </Label>
+            <Select
               value={typography.fontFamily.serif.join(', ')}
-              onChange={(e) => onChange('fontFamily', 'serif', e.target.value.split(',').map(s => s.trim()))}
-              placeholder="Georgia, serif"
-            />
+              onValueChange={(value) => onChange('fontFamily', 'serif', value.split(',').map(s => s.trim()))}
+            >
+              <SelectTrigger id="font-serif">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {popularFonts.serif.map((font) => (
+                  <SelectItem key={font.value} value={font.value}>
+                    <span style={{ fontFamily: font.value }}>{font.label}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div 
+              className="p-3 bg-muted/50 rounded border border-border"
+              style={{ fontFamily: typography.fontFamily.serif.join(', ') }}
+            >
+              <p className="text-sm text-foreground">The quick brown fox jumps over the lazy dog</p>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="font-mono">Monospace</Label>
-            <Input
-              id="font-mono"
-              type="text"
+
+          {/* Monospace */}
+          <div className="space-y-3">
+            <Label htmlFor="font-mono" className="text-sm font-medium">
+              Monospace (Code)
+            </Label>
+            <Select
               value={typography.fontFamily.mono.join(', ')}
-              onChange={(e) => onChange('fontFamily', 'mono', e.target.value.split(',').map(s => s.trim()))}
-              placeholder="Consolas, monospace"
-            />
+              onValueChange={(value) => onChange('fontFamily', 'mono', value.split(',').map(s => s.trim()))}
+            >
+              <SelectTrigger id="font-mono">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {popularFonts.mono.map((font) => (
+                  <SelectItem key={font.value} value={font.value}>
+                    <span style={{ fontFamily: font.value }}>{font.label}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div 
+              className="p-3 bg-muted/50 rounded border border-border"
+              style={{ fontFamily: typography.fontFamily.mono.join(', ') }}
+            >
+              <p className="text-sm text-foreground">const code = &quot;example&quot;;</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Font Sizes */}
+      {/* Font Sizes with Sliders */}
       <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Font Sizes (rem)</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {Object.entries(typography.fontSize).map(([key, value]) => (
-            <div key={key} className="space-y-2">
-              <Label htmlFor={`size-${key}`} className="text-xs">{key}</Label>
-              <Input
-                id={`size-${key}`}
-                type="text"
-                value={value}
-                onChange={(e) => onChange('fontSize', key, e.target.value)}
-                placeholder="1rem"
-                className="text-sm"
-              />
-            </div>
-          ))}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground">Font Sizes</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Adjust the type scale for your application
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {Object.entries(typography.fontSize).map(([key, value]) => {
+            const remValue = parseFloat(value);
+            const pxValue = Math.round(remValue * 16);
+            
+            return (
+              <div key={key} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={`size-${key}`} className="text-sm font-medium capitalize">
+                    {key}
+                  </Label>
+                  <span className="text-xs text-muted-foreground">
+                    {value} ({pxValue}px)
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    id={`size-${key}`}
+                    type="range"
+                    min="0.5"
+                    max="5"
+                    step="0.125"
+                    value={remValue}
+                    onChange={(e) => onChange('fontSize', key, `${e.target.value}rem`)}
+                    className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <Input
+                    type="text"
+                    value={value}
+                    onChange={(e) => onChange('fontSize', key, e.target.value)}
+                    className="w-24 text-sm"
+                  />
+                </div>
+                <p 
+                  className="text-foreground"
+                  style={{ fontSize: value }}
+                >
+                  Sample Text
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Font Weights */}
+      {/* Font Weights with Visual Preview */}
       <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Font Weights</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground">Font Weights</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Define weight scale from light to extra bold
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {Object.entries(typography.fontWeight).map(([key, value]) => (
-            <div key={key} className="space-y-2">
-              <Label htmlFor={`weight-${key}`} className="text-xs capitalize">{key}</Label>
-              <Input
-                id={`weight-${key}`}
-                type="number"
-                min="100"
-                max="900"
-                step="100"
-                value={value}
-                onChange={(e) => onChange('fontWeight', key, parseInt(e.target.value))}
-                className="text-sm"
-              />
-              <p className="text-xs text-muted-foreground" style={{ fontWeight: value }}>
-                Sample Text
+            <div key={key} className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor={`weight-${key}`} className="text-sm font-medium capitalize">
+                  {key}
+                </Label>
+                <span className="text-xs text-muted-foreground">{value}</span>
+              </div>
+              <Select
+                value={value.toString()}
+                onValueChange={(v) => onChange('fontWeight', key, parseInt(v))}
+              >
+                <SelectTrigger id={`weight-${key}`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="100">100 - Thin</SelectItem>
+                  <SelectItem value="200">200 - Extra Light</SelectItem>
+                  <SelectItem value="300">300 - Light</SelectItem>
+                  <SelectItem value="400">400 - Normal</SelectItem>
+                  <SelectItem value="500">500 - Medium</SelectItem>
+                  <SelectItem value="600">600 - Semibold</SelectItem>
+                  <SelectItem value="700">700 - Bold</SelectItem>
+                  <SelectItem value="800">800 - Extra Bold</SelectItem>
+                  <SelectItem value="900">900 - Black</SelectItem>
+                </SelectContent>
+              </Select>
+              <p 
+                className="text-base text-foreground"
+                style={{ fontWeight: value }}
+              >
+                The quick brown fox
               </p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Line Heights */}
+      {/* Line Heights with Slider */}
       <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Line Heights</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground">Line Heights</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Control vertical spacing between lines of text
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {Object.entries(typography.lineHeight).map(([key, value]) => (
-            <div key={key} className="space-y-2">
-              <Label htmlFor={`lineheight-${key}`} className="text-xs capitalize">{key}</Label>
-              <Input
-                id={`lineheight-${key}`}
-                type="number"
-                min="1"
-                max="3"
-                step="0.05"
-                value={value}
-                onChange={(e) => onChange('lineHeight', key, parseFloat(e.target.value))}
-                className="text-sm"
-              />
-              <p className="text-xs text-muted-foreground" style={{ lineHeight: value }}>
-                Sample text with<br />multiple lines
-              </p>
+            <div key={key} className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor={`lineheight-${key}`} className="text-sm font-medium capitalize">
+                  {key}
+                </Label>
+                <span className="text-xs text-muted-foreground">{value}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  id={`lineheight-${key}`}
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.05"
+                  value={value}
+                  onChange={(e) => onChange('lineHeight', key, parseFloat(e.target.value))}
+                  className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+                <Input
+                  type="number"
+                  min="1"
+                  max="3"
+                  step="0.05"
+                  value={value}
+                  onChange={(e) => onChange('lineHeight', key, parseFloat(e.target.value))}
+                  className="w-20 text-sm"
+                />
+              </div>
+              <div 
+                className="p-3 bg-muted/50 rounded border border-border"
+                style={{ lineHeight: value }}
+              >
+                <p className="text-sm text-foreground">
+                  This is sample text with multiple lines to demonstrate the line height setting. 
+                  Notice how the spacing between lines changes.
+                </p>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Letter Spacing */}
+      {/* Letter Spacing with Slider */}
       <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Letter Spacing</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {Object.entries(typography.letterSpacing).map(([key, value]) => (
-            <div key={key} className="space-y-2">
-              <Label htmlFor={`spacing-${key}`} className="text-xs capitalize">{key}</Label>
-              <Input
-                id={`spacing-${key}`}
-                type="text"
-                value={value}
-                onChange={(e) => onChange('letterSpacing', key, e.target.value)}
-                placeholder="0em"
-                className="text-sm"
-              />
-              <p className="text-xs text-muted-foreground" style={{ letterSpacing: value }}>
-                SAMPLE
-              </p>
-            </div>
-          ))}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground">Letter Spacing</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Adjust horizontal spacing between characters
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Object.entries(typography.letterSpacing).map(([key, value]) => {
+            const emValue = parseFloat(value) || 0;
+            
+            return (
+              <div key={key} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={`spacing-${key}`} className="text-sm font-medium capitalize">
+                    {key}
+                  </Label>
+                  <span className="text-xs text-muted-foreground">{value}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    id={`spacing-${key}`}
+                    type="range"
+                    min="-0.1"
+                    max="0.1"
+                    step="0.005"
+                    value={emValue}
+                    onChange={(e) => onChange('letterSpacing', key, `${e.target.value}em`)}
+                    className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <Input
+                    type="text"
+                    value={value}
+                    onChange={(e) => onChange('letterSpacing', key, e.target.value)}
+                    className="w-24 text-sm"
+                  />
+                </div>
+                <div 
+                  className="p-3 bg-muted/50 rounded border border-border"
+                  style={{ letterSpacing: value }}
+                >
+                  <p className="text-sm text-foreground uppercase">
+                    SAMPLE TEXT
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Preview */}
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Typography Preview</h3>
-        <div className="space-y-6">
+      {/* Live Preview */}
+      <div className="bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 border border-border rounded-lg p-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground">Live Preview</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            See how your typography settings look in real content
+          </p>
+        </div>
+        <div className="space-y-6 bg-background rounded-lg p-6 border border-border">
+          {/* Sans Serif Preview */}
           <div style={{ fontFamily: typography.fontFamily.sans.join(', ') }}>
-            <p className="text-xs text-muted-foreground mb-2">Sans Serif Font</p>
-            <div className="space-y-2">
-              <p style={{ fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, lineHeight: typography.lineHeight.tight }}>
-                Heading Example
-              </p>
-              <p style={{ fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.normal, lineHeight: typography.lineHeight.normal }}>
-                The quick brown fox jumps over the lazy dog. This is a sample paragraph to demonstrate how the typography settings affect the appearance of body text.
-              </p>
+            <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide">
+              Sans Serif Font Family
+            </p>
+            <h1 
+              className="text-foreground mb-2"
+              style={{ 
+                fontSize: typography.fontSize['3xl'], 
+                fontWeight: typography.fontWeight.bold,
+                lineHeight: typography.lineHeight.tight 
+              }}
+            >
+              Main Heading Example
+            </h1>
+            <h2 
+              className="text-foreground mb-3"
+              style={{ 
+                fontSize: typography.fontSize.xl, 
+                fontWeight: typography.fontWeight.semibold,
+                lineHeight: typography.lineHeight.normal 
+              }}
+            >
+              Subheading Example
+            </h2>
+            <p 
+              className="text-foreground mb-4"
+              style={{ 
+                fontSize: typography.fontSize.base, 
+                fontWeight: typography.fontWeight.normal,
+                lineHeight: typography.lineHeight.relaxed 
+              }}
+            >
+              The quick brown fox jumps over the lazy dog. This is a sample paragraph to demonstrate 
+              how the typography settings affect the appearance of body text. Notice the font family, 
+              size, weight, line height, and letter spacing all working together to create readable, 
+              beautiful text.
+            </p>
+            <p 
+              className="text-muted-foreground"
+              style={{ 
+                fontSize: typography.fontSize.sm, 
+                fontWeight: typography.fontWeight.normal,
+                lineHeight: typography.lineHeight.normal 
+              }}
+            >
+              Small text example for captions and metadata
+            </p>
+          </div>
+
+          {/* Serif Preview */}
+          <div 
+            className="pt-6 border-t border-border"
+            style={{ fontFamily: typography.fontFamily.serif.join(', ') }}
+          >
+            <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide">
+              Serif Font Family
+            </p>
+            <h2 
+              className="text-foreground mb-3"
+              style={{ 
+                fontSize: typography.fontSize['2xl'], 
+                fontWeight: typography.fontWeight.bold,
+                lineHeight: typography.lineHeight.tight 
+              }}
+            >
+              Elegant Serif Heading
+            </h2>
+            <p 
+              className="text-foreground"
+              style={{ 
+                fontSize: typography.fontSize.base, 
+                fontWeight: typography.fontWeight.normal,
+                lineHeight: typography.lineHeight.relaxed 
+              }}
+            >
+              Serif fonts are often used for long-form content and editorial text. They provide 
+              a classic, sophisticated look that&apos;s easy to read in longer passages.
+            </p>
+          </div>
+
+          {/* Monospace Preview */}
+          <div 
+            className="pt-6 border-t border-border"
+            style={{ fontFamily: typography.fontFamily.mono.join(', ') }}
+          >
+            <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wide">
+              Monospace Font Family
+            </p>
+            <div 
+              className="bg-muted/50 rounded p-4 border border-border"
+              style={{ 
+                fontSize: typography.fontSize.sm, 
+                fontWeight: typography.fontWeight.normal,
+                lineHeight: typography.lineHeight.relaxed,
+                letterSpacing: typography.letterSpacing.normal 
+              }}
+            >
+              <p className="text-foreground">const greeting = &quot;Hello, World!&quot;;</p>
+              <p className="text-foreground">function example() {`{`}</p>
+              <p className="text-foreground ml-4">return true;</p>
+              <p className="text-foreground">{`}`}</p>
             </div>
-          </div>
-          <div style={{ fontFamily: typography.fontFamily.serif.join(', ') }}>
-            <p className="text-xs text-muted-foreground mb-2">Serif Font</p>
-            <p style={{ fontSize: typography.fontSize.base, fontWeight: typography.fontWeight.normal, lineHeight: typography.lineHeight.relaxed }}>
-              The quick brown fox jumps over the lazy dog. Serif fonts are often used for long-form content and editorial text.
-            </p>
-          </div>
-          <div style={{ fontFamily: typography.fontFamily.mono.join(', ') }}>
-            <p className="text-xs text-muted-foreground mb-2">Monospace Font</p>
-            <p style={{ fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.normal, lineHeight: typography.lineHeight.normal, letterSpacing: typography.letterSpacing.normal }}>
-              const example = "Monospace fonts are used for code";
-            </p>
           </div>
         </div>
       </div>

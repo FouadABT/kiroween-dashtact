@@ -14,15 +14,15 @@ export async function seedBranding(prisma: PrismaClient) {
   const existing = await prisma.brandSettings.findFirst();
 
   if (!existing) {
-    // Create new branding settings
+    // Create new branding settings with default logos
     await prisma.brandSettings.create({
       data: {
         brandName,
         tagline: tagline || null,
         description: description || null,
-        logoUrl: null,
-        logoDarkUrl: null,
-        faviconUrl: null,
+        logoUrl: '/logo light.png',
+        logoDarkUrl: '/logo dark.png',
+        faviconUrl: '/logo dark.png',
         websiteUrl: websiteUrl || null,
         supportEmail: supportEmail || null,
         socialLinks: {
@@ -35,6 +35,8 @@ export async function seedBranding(prisma: PrismaClient) {
     });
 
     console.log(`✅ Branding settings created: ${brandName}`);
+    console.log('   Default logos: /logo light.png, /logo dark.png');
+    console.log('   Default favicon: /logo dark.png');
   } else {
     // Update existing branding if CLI provided values (not defaults)
     const hasCliValues = process.env.BRAND_NAME && process.env.BRAND_NAME !== '';

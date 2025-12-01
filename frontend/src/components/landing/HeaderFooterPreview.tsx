@@ -155,7 +155,10 @@ export function FooterPreview({ config }: FooterPreviewProps) {
             {/* Newsletter */}
             {config.newsletter.enabled && (
               <div className="mb-8 max-w-md">
-                <h4 className="font-semibold mb-3 text-sm">{config.newsletter.title}</h4>
+                <h4 className="font-semibold mb-2 text-sm">{config.newsletter.title}</h4>
+                {config.newsletter.description && (
+                  <p className="text-xs mb-3 opacity-80">{config.newsletter.description}</p>
+                )}
                 <div className="flex gap-2">
                   <Input
                     placeholder={config.newsletter.placeholder}
@@ -249,7 +252,10 @@ export function FooterPreview({ config }: FooterPreviewProps) {
           <div className="max-w-2xl mx-auto text-center space-y-8">
             {config.newsletter.enabled && (
               <div>
-                <h4 className="font-semibold mb-3">{config.newsletter.title}</h4>
+                <h4 className="font-semibold mb-2">{config.newsletter.title}</h4>
+                {config.newsletter.description && (
+                  <p className="text-sm mb-3 opacity-80">{config.newsletter.description}</p>
+                )}
                 <div className="flex gap-2 max-w-md mx-auto">
                   <Input
                     placeholder={config.newsletter.placeholder}
@@ -305,7 +311,10 @@ export function FooterPreview({ config }: FooterPreviewProps) {
               <div>
                 {config.newsletter.enabled && (
                   <div className="mb-6">
-                    <h4 className="font-semibold mb-3 text-sm">{config.newsletter.title}</h4>
+                    <h4 className="font-semibold mb-2 text-sm">{config.newsletter.title}</h4>
+                    {config.newsletter.description && (
+                      <p className="text-xs mb-3 opacity-80">{config.newsletter.description}</p>
+                    )}
                     <div className="flex gap-2">
                       <Input
                         placeholder={config.newsletter.placeholder}

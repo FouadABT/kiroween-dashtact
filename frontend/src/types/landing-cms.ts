@@ -70,13 +70,14 @@ export interface FooterColumn {
 export interface SocialLink {
   platform: string;
   url: string;
-  icon: string;
+  icon?: string;
 }
 
 // Newsletter Config
 export interface NewsletterConfig {
   enabled: boolean;
   title: string;
+  description?: string;
   placeholder: string;
   buttonText: string;
 }
@@ -91,7 +92,7 @@ export interface LegalLink {
 export interface FooterStyle {
   background: string;
   textColor: string;
-  borderTop: boolean;
+  borderTop?: boolean;
 }
 
 // Footer Configuration

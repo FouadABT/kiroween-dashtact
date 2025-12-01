@@ -139,24 +139,6 @@ export const defaultLayoutsSeed = [
     gridSpan: 6,
     config: { title: 'Top Selling Products', limit: 10 },
   },
-  {
-    userId: null,
-    role: 'Super Admin',
-    page: 'analytics-dashboard',
-    widgetKey: 'cron-jobs-status',
-    position: 4,
-    gridSpan: 6,
-    config: { title: 'Cron Jobs Status', limit: 10 },
-  },
-  {
-    userId: null,
-    role: 'Super Admin',
-    page: 'analytics-dashboard',
-    widgetKey: 'email-delivery-stats',
-    position: 5,
-    gridSpan: 6,
-    config: { title: 'Email Delivery Stats' },
-  },
 
   // ============================================================================
   // ADMIN - Main Dashboard (/dashboard)

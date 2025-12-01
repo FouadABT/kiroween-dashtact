@@ -43,21 +43,30 @@ export class SocialLinkDto {
   url: string;
 
   @IsString()
-  icon: string;
+  @IsOptional()
+  icon?: string;
 }
 
 export class NewsletterConfigDto {
   @IsBoolean()
-  enabled: boolean;
+  @IsOptional()
+  enabled?: boolean;
 
   @IsString()
-  title: string;
+  @IsOptional()
+  title?: string;
 
   @IsString()
-  placeholder: string;
+  @IsOptional()
+  description?: string;
 
   @IsString()
-  buttonText: string;
+  @IsOptional()
+  placeholder?: string;
+
+  @IsString()
+  @IsOptional()
+  buttonText?: string;
 }
 
 export class LegalLinkDto {
@@ -78,7 +87,8 @@ export class FooterStyleDto {
   textColor?: string;
 
   @IsBoolean()
-  borderTop: boolean;
+  @IsOptional()
+  borderTop?: boolean;
 }
 
 export class FooterConfigDto {

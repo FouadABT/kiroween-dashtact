@@ -42,13 +42,16 @@ export function TestimonialsSection({ section, maxWidth = 'container' }: Testimo
 
         {/* Testimonials Grid/Carousel */}
         <div className={layoutClass}>
-          {sortedTestimonials.map((testimonial) => (
-            <div
-              key={testimonial.id}
-              className={`${
-                data.layout === 'carousel' ? 'flex-shrink-0 w-80 snap-center' : ''
-              } p-6 rounded-lg border border-border bg-card`}
-            >
+          {sortedTestimonials.map((testimonial) => {
+            const testimonialKey = `testimonial-${testimonial.id || testimonial.author}`;
+            
+            return (
+              <div
+                key={testimonialKey}
+                className={`${
+                  data.layout === 'carousel' ? 'flex-shrink-0 w-80 snap-center' : ''
+                } p-6 rounded-lg border border-border bg-card`}
+              >
               {/* Quote */}
               <blockquote className="text-card-foreground mb-6 italic">
                 "{testimonial.quote}"
@@ -80,7 +83,8 @@ export function TestimonialsSection({ section, maxWidth = 'container' }: Testimo
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -616,6 +616,17 @@ function NewsletterTab({
               />
             </div>
 
+            {/* Newsletter Description */}
+            <div className="space-y-2">
+              <Label htmlFor="newsletter-description">Description (Optional)</Label>
+              <Input
+                id="newsletter-description"
+                value={config.newsletter.description || ''}
+                onChange={(e) => updateNewsletter({ description: e.target.value })}
+                placeholder="Get the latest updates delivered to your inbox"
+              />
+            </div>
+
             {/* Placeholder */}
             <div className="space-y-2">
               <Label htmlFor="newsletter-placeholder">Email Placeholder</Label>
@@ -644,7 +655,10 @@ function NewsletterTab({
             <div className="space-y-2">
               <Label>Preview</Label>
               <div className="border border-border rounded-lg p-4 bg-muted/30">
-                <p className="text-sm font-medium mb-3">{config.newsletter.title}</p>
+                <p className="text-sm font-medium mb-2">{config.newsletter.title}</p>
+                {config.newsletter.description && (
+                  <p className="text-xs text-muted-foreground mb-3">{config.newsletter.description}</p>
+                )}
                 <div className="flex gap-2">
                   <Input
                     placeholder={config.newsletter.placeholder}
@@ -727,7 +741,7 @@ function StyleTab({
           <p className="text-sm text-muted-foreground">Add border line above footer</p>
         </div>
         <Switch
-          checked={config.style.borderTop}
+          checked={config.style.borderTop ?? true}
           onCheckedChange={(checked) => updateStyle({ borderTop: checked })}
         />
       </div>

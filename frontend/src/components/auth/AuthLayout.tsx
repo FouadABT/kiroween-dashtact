@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBranding } from '@/hooks/useBranding';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -44,7 +43,28 @@ export function AuthLayout({
   const brandInitial = brandName.charAt(0).toUpperCase();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-3 sm:p-4 md:p-6">
+    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black p-3 sm:p-4 md:p-6 relative overflow-hidden">
+      {/* Light mode - Decorative Background Elements */}
+      <div className="absolute inset-0 -z-10 dark:opacity-0">
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+      </div>
+      
+      {/* Dark mode - Monochrome elegant design */}
+      <div className="absolute inset-0 -z-10 opacity-0 dark:opacity-100">
+        {/* Subtle radial gradient from dark gray to black */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#1a1a1a_0%,#000000_50%)]"></div>
+        
+        {/* Animated white orbs with very low opacity */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/[0.02] rounded-full filter blur-3xl animate-blob"></div>
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-white/[0.03] rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-white/[0.02] rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
+        
+        {/* Fine grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+      </div>
+
       <div className="w-full max-w-sm sm:max-w-md space-y-4 sm:space-y-6">
         {/* Brand Logo */}
         <div className="text-center">
@@ -73,10 +93,10 @@ export function AuthLayout({
         </div>
 
         {/* Auth Card */}
-        <Card className="shadow-lg border-0 sm:border" role="main" aria-labelledby="auth-title">
+        <Card className="shadow-2xl border bg-white dark:bg-zinc-950 border-gray-200 dark:border-zinc-800 backdrop-blur-sm relative overflow-hidden" role="main" aria-labelledby="auth-title">
           <CardHeader className="space-y-1 px-4 sm:px-6 pt-4 sm:pt-6">
-            <CardTitle id="auth-title" className="text-xl sm:text-2xl text-center">{title}</CardTitle>
-            <CardDescription className="text-center text-sm sm:text-base">
+            <CardTitle id="auth-title" className="text-xl sm:text-2xl text-center text-gray-900 dark:text-white">{title}</CardTitle>
+            <CardDescription className="text-center text-sm sm:text-base text-gray-600 dark:text-zinc-400">
               {description}
             </CardDescription>
           </CardHeader>
@@ -87,11 +107,11 @@ export function AuthLayout({
 
         {/* Navigation Link */}
         <div className="text-center px-2">
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-zinc-400">
             {linkText}{' '}
             <Link
               href={linkHref}
-              className="font-medium text-primary hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
+              className="font-medium text-blue-600 dark:text-blue-400 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
             >
               {linkLabel}
             </Link>

@@ -46,9 +46,81 @@ function ensureEnvFiles() {
   const frontendEnvPath = path.join(__dirname, 'frontend', '.env.local');
   
   // Create backend .env from .env.example if it doesn't exist
-  if (!fs.existsSync(backendEnvPath) && fs.existsSync(backendEnvExamplePath)) {
-    fs.copyFileSync(backendEnvExamplePath, backendEnvPath);
-    log('✅ Created backend/.env from .env.example', 'green');
+  if (!fs.existsSync(backendEnvPath)) {
+    if (fs.existsSync(backendEnvExamplePath)) {
+      // Copy from .env.example
+      fs.copyFileSync(backendEnvExamplePath, backendEnvPath);
+      log('✅ Created backend/.env from .env.example', 'green');
+    } else {
+      // Create with all default values if .env.example doesn't exist
+      const defaultBackendEnv = `# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/dbname?schema=public"
+
+# Application
+PORT=3001
+NODE_ENV=development
+APP_URL=http://localhost:3001
+
+# JWT Authentication Configuration
+JWT_SECRET=CHANGE_THIS_JWT_SECRET_MIN_64_CHARS
+JWT_ACCESS_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
+JWT_ISSUER=dashboard-app
+JWT_AUDIENCE=dashboard-users
+
+# Password Security
+BCRYPT_ROUNDS=10
+
+# Rate Limiting
+RATE_LIMIT_TTL=900
+RATE_LIMIT_MAX=100
+
+# Security Features
+ENABLE_AUDIT_LOGGING=true
+ACCOUNT_LOCKOUT_ENABLED=false
+ACCOUNT_LOCKOUT_MAX_ATTEMPTS=5
+ACCOUNT_LOCKOUT_DURATION=900
+
+# Activity Logging Configuration
+ACTIVITY_LOG_ENABLED=true
+AUDIT_LOG_TOKEN_REFRESH=false
+
+# Feature Flags - Controls which features are available
+ENABLE_LANDING=true
+ENABLE_BLOG=true
+ENABLE_ECOMMERCE=true
+ENABLE_CALENDAR=true
+ENABLE_CRM=true
+ENABLE_NOTIFICATIONS=true
+ENABLE_CUSTOMER_ACCOUNT=true
+
+# Setup Status
+SETUP_COMPLETED=false
+
+# Legacy Feature Flags
+FEATURE_EMAIL_VERIFICATION=false
+FEATURE_TWO_FACTOR_AUTH=false
+FEATURE_SOCIAL_AUTH=false
+FEATURE_REMEMBER_ME=true
+FEATURE_PASSWORD_RESET=true
+FEATURE_SESSION_MANAGEMENT=false
+
+# Default Settings
+DEFAULT_USER_ROLE=USER
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000
+
+# Token Blacklist Cleanup
+BLACKLIST_CLEANUP_ENABLED=true
+BLACKLIST_CLEANUP_INTERVAL=86400000
+
+# Email System Configuration
+EMAIL_ENCRYPTION_KEY=CHANGE_THIS_EMAIL_ENCRYPTION_KEY_MIN_32_CHARS
+`;
+      fs.writeFileSync(backendEnvPath, defaultBackendEnv);
+      log('✅ Created backend/.env with default values', 'green');
+    }
   }
   
   // Create frontend .env.local with default values if it doesn't exist
@@ -81,10 +153,12 @@ NEXT_PUBLIC_SHOW_ACCOUNT_PAGE=true
 # Setup Status
 NEXT_PUBLIC_SETUP_COMPLETED=false
 
-# Dynamic Header/Footer
+# Dynamic Header/Footer - Set to 'true' to use header/footer from CMS settings
+# When enabled, uses configurations from /dashboard/settings/landing-page
+# When disabled, uses hardcoded PublicNavigation and Footer components
 NEXT_PUBLIC_USE_DYNAMIC_HEADER_FOOTER=true
 
-# Blog Configuration
+# Blog Configuration (only applies when NEXT_PUBLIC_ENABLE_BLOG=true)
 NEXT_PUBLIC_BLOG_POSTS_PER_PAGE=10
 NEXT_PUBLIC_BLOG_ENABLE_CATEGORIES=true
 NEXT_PUBLIC_BLOG_ENABLE_TAGS=true
@@ -262,7 +336,7 @@ async function createDatabase(dbConfig) {
           resolve({ success: false, error: err.message });
         } else {
           client.query(
-            `CREATE DATABASE ${dbConfig.database}`,
+            `CREATE DATABASE "${dbConfig.database}"`,
             (queryErr) => {
               clearTimeout(timeout);
               client.end();
@@ -279,7 +353,7 @@ async function createDatabase(dbConfig) {
   } catch (requireError) {
     // Fallback to psql command
     return new Promise((resolve) => {
-      const createCommand = `psql -h ${dbConfig.host} -p ${dbConfig.port} -U ${dbConfig.user} -c "CREATE DATABASE ${dbConfig.database};"`;
+      const createCommand = `psql -h ${dbConfig.host} -p ${dbConfig.port} -U ${dbConfig.user} -c "CREATE DATABASE \\"${dbConfig.database}\\";"`;
       exec(createCommand, { env: { ...process.env, PGPASSWORD: dbConfig.password } }, (error, stdout, stderr) => {
         if (error) {
           resolve({ success: false, error: stderr || error.message });
@@ -534,7 +608,7 @@ async function configureDatabaseConnection() {
 
     log(`\n📌 Connection string created`, 'green');
     log(`   postgresql://${user}:****@${host}:${port}/${database}`, 'dim');
-  } else {
+  } else if (choice === '3') {
     log('\n⏭️  Skipping database configuration', 'yellow');
     log('   Remember to configure DATABASE_URL in backend/.env before running migrations!\n', 'yellow');
     return { skip: true };

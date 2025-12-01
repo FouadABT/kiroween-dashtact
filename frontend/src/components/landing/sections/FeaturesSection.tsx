@@ -7,7 +7,7 @@
 'use client';
 
 import { LandingPageSection, FeaturesSectionData } from '@/types/landing-page';
-import * as Icons from 'lucide-react';
+import { getIconByName } from '@/lib/icon-loader';
 
 interface FeaturesSectionProps {
   section: LandingPageSection;
@@ -27,12 +27,6 @@ export function FeaturesSection({ section, maxWidth = 'container' }: FeaturesSec
     ? 'flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4'
     : `grid grid-cols-1 md:grid-cols-${data.columns} gap-8`;
 
-  // Get icon component
-  const getIcon = (iconName: string) => {
-    const IconComponent = (Icons as any)[iconName];
-    return IconComponent ? <IconComponent className="w-8 h-8" /> : null;
-  };
-
   return (
     <section data-section-type="features" className="py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -50,29 +44,34 @@ export function FeaturesSection({ section, maxWidth = 'container' }: FeaturesSec
 
         {/* Features Grid/List/Carousel */}
         <div className={layoutClass}>
-          {sortedFeatures.map((feature) => (
-            <div
-              key={feature.id}
-              className={`${
-                data.layout === 'carousel' ? 'flex-shrink-0 w-80 snap-center' : ''
-              } p-6 rounded-lg border border-border bg-card hover:shadow-lg transition-shadow`}
-            >
-              {/* Icon */}
-              <div className="mb-4 text-primary">
-                {getIcon(feature.icon)}
+          {sortedFeatures.map((feature) => {
+            const IconComponent = getIconByName(feature.icon);
+            const featureKey = `feature-${feature.id || feature.title}`;
+            
+            return (
+              <div
+                key={featureKey}
+                className={`${
+                  data.layout === 'carousel' ? 'flex-shrink-0 w-80 snap-center' : ''
+                } p-6 rounded-lg border border-border bg-card hover:shadow-lg transition-shadow`}
+              >
+                {/* Icon */}
+                <div className="mb-4 text-primary">
+                  <IconComponent className="w-8 h-8" />
+                </div>
+
+                {/* Title */}
+                <h3 className="text-xl font-semibold mb-2 text-card-foreground">
+                  {feature.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-muted-foreground">
+                  {feature.description}
+                </p>
               </div>
-
-              {/* Title */}
-              <h3 className="text-xl font-semibold mb-2 text-card-foreground">
-                {feature.title}
-              </h3>
-
-              {/* Description */}
-              <p className="text-muted-foreground">
-                {feature.description}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

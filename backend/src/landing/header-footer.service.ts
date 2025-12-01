@@ -107,27 +107,32 @@ export class HeaderFooterService {
   }
 
   async updateFooterConfig(dto: UpdateFooterConfigDto): Promise<any> {
-    const existing = await this.getFooterConfig();
+    try {
+      const existing = await this.getFooterConfig();
 
-    if (existing.id) {
-      // Only update fields that are provided
-      const updateData: any = {};
-      
-      if (dto.layout !== undefined) updateData.layout = dto.layout;
-      if (dto.columns !== undefined) updateData.columns = dto.columns;
-      if (dto.social !== undefined) updateData.social = dto.social;
-      if (dto.newsletter !== undefined) updateData.newsletter = dto.newsletter;
-      if (dto.copyright !== undefined) updateData.copyright = dto.copyright;
-      if (dto.legalLinks !== undefined) updateData.legalLinks = dto.legalLinks;
-      if (dto.style !== undefined) updateData.style = dto.style;
+      if (existing.id) {
+        // Only update fields that are provided
+        const updateData: any = {};
+        
+        if (dto.layout !== undefined) updateData.layout = dto.layout;
+        if (dto.columns !== undefined) updateData.columns = dto.columns;
+        if (dto.social !== undefined) updateData.social = dto.social;
+        if (dto.newsletter !== undefined) updateData.newsletter = dto.newsletter;
+        if (dto.copyright !== undefined) updateData.copyright = dto.copyright;
+        if (dto.legalLinks !== undefined) updateData.legalLinks = dto.legalLinks;
+        if (dto.style !== undefined) updateData.style = dto.style;
 
-      return this.prisma.footerConfig.update({
-        where: { id: existing.id },
-        data: updateData,
-      });
+        return this.prisma.footerConfig.update({
+          where: { id: existing.id },
+          data: updateData,
+        });
+      }
+
+      return this.createFooterConfig(dto as FooterConfigDto);
+    } catch (error) {
+      console.error('Error updating footer config:', error);
+      throw error;
     }
-
-    return this.createFooterConfig(dto as FooterConfigDto);
   }
 
   async createFooterConfig(dto: FooterConfigDto): Promise<any> {

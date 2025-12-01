@@ -2,13 +2,16 @@
  * Footer Section Component
  * 
  * Renders the footer section with company info, navigation links, and social links.
+ * Automatically falls back to branding social links if none are set in footer.
  */
 
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LandingPageSection, FooterSectionData } from '@/types/landing-page';
+import { LandingPageSection, FooterSectionData, SocialLink } from '@/types/landing-page';
 import { resolveCtaLink, isExternalUrl, getLinkTarget, getLinkRel } from '@/lib/landing-helpers';
+import { BrandingApi } from '@/lib/api/branding';
 import * as Icons from 'lucide-react';
 
 interface FooterSectionProps {
@@ -18,6 +21,45 @@ interface FooterSectionProps {
 
 export function FooterSection({ section, maxWidth = 'container' }: FooterSectionProps) {
   const data = section.data as FooterSectionData;
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(data.socialLinks || []);
+
+  // Auto-sync with branding if no social links in footer
+  useEffect(() => {
+    if (!data.socialLinks || data.socialLinks.length === 0) {
+      loadBrandingSocialLinks();
+    }
+  }, [data.socialLinks]);
+
+  const loadBrandingSocialLinks = async () => {
+    try {
+      const branding = await BrandingApi.getBrandSettings();
+      if (branding.socialLinks) {
+        const converted: SocialLink[] = [];
+        const iconMap: Record<string, string> = {
+          twitter: 'Twitter',
+          linkedin: 'Linkedin',
+          facebook: 'Facebook',
+          instagram: 'Instagram',
+          github: 'Github',
+          youtube: 'Youtube',
+        };
+
+        Object.entries(branding.socialLinks).forEach(([platform, url]) => {
+          if (url && typeof url === 'string' && url.trim()) {
+            converted.push({
+              platform,
+              url: url as string,
+              icon: iconMap[platform] || platform,
+            });
+          }
+        });
+
+        setSocialLinks(converted);
+      }
+    } catch (error) {
+      console.error('Failed to load branding social links:', error);
+    }
+  };
 
   // Sort links by order
   const sortedNavLinks = [...data.navLinks].sort((a, b) => a.order - b.order);
@@ -42,18 +84,18 @@ export function FooterSection({ section, maxWidth = 'container' }: FooterSection
             </p>
             
             {/* Social Links */}
-            {data.socialLinks && data.socialLinks.length > 0 && (
+            {socialLinks && socialLinks.length > 0 && (
               <div className="flex gap-4">
-                {data.socialLinks.map((social, index) => (
+                {socialLinks.map((social) => (
                   <a
-                    key={index}
+                    key={social.url}
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                     aria-label={social.platform}
                   >
-                    {getIcon(social.icon)}
+                    {social.icon && getIcon(social.icon)}
                   </a>
                 ))}
               </div>
@@ -66,12 +108,12 @@ export function FooterSection({ section, maxWidth = 'container' }: FooterSection
               Quick Links
             </h3>
             <ul className="space-y-2">
-              {sortedNavLinks.map((link, index) => {
+              {sortedNavLinks.map((link) => {
                 const href = resolveCtaLink(link);
                 const isExternal = isExternalUrl(href);
                 
                 return (
-                  <li key={index}>
+                  <li key={link.label}>
                     {isExternal ? (
                       <a
                         href={href}

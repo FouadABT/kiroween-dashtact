@@ -132,9 +132,31 @@ export class SettingsService {
     }
 
     if (updateSettingsDto.typography !== undefined) {
+      const existingTypography = existing.typography as any;
+      const updatedTypography = updateSettingsDto.typography as any;
+      
+      // Deep merge typography nested objects
       updateData.typography = {
-        ...(existing.typography as any),
-        ...updateSettingsDto.typography,
+        fontFamily: {
+          ...(existingTypography.fontFamily || {}),
+          ...(updatedTypography.fontFamily || {}),
+        },
+        fontSize: {
+          ...(existingTypography.fontSize || {}),
+          ...(updatedTypography.fontSize || {}),
+        },
+        fontWeight: {
+          ...(existingTypography.fontWeight || {}),
+          ...(updatedTypography.fontWeight || {}),
+        },
+        lineHeight: {
+          ...(existingTypography.lineHeight || {}),
+          ...(updatedTypography.lineHeight || {}),
+        },
+        letterSpacing: {
+          ...(existingTypography.letterSpacing || {}),
+          ...(updatedTypography.letterSpacing || {}),
+        },
       };
     }
 

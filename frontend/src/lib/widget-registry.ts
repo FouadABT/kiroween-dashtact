@@ -8,17 +8,20 @@
  * @see WIDGET_SYSTEM_GUIDE.md for complete documentation on adding widgets
  */
 
-import { lazy, ComponentType } from 'react';
+import { lazy, ComponentType, LazyExoticComponent } from 'react';
 
 /**
  * Widget registry entry with component and metadata
  */
 export interface WidgetRegistryEntry {
   /** React component (can be lazy-loaded) */
-  component: ComponentType<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: ComponentType<any> | LazyExoticComponent<ComponentType<any>>;
   /** Default props for the widget */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultProps?: Record<string, any>;
   /** Prop type definitions for validation */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   propTypes?: Record<string, any>;
   /** Widget category for organization */
   category: string;
@@ -459,7 +462,7 @@ export const widgetRegistry: Record<string, WidgetRegistryEntry> = {
  * @param key - Widget key
  * @returns Component or null if not found
  */
-export function getWidgetComponent(key: string): ComponentType<any> | null {
+export function getWidgetComponent(key: string): ComponentType<unknown> | null {
   const entry = widgetRegistry[key];
   return entry?.component || null;
 }
@@ -471,7 +474,7 @@ export function getWidgetComponent(key: string): ComponentType<any> | null {
  */
 export function getWidgetsByCategory(category: string): string[] {
   return Object.entries(widgetRegistry)
-    .filter(([_, entry]) => entry.category === category)
+    .filter(([, entry]) => entry.category === category)
     .map(([key]) => key);
 }
 
@@ -484,6 +487,7 @@ export function getWidgetMetadata(key: string): Omit<WidgetRegistryEntry, 'compo
   const entry = widgetRegistry[key];
   if (!entry) return null;
   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { component, ...metadata } = entry;
   return metadata;
 }
@@ -524,6 +528,7 @@ export function getAllWidgetKeys(): string[] {
  */
 export function getWidgetsByCategories(categories: string[]): string[] {
   return Object.entries(widgetRegistry)
-    .filter(([_, entry]) => categories.includes(entry.category))
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    .filter(([_key, entry]) => categories.includes(entry.category))
     .map(([key]) => key);
 }

@@ -178,7 +178,13 @@ export class LandingController {
   @Permissions('landing:write')
   @Put('footer')
   async updateFooterConfig(@Body() dto: UpdateFooterConfigDto) {
-    return this.headerFooterService.updateFooterConfig(dto);
+    try {
+      console.log('[Footer Update] Received data:', JSON.stringify(dto, null, 2));
+      return await this.headerFooterService.updateFooterConfig(dto);
+    } catch (error) {
+      console.error('[Footer Update] Error:', error);
+      throw error;
+    }
   }
 
   // Template Endpoints

@@ -81,7 +81,7 @@ export interface NavLink {
 export interface SocialLink {
   platform: string;
   url: string;
-  icon: string;
+  icon?: string;
 }
 
 // Footer Section Data
