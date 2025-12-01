@@ -121,10 +121,9 @@ npx comes with npm, so if you have Node.js installed, you already have npx.
 
 ### Setup Steps
 
-1. **Copy example config**:
-   ```bash
-   cp .kiro/settings/mcp.json.example .kiro/settings/mcp.json
-   ```
+1. **MCP config is already included** at `.kiro/settings/mcp.json`
+   - Contains all MCP server configurations
+   - Uses placeholder tokens (replace with your own)
 
 2. **Update database connection** (done automatically by setup-cli.js):
    ```json
@@ -132,6 +131,8 @@ npx comes with npm, so if you have Node.js installed, you already have npx.
    ```
 
 3. **Add GitHub token** (if using GitHub MCP):
+   - Get token from: https://github.com/settings/tokens
+   - Replace `YOUR_GITHUB_TOKEN_HERE` in mcp.json:
    ```json
    "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_your_actual_token"
    ```
@@ -143,12 +144,18 @@ npx comes with npm, so if you have Node.js installed, you already have npx.
 
 ## Security
 
-⚠️ **IMPORTANT**: The `mcp.json` file contains sensitive credentials!
+⚠️ **IMPORTANT**: The `mcp.json` file is included in the repository with placeholder tokens.
 
-- ✅ Already in `.gitignore` (won't be committed)
-- ❌ Never commit tokens to Git
+- ✅ Included in repo with sanitized placeholders
+- ⚠️ Replace placeholders with your actual tokens locally
+- ❌ Never commit your real tokens to Git
 - ✅ Use environment variables in production
-- ✅ Use `mcp.json.example` for sharing config structure
+- ✅ Keep your local mcp.json private
+
+**After cloning**:
+1. Open `.kiro/settings/mcp.json`
+2. Replace `YOUR_GITHUB_TOKEN_HERE` with your actual token
+3. Database URI will be updated automatically by setup-cli.js
 
 ## Usage in Kiro
 

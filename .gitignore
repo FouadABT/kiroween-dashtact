@@ -64,8 +64,8 @@ next-env.d.ts
 .vercel
 *.pem
 
-# Kiro settings (contains sensitive tokens)
-.kiro/settings/mcp.json
+# Kiro settings - mcp.json is now included with sanitized placeholders
+# Users should update tokens locally after cloning
 
 # Documentation (temporary files - keep main docs)
 *_FIX.md
