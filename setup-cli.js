@@ -39,6 +39,62 @@ async function confirm(prompt) {
   return answer.toLowerCase() === 'y';
 }
 
+// Create environment files if they don't exist
+function ensureEnvFiles() {
+  const backendEnvPath = path.join(__dirname, 'backend', '.env');
+  const backendEnvExamplePath = path.join(__dirname, 'backend', '.env.example');
+  const frontendEnvPath = path.join(__dirname, 'frontend', '.env.local');
+  
+  // Create backend .env from .env.example if it doesn't exist
+  if (!fs.existsSync(backendEnvPath) && fs.existsSync(backendEnvExamplePath)) {
+    fs.copyFileSync(backendEnvExamplePath, backendEnvPath);
+    log('✅ Created backend/.env from .env.example', 'green');
+  }
+  
+  // Create frontend .env.local with default values if it doesn't exist
+  if (!fs.existsSync(frontendEnvPath)) {
+    const defaultFrontendEnv = `# Development Environment - Local
+# DO NOT COMMIT THIS FILE TO GIT!
+
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Environment
+NODE_ENV=development
+
+# Feature Flags - Controls which features are available
+NEXT_PUBLIC_ENABLE_LANDING=true
+NEXT_PUBLIC_ENABLE_BLOG=true
+NEXT_PUBLIC_ENABLE_ECOMMERCE=true
+NEXT_PUBLIC_ENABLE_CALENDAR=true
+NEXT_PUBLIC_ENABLE_CRM=true
+NEXT_PUBLIC_ENABLE_NOTIFICATIONS=true
+NEXT_PUBLIC_ENABLE_CUSTOMER_ACCOUNT=true
+
+# Page Visibility - Controls which pages are visible to users
+NEXT_PUBLIC_SHOW_HOME_PAGE=true
+NEXT_PUBLIC_SHOW_SHOP_PAGE=true
+NEXT_PUBLIC_SHOW_BLOG_PAGE=true
+NEXT_PUBLIC_SHOW_ACCOUNT_PAGE=true
+
+# Setup Status
+NEXT_PUBLIC_SETUP_COMPLETED=false
+
+# Dynamic Header/Footer
+NEXT_PUBLIC_USE_DYNAMIC_HEADER_FOOTER=true
+
+# Blog Configuration
+NEXT_PUBLIC_BLOG_POSTS_PER_PAGE=10
+NEXT_PUBLIC_BLOG_ENABLE_CATEGORIES=true
+NEXT_PUBLIC_BLOG_ENABLE_TAGS=true
+NEXT_PUBLIC_BLOG_REQUIRE_AUTHOR=false
+`;
+    fs.writeFileSync(frontendEnvPath, defaultFrontendEnv);
+    log('✅ Created frontend/.env.local with default values', 'green');
+  }
+}
+
 // Database utility functions
 async function checkPostgreSQLInstalled() {
   try {
@@ -452,13 +508,17 @@ async function configureDatabaseConnection() {
         log(`   ${databaseUrl.replace(/:[^:@]+@/, ':****@')}`, 'dim');
       } else {
         log('\n❌ No DATABASE_URL found in .env file', 'red');
-        return await configureDatabaseConnection();
+        log('   Let\'s configure it now.', 'yellow');
+        choice = '2'; // Switch to manual entry
       }
     } else {
-      log('\n❌ .env file not found', 'red');
-      return await configureDatabaseConnection();
+      log('\n⚠️  .env file not found - will be created', 'yellow');
+      log('   Let\'s configure your database connection.', 'dim');
+      choice = '2'; // Switch to manual entry
     }
-  } else if (choice === '2') {
+  }
+  
+  if (choice === '2') {
     // Collect database details
     log('\n📝 Enter Database Connection Details:', 'bright');
     log('   (Press Enter to use default values shown in brackets)\n', 'dim');
@@ -840,8 +900,13 @@ async function main() {
   log('   • Pre-built foundation ready for customization', 'dim');
   log('   • The bones of your app - now add the muscles!\n', 'dim');
 
+  // Step 0: Ensure environment files exist
+  log('Step 0: Preparing Environment Files', 'bright');
+  log('─────────────────────────────────────────────────────────────', 'cyan');
+  ensureEnvFiles();
+
   // Step 1: Verify environment
-  log('Step 1: Environment Verification', 'bright');
+  log('\nStep 1: Environment Verification', 'bright');
   log('─────────────────────────────────────────────────────────────', 'cyan');
 
   const envCheck = await verifyEnvironment();
