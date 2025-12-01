@@ -540,6 +540,39 @@ function runCommand(command, cwd = '.') {
   }
 }
 
+function sanitizeMcpConfig() {
+  const mcpConfigPath = path.join(__dirname, '.kiro', 'settings', 'mcp.json');
+  
+  if (!fs.existsSync(mcpConfigPath)) {
+    return { success: false, reason: 'MCP config not found' };
+  }
+
+  try {
+    const mcpConfig = JSON.parse(fs.readFileSync(mcpConfigPath, 'utf8'));
+    let sanitized = false;
+
+    // Sanitize GitHub token
+    if (mcpConfig.mcpServers?.github?.env?.GITHUB_PERSONAL_ACCESS_TOKEN) {
+      const token = mcpConfig.mcpServers.github.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+      if (token && token.length > 8 && !token.includes('YOUR_')) {
+        // Replace with placeholder but keep format
+        mcpConfig.mcpServers.github.env.GITHUB_PERSONAL_ACCESS_TOKEN = 'YOUR_GITHUB_TOKEN_HERE';
+        sanitized = true;
+      }
+    }
+
+    // Add comments to sensitive fields
+    if (sanitized) {
+      fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
+      return { success: true, sanitized: true };
+    }
+
+    return { success: true, sanitized: false };
+  } catch (error) {
+    return { success: false, reason: error.message };
+  }
+}
+
 async function configureDatabaseConnection() {
   log('\n╔════════════════════════════════════════════════════════════╗', 'cyan');
   log('║              �️  tDatabase Configuration                    ║', 'cyan');
@@ -1071,6 +1104,71 @@ async function main() {
       fs.writeFileSync(envPath, envContent);
       log(`\n✅ Updated ${environment.envFile} with database connection`, 'green');
     }
+
+    // Update MCP configuration with new database connection
+    const mcpConfigPath = path.join(__dirname, '.kiro', 'settings', 'mcp.json');
+    if (fs.existsSync(mcpConfigPath)) {
+      try {
+        const mcpConfig = JSON.parse(fs.readFileSync(mcpConfigPath, 'utf8'));
+        
+        if (mcpConfig.mcpServers && mcpConfig.mcpServers.postgres) {
+          // Update postgres MCP with new connection string
+          mcpConfig.mcpServers.postgres.env.DATABASE_URI = dbSetup.databaseUrl;
+          
+          // Hide sensitive tokens in GitHub MCP if present
+          if (mcpConfig.mcpServers.github && mcpConfig.mcpServers.github.env && mcpConfig.mcpServers.github.env.GITHUB_PERSONAL_ACCESS_TOKEN) {
+            const token = mcpConfig.mcpServers.github.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+            if (token && token.length > 8) {
+              // Keep token but add a comment for user awareness
+              log('   ℹ️  GitHub MCP token detected (keeping existing token)', 'cyan');
+            }
+          }
+          
+          fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
+          log('✅ Updated MCP configuration with database connection', 'green');
+          
+          log('\n📋 MCP (Model Context Protocol) Configuration:', 'bright');
+          log('   Your project includes powerful MCP integrations:', 'dim');
+          log('', 'reset');
+          log('   🗄️  Postgres MCP - Database operations via AI', 'cyan');
+          log('      • Query, analyze, and optimize your database', 'dim');
+          log('      • Get schema insights and performance recommendations', 'dim');
+          log('      • Connection: Updated with your database credentials', 'green');
+          log('', 'reset');
+          log('   🐙 GitHub MCP - Repository operations via AI', 'cyan');
+          log('      • Search repos, create issues, manage PRs', 'dim');
+          log('      • Read/write files directly to GitHub', 'dim');
+          if (mcpConfig.mcpServers.github && !mcpConfig.mcpServers.github.disabled) {
+            log('      • Status: ✅ Configured and enabled', 'green');
+          } else {
+            log('      • Status: ⚠️  Needs GitHub token configuration', 'yellow');
+          }
+          log('', 'reset');
+          log('   🌐 Fetch MCP - Web scraping and API calls', 'cyan');
+          log('      • Fetch and parse web content', 'dim');
+          log('      • Make HTTP requests via AI', 'dim');
+          log('', 'reset');
+          log('   🕐 Time MCP - Timezone operations', 'cyan');
+          log('      • Convert times between timezones', 'dim');
+          log('      • Get current time in any timezone', 'dim');
+          log('', 'reset');
+          
+          log('   💡 Required Tools:', 'yellow');
+          log('      • uvx (Python package runner) - Required for Postgres, Time, Fetch MCPs', 'dim');
+          log('        Install: https://docs.astral.sh/uv/getting-started/installation/', 'dim');
+          log('      • npx (Node package runner) - Already installed with npm ✅', 'dim');
+          log('', 'reset');
+          
+          log('   📖 Learn more about MCP:', 'bright');
+          log('      • Open Command Palette → "MCP" to manage servers', 'dim');
+          log('      • View MCP Servers in Kiro sidebar', 'dim');
+          log('      • Configuration: .kiro/settings/mcp.json', 'dim');
+          log('', 'reset');
+        }
+      } catch (error) {
+        log(`   ⚠️  Could not update MCP configuration: ${error.message}`, 'yellow');
+      }
+    }
   }
 
   // Step 9: Database initialization
@@ -1237,6 +1335,13 @@ async function main() {
   log('  • backend/README.md - Backend documentation', 'dim');
   log('  • frontend/README.md - Frontend documentation', 'dim');
   log('  • documentation/ - Additional guides\n', 'dim');
+
+  log('🔐 MCP Security Note:', 'yellow');
+  log('  • MCP configuration: .kiro/settings/mcp.json', 'dim');
+  log('  • Contains database connection and API tokens', 'dim');
+  log('  • ⚠️  DO NOT commit sensitive tokens to Git!', 'red');
+  log('  • Add .kiro/settings/mcp.json to .gitignore if sharing publicly', 'dim');
+  log('  • Use environment variables for production deployments\n', 'dim');
 
   log('🏗️  Transform This Skeleton with Kiro AI:', 'magenta');
   log('   The skeleton is ready - now bring it to life!', 'bright');
