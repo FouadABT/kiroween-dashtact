@@ -1,3 +1,5 @@
+'use client';
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -343,3 +345,4 @@ export function AuthDebugPanel({ position = 'bottom-right' }: AuthDebugPanelProp
 }
 
 export default AuthDebugPanel;
+

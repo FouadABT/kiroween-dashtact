@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  
+  // Set workspace root to silence lockfile warning
+  outputFileTracingRoot: path.join(__dirname, '..'),
   
   // Image optimization configuration
   images: {

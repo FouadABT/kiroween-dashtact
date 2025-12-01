@@ -1,3 +1,5 @@
+'use client';
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -277,3 +279,4 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return this.props.children;
   }
 }
+

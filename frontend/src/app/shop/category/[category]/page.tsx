@@ -9,10 +9,10 @@ import type {
 } from '@/types/ecommerce';
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     category: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     page?: string;
     limit?: string;
     search?: string;
@@ -21,7 +21,7 @@ interface CategoryPageProps {
     isFeatured?: string;
     inStock?: string;
     sortBy?: string;
-  };
+  }>;
 }
 
 // Enable ISR with 5 minute revalidation for category pages
@@ -32,8 +32,9 @@ export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
   try {
+    const { category: categorySlug } = await params;
     const categories = await StorefrontApi.getCategories();
-    const category = findCategoryBySlug(categories, params.category);
+    const category = findCategoryBySlug(categories, categorySlug);
 
     if (!category) {
       return {
@@ -107,7 +108,16 @@ function findCategoryBySlug(
 
 async function getProducts(
   categorySlug: string,
-  searchParams: CategoryPageProps['searchParams']
+  searchParams: {
+    page?: string;
+    limit?: string;
+    search?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    isFeatured?: string;
+    inStock?: string;
+    sortBy?: string;
+  }
 ): Promise<StorefrontProductListResponseDto> {
   try {
     const query = {
@@ -147,14 +157,17 @@ export default async function CategoryPage({
   params,
   searchParams,
 }: CategoryPageProps) {
+  const { category: categorySlug } = await params;
+  const resolvedSearchParams = await searchParams;
+  
   // Fetch data on the server
   const [productsData, categories] = await Promise.all([
-    getProducts(params.category, searchParams),
+    getProducts(categorySlug, resolvedSearchParams),
     getCategories(),
   ]);
 
   // Find the current category
-  const category = findCategoryBySlug(categories, params.category);
+  const category = findCategoryBySlug(categories, categorySlug);
 
   // If category not found, show 404
   if (!category) {
@@ -199,7 +212,7 @@ export default async function CategoryPage({
         category={category}
         initialProducts={productsData}
         categories={categories}
-        initialSearchParams={searchParams}
+        initialSearchParams={resolvedSearchParams}
       />
     </>
   );

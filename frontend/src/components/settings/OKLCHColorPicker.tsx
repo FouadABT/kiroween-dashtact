@@ -291,7 +291,7 @@ export function OKLCHColorPicker({ label, value, onChange, id }: HSLColorPickerP
                 </div>
                 <Slider
                   value={[hslValues.hue]}
-                  onValueChange={(v) => handleSliderChange('hue', v)}
+                  onValueChange={(v: number[]) => handleSliderChange('hue', v)}
                   min={0}
                   max={360}
                   step={0.1}
@@ -315,7 +315,7 @@ export function OKLCHColorPicker({ label, value, onChange, id }: HSLColorPickerP
                 </div>
                 <Slider
                   value={[hslValues.saturation]}
-                  onValueChange={(v) => handleSliderChange('saturation', v)}
+                  onValueChange={(v: number[]) => handleSliderChange('saturation', v)}
                   min={0}
                   max={100}
                   step={0.1}
@@ -337,7 +337,7 @@ export function OKLCHColorPicker({ label, value, onChange, id }: HSLColorPickerP
                 </div>
                 <Slider
                   value={[hslValues.lightness]}
-                  onValueChange={(v) => handleSliderChange('lightness', v)}
+                  onValueChange={(v: number[]) => handleSliderChange('lightness', v)}
                   min={0}
                   max={100}
                   step={0.1}
@@ -360,7 +360,7 @@ export function OKLCHColorPicker({ label, value, onChange, id }: HSLColorPickerP
                   </div>
                   <Slider
                     value={[hslValues.alpha]}
-                    onValueChange={(v) => handleSliderChange('alpha', v)}
+                    onValueChange={(v: number[]) => handleSliderChange('alpha', v)}
                     min={0}
                     max={1}
                     step={0.01}

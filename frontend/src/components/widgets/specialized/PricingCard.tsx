@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PricingCard Component
  * 
@@ -182,3 +184,4 @@ export function PricingCard({
     </Card>
   );
 }
+

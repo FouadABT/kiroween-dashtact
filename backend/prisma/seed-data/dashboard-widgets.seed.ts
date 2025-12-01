@@ -1269,28 +1269,28 @@ export async function seedDefaultWidgetInstances(
   // Define role-specific layouts
   const roleLayouts = [
     {
-      role: 'SUPER_ADMIN',
+      role: 'Super Admin',
       pageId: 'main-dashboard',
       name: 'Super Admin Dashboard',
       description: 'Comprehensive dashboard with system monitoring and business metrics',
       widgets: filterWidgetsByFeatures(SUPER_ADMIN_WIDGETS),
     },
     {
-      role: 'ADMIN',
+      role: 'Admin',
       pageId: 'main-dashboard',
       name: 'Admin Dashboard',
       description: 'Business operations and content management dashboard',
       widgets: filterWidgetsByFeatures(ADMIN_WIDGETS),
     },
     {
-      role: 'MANAGER',
+      role: 'Manager',
       pageId: 'main-dashboard',
       name: 'Manager Dashboard',
       description: 'Operations and inventory management dashboard',
       widgets: filterWidgetsByFeatures(MANAGER_WIDGETS),
     },
     {
-      role: 'USER',
+      role: 'User',
       pageId: 'main-dashboard',
       name: 'User Dashboard',
       description: 'Personal activity and information dashboard',

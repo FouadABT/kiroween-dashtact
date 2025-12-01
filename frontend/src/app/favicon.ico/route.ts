@@ -10,7 +10,10 @@ export async function GET() {
       redirect(branding.faviconUrl);
     }
   } catch (error) {
-    console.error('Failed to fetch branding for favicon:', error);
+    // Only log in development, suppress during build
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Failed to fetch branding for favicon:', error);
+    }
   }
 
   // Fallback to a simple SVG if no custom favicon

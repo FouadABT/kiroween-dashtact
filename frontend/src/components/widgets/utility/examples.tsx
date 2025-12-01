@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Utility Widgets Examples
  * 
@@ -441,3 +443,4 @@ export function UtilityWidgetsExamples() {
     </div>
   );
 }
+

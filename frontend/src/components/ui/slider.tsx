@@ -1,3 +1,5 @@
+'use client';
+
 "use client"
 
 import * as React from "react"
@@ -61,3 +63,4 @@ function Slider({
 }
 
 export { Slider }
+

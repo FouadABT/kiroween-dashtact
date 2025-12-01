@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Profile Form Component
  * 
@@ -215,3 +217,4 @@ export function ProfileForm({ profile }: ProfileFormProps) {
     </Card>
   );
 }
+

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Core Widgets Usage Examples
  * 
@@ -300,3 +302,4 @@ export function ActivityFeedExample() {
     </div>
   );
 }
+

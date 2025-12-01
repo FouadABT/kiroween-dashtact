@@ -85,24 +85,32 @@ export function Breadcrumb({
   
   // Force re-render when context dynamic values change
   React.useEffect(() => {
-    console.log('[Breadcrumb] Context dynamic values changed:', contextDynamicValues);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Breadcrumb] Context dynamic values changed:', contextDynamicValues);
+    }
   }, [contextDynamicValues]);
   
-  console.log('[Breadcrumb] Rendering:', {
-    pathname,
-    propDynamicValues,
-    contextDynamicValues,
-    finalDynamicValues: dynamicValues,
-    hasCustomItems: !!customItems
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Breadcrumb] Rendering:', {
+      pathname,
+      propDynamicValues,
+      contextDynamicValues,
+      finalDynamicValues: dynamicValues,
+      hasCustomItems: !!customItems
+    });
+  }
   
   const breadcrumbs = useMemo(() => {
     if (customItems) {
-      console.log('[Breadcrumb] Using custom items:', customItems);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Breadcrumb] Using custom items:', customItems);
+      }
       return customItems;
     }
     const generated = generateBreadcrumbs(pathname, dynamicValues);
-    console.log('[Breadcrumb] Generated breadcrumbs:', generated);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Breadcrumb] Generated breadcrumbs:', generated);
+    }
     return generated;
   }, [pathname, dynamicValues, customItems]);
   

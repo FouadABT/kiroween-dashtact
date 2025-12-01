@@ -23,9 +23,9 @@ import { BlogPost } from '@/types/blog';
  */
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // Enable ISR with 5 minute revalidation

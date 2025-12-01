@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Landing Page Component
  * 
@@ -159,3 +161,4 @@ export function LandingPage() {
     </LandingLayout>
   );
 }
+

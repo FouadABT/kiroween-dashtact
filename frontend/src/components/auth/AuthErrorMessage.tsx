@@ -1,3 +1,5 @@
+'use client';
+
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -329,3 +331,4 @@ export function ErrorList({
     </motion.div>
   );
 }
+

@@ -19,7 +19,10 @@ export default async function TermsPage() {
   try {
     legalPage = await legalPagesApi.getLegalPage('terms');
   } catch (err) {
-    console.error('Failed to fetch Terms of Service:', err);
+    // Only log in development, suppress during build
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Failed to fetch Terms of Service:', err);
+    }
     error = 'Failed to load Terms of Service';
   }
 

@@ -5,14 +5,11 @@ const prisma = new PrismaClient();
 async function addNotificationPermissions() {
   console.log('Adding notification permissions to roles...\n');
 
-  const roles = ['User', 'Manager', 'Admin', 'USER', 'ADMIN', 'MODERATOR'];
+  const roles = ['User', 'Manager', 'Admin'];
   const permissions = {
     'User': ['notifications:read'],
     'Manager': ['notifications:read'],
     'Admin': ['notifications:read', 'notifications:write', 'notifications:delete'],
-    'USER': ['notifications:read'],
-    'ADMIN': ['notifications:read', 'notifications:write', 'notifications:delete'],
-    'MODERATOR': ['notifications:read'],
   };
 
   for (const roleName of roles) {

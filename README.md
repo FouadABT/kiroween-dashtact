@@ -1,6 +1,24 @@
-# Full-Stack Template Project
+# 🏗️ Full-Stack Skeleton/Template Dashboard
 
-A complete full-stack application template with Next.js frontend and NestJS backend.
+> **A professional application skeleton** - Your foundation for building custom full-stack applications
+
+This is a **SKELETON/TEMPLATE** project, not a finished product. Think of it as the bones of your application - a solid, production-ready foundation that you build upon and customize for your specific needs.
+
+## 🦴 What is a Skeleton/Template?
+
+A **skeleton** provides:
+- ✅ Complete architecture and structure (the bones)
+- ✅ Core systems already implemented (auth, database, API)
+- ✅ Best practices and patterns built-in
+- ✅ Ready to extend with your unique features
+
+**You provide**:
+- 💪 Your business logic and workflows
+- 💪 Custom features specific to your use case
+- 💪 Your brand and design customization
+- 💪 Domain-specific functionality
+
+**Result**: A complete, custom application built on a solid foundation in a fraction of the time!
 
 ## 🏗️ Project Structure
 

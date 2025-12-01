@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Modal Component
  * 
@@ -90,3 +92,4 @@ export function Modal({
 }
 
 Modal.displayName = 'Modal';
+

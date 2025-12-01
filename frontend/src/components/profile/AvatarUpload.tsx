@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Avatar Upload Component
  * 
@@ -288,3 +290,4 @@ export function AvatarUpload({ currentAvatarUrl, userName }: AvatarUploadProps) 
     </div>
   );
 }
+

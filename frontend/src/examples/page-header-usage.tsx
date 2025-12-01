@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PageHeader Component Usage Examples
  * 
@@ -451,3 +453,4 @@ export function CustomStyledPageHeaderExample() {
     </div>
   );
 }
+

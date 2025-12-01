@@ -32,20 +32,21 @@ async function fetchPublishedBlogPosts(): Promise<Array<{ slug: string; updatedA
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     const response = await fetch(`${apiUrl}/blog?limit=1000`, {
       next: { revalidate: 3600 }, // Revalidate every hour
+      cache: 'no-store', // Don't cache during build
     });
 
     if (!response.ok) {
-      console.error('Failed to fetch blog posts for sitemap');
+      // Silently return empty array during build
       return [];
     }
 
     const data = await response.json();
-    return data.posts.map((post: { slug: string; updatedAt: string }) => ({
+    return data.posts?.map((post: { slug: string; updatedAt: string }) => ({
       slug: post.slug,
       updatedAt: post.updatedAt,
-    }));
+    })) || [];
   } catch (error) {
-    console.error('Error fetching blog posts for sitemap:', error);
+    // Silently return empty array during build
     return [];
   }
 }
@@ -67,20 +68,21 @@ async function fetchPublishedProducts(): Promise<Array<{ slug: string; updatedAt
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     const response = await fetch(`${apiUrl}/storefront/products?limit=1000`, {
       next: { revalidate: 300 }, // Revalidate every 5 minutes
+      cache: 'no-store', // Don't cache during build
     });
 
     if (!response.ok) {
-      console.error('Failed to fetch products for sitemap');
+      // Silently return empty array during build
       return [];
     }
 
     const data = await response.json();
-    return data.products.map((product: { slug: string; updatedAt: string }) => ({
+    return data.products?.map((product: { slug: string; updatedAt: string }) => ({
       slug: product.slug,
       updatedAt: product.updatedAt,
-    }));
+    })) || [];
   } catch (error) {
-    console.error('Error fetching products for sitemap:', error);
+    // Silently return empty array during build
     return [];
   }
 }
@@ -132,10 +134,11 @@ async function fetchPublishedCustomPages(): Promise<Array<{ slug: string; update
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     const response = await fetch(`${apiUrl}/pages?limit=1000`, {
       next: { revalidate: 3600 }, // Revalidate every hour
+      cache: 'no-store', // Don't cache during build
     });
 
     if (!response.ok) {
-      console.error('Failed to fetch custom pages for sitemap');
+      // Silently return empty array during build
       return [];
     }
 
@@ -143,7 +146,7 @@ async function fetchPublishedCustomPages(): Promise<Array<{ slug: string; update
     
     // Filter to only include published, public pages
     // Exclude pages with robots noindex (metaKeywords containing 'noindex')
-    return data.data
+    return (data.data || [])
       .filter((page: CustomPage) => {
         // Must be published
         if (page.status !== PageStatus.PUBLISHED) return false;
@@ -162,7 +165,7 @@ async function fetchPublishedCustomPages(): Promise<Array<{ slug: string; update
         parentPage: page.parentPage ? { slug: page.parentPage.slug } : null,
       }));
   } catch (error) {
-    console.error('Error fetching custom pages for sitemap:', error);
+    // Silently return empty array during build
     return [];
   }
 }

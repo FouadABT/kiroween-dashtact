@@ -1,19 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
 import { Toaster } from "@/components/ui/sonner";
 import { BrandingApi } from "@/lib/api/branding";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 async function getBrandingMetadata() {
   try {
@@ -87,9 +76,7 @@ export default function RootLayout({
         {/* Preload favicon to reduce flash on page load */}
         <link rel="preload" as="image" href="/favicon.ico" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="antialiased">
         <Providers>
           {children}
           <Toaster />

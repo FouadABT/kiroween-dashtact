@@ -19,7 +19,10 @@ export default async function PrivacyPage() {
   try {
     legalPage = await legalPagesApi.getLegalPage('privacy');
   } catch (err) {
-    console.error('Failed to fetch Privacy Policy:', err);
+    // Only log in development, suppress during build
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Failed to fetch Privacy Policy:', err);
+    }
     error = 'Failed to load Privacy Policy';
   }
 

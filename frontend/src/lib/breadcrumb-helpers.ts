@@ -29,14 +29,18 @@ export function generateBreadcrumbs(
   pathname: string,
   dynamicValues?: Record<string, string>
 ): BreadcrumbItem[] {
-  console.log('[generateBreadcrumbs] Called with:', { pathname, dynamicValues });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[generateBreadcrumbs] Called with:', { pathname, dynamicValues });
+  }
   
   // Check cache first
   const cacheKey = getBreadcrumbCacheKey(pathname, dynamicValues);
   const cached = breadcrumbCache.get(cacheKey);
   
   if (cached) {
-    console.log('[generateBreadcrumbs] Returning cached:', cached);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[generateBreadcrumbs] Returning cached:', cached);
+    }
     return cached;
   }
 
@@ -52,32 +56,40 @@ export function generateBreadcrumbs(
       // Get metadata for this path
       const metadata = getMetadataForSegment(currentPath);
       
-      console.log(`[generateBreadcrumbs] Segment ${i}:`, {
-        segment: segments[i],
-        currentPath,
-        metadata: metadata?.breadcrumb,
-        hasMetadata: !!metadata
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[generateBreadcrumbs] Segment ${i}:`, {
+          segment: segments[i],
+          currentPath,
+          metadata: metadata?.breadcrumb,
+          hasMetadata: !!metadata
+        });
+      }
       
       // Skip hidden breadcrumb items
       if (metadata?.breadcrumb?.hidden) {
-        console.log(`[generateBreadcrumbs] Skipping hidden segment: ${currentPath}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[generateBreadcrumbs] Skipping hidden segment: ${currentPath}`);
+        }
         continue;
       }
       
       let label = metadata?.breadcrumb?.label || formatSegment(segments[i]);
       
-      console.log(`[generateBreadcrumbs] Label before template:`, label);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[generateBreadcrumbs] Label before template:`, label);
+      }
       
       // Resolve dynamic labels
       if (dynamicValues && label.includes('{')) {
         const originalLabel = label;
         label = resolveTemplate(label, dynamicValues);
-        console.log(`[generateBreadcrumbs] Template resolved:`, {
-          original: originalLabel,
-          resolved: label,
-          dynamicValues
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[generateBreadcrumbs] Template resolved:`, {
+            original: originalLabel,
+            resolved: label,
+            dynamicValues
+          });
+        }
       }
       
       breadcrumbs.push({
@@ -86,7 +98,9 @@ export function generateBreadcrumbs(
       });
     }
     
-    console.log('[generateBreadcrumbs] Final breadcrumbs:', breadcrumbs);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[generateBreadcrumbs] Final breadcrumbs:', breadcrumbs);
+    }
     
     // Cache the result
     breadcrumbCache.set(cacheKey, breadcrumbs);
@@ -102,11 +116,15 @@ export function generateBreadcrumbs(
  * Get metadata for a path segment
  */
 function getMetadataForSegment(path: string) {
-  console.log(`[getMetadataForSegment] Looking for path: ${path}`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[getMetadataForSegment] Looking for path: ${path}`);
+  }
   
   // Try exact match
   if (metadataConfig[path]) {
-    console.log(`[getMetadataForSegment] Found exact match for: ${path}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[getMetadataForSegment] Found exact match for: ${path}`);
+    }
     return metadataConfig[path];
   }
   
@@ -114,18 +132,22 @@ function getMetadataForSegment(path: string) {
   const pattern = Object.keys(metadataConfig).find(key => {
     const regex = new RegExp('^' + key.replace(/:\w+/g, '[^/]+') + '$');
     const matches = regex.test(path);
-    if (matches) {
+    if (matches && process.env.NODE_ENV === 'development') {
       console.log(`[getMetadataForSegment] Pattern match: ${key} matches ${path}`);
     }
     return matches;
   });
   
   if (pattern) {
-    console.log(`[getMetadataForSegment] Using pattern: ${pattern} for path: ${path}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[getMetadataForSegment] Using pattern: ${pattern} for path: ${path}`);
+    }
     return metadataConfig[pattern];
   }
   
-  console.log(`[getMetadataForSegment] No metadata found for: ${path}`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[getMetadataForSegment] No metadata found for: ${path}`);
+  }
   return null;
 }
 
@@ -157,7 +179,9 @@ export function formatSegment(segment: string): string {
 function resolveTemplate(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (match, key) => {
     if (!values[key]) {
-      console.warn(`Template value not found: ${key}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Template value not found: ${key}`);
+      }
       return match; // Keep placeholder if value not found
     }
     return values[key];

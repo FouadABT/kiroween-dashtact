@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Dynamic Header Component
  * 
@@ -269,3 +271,4 @@ export function DynamicHeader() {
     </nav>
   );
 }
+

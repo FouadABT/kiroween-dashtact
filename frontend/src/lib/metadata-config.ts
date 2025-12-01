@@ -1076,6 +1076,27 @@ export const metadataConfig: Record<string, PageMetadata> = {
     },
   },
 
+  '/dashboard/ecommerce/shipping': {
+    title: 'Shipping Methods',
+    description: 'Manage shipping methods, rates, and delivery options',
+    keywords: ['shipping', 'delivery', 'methods', 'rates', 'ecommerce'],
+    breadcrumb: { label: 'Shipping' },
+    openGraph: {
+      title: 'Shipping Methods Management',
+      description: 'Configure and manage shipping methods and delivery rates',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Shipping Methods Management',
+      description: 'Configure and manage shipping methods and delivery rates',
+    },
+    robots: {
+      index: false,
+      follow: false,
+      noarchive: true,
+    },
+  },
+
   '/dashboard/settings/ecommerce': {
     title: 'E-Commerce Settings',
     description: 'Configure e-commerce store settings',
@@ -1457,6 +1478,17 @@ export const metadataConfig: Record<string, PageMetadata> = {
       follow: false,
       noarchive: true,
       nosnippet: true,
+    },
+  },
+
+  // Admin section
+  '/admin': {
+    title: 'Admin',
+    description: 'Admin section',
+    breadcrumb: { label: 'Admin' },
+    robots: {
+      index: false,
+      follow: false,
     },
   },
 

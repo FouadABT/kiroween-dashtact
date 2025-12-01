@@ -23,12 +23,12 @@ export const metadata: Metadata = {
  * 
  * Requirements: 6.4, 7.4
  */
-export default function AccessDeniedPage({
+export default async function AccessDeniedPage({
   searchParams,
 }: {
-  searchParams: { permission?: string; role?: string; resource?: string };
+  searchParams: Promise<{ permission?: string; role?: string; resource?: string }>;
 }) {
-  const { permission, role, resource } = searchParams;
+  const { permission, role, resource } = await searchParams;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
@@ -246,3 +246,4 @@ export default function AccessDeniedPage({
     </div>
   );
 }
+

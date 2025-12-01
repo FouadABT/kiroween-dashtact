@@ -1,3 +1,5 @@
+'use client';
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -468,3 +470,4 @@ export function WidgetLibrary({ open, onClose, layoutId, pageIdentifier }: Widge
     </Dialog>
   );
 }
+

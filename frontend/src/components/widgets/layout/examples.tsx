@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Layout Widgets Examples
  * 
@@ -369,3 +371,4 @@ export const layoutExamples = {
     completePage: CompletePageLayoutExample,
   },
 };
+

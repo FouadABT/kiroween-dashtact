@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Profile Header Component
  * 
@@ -244,3 +246,4 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
     </Card>
   );
 }
+

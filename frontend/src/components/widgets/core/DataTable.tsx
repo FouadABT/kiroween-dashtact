@@ -1,3 +1,5 @@
+'use client';
+
 "use client";
 
 import React, { useState } from "react";
@@ -297,3 +299,4 @@ export function DataTable<T>({
     </WidgetContainer>
   );
 }
+

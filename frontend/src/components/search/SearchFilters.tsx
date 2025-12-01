@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * SearchFilters Component
  * Entity type filtering and sorting controls for search results
@@ -85,3 +87,4 @@ export function SearchFilters({
     </div>
   );
 }
+

@@ -133,10 +133,13 @@ async function main() {
   });
 
   if (!existingGlobalSettings) {
+    // Read theme mode from environment variable (set by setup CLI)
+    const themeMode = process.env.THEME_MODE || 'system';
+    
     await prisma.settings.create({
       data: {
         scope: 'global',
-        themeMode: 'system',
+        themeMode,
         activeTheme: 'default',
         lightPalette: {
           background: '0 0% 100%',
@@ -251,6 +254,7 @@ async function main() {
       },
     });
     console.log('✅ Created default global settings');
+    console.log(`   Theme Mode: ${themeMode}`);
   } else {
     console.log('⏭️  Global settings already exist');
   }
@@ -691,9 +695,9 @@ async function main() {
     }
   }
 
-  // Assign email permissions to SUPER_ADMIN role
+  // Assign email permissions to Super Admin role
   const superAdminRole = await prisma.userRole.findUnique({
-    where: { name: 'SUPER_ADMIN' },
+    where: { name: 'Super Admin' },
   });
 
   if (superAdminRole) {
@@ -719,7 +723,7 @@ async function main() {
               permissionId: permission.id,
             },
           });
-          console.log(`  ✅ Assigned email permission to SUPER_ADMIN: ${permissionDef.name}`);
+          console.log(`  ✅ Assigned email permission to Super Admin: ${permissionDef.name}`);
         }
       }
     }
@@ -730,7 +734,7 @@ async function main() {
   const superAdmin = await prisma.user.findFirst({
     where: {
       role: {
-        name: 'SUPER_ADMIN',
+        name: 'Super Admin',
       },
     },
   });
@@ -780,14 +784,14 @@ async function main() {
   const roles = await prisma.userRole.findMany({
     where: {
       name: {
-        in: ['SUPER_ADMIN', 'ADMIN', 'USER'],
+        in: ['Super Admin', 'Admin', 'User'],
       },
     },
   });
 
   for (const role of roles) {
-    // SUPER_ADMIN gets all messaging permissions
-    if (role.name === 'SUPER_ADMIN') {
+    // Super Admin gets all messaging permissions
+    if (role.name === 'Super Admin') {
       for (const permissionDef of MESSAGING_PERMISSIONS) {
         const permission = await prisma.permission.findUnique({
           where: { name: permissionDef.name },
@@ -815,8 +819,8 @@ async function main() {
         }
       }
     }
-    // ADMIN and USER get messaging:access permission
-    else if (role.name === 'ADMIN' || role.name === 'USER') {
+    // Admin and User get messaging:access permission
+    else if (role.name === 'Admin' || role.name === 'User') {
       const permission = await prisma.permission.findUnique({
         where: { name: 'messaging:access' },
       });

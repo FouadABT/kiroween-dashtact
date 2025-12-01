@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * ChatWidget Component
  * 
@@ -259,3 +261,4 @@ export function ChatWidget({
     </Card>
   );
 }
+

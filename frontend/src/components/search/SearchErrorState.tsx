@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * SearchErrorState Component
  * Displays error message when search fails
@@ -29,3 +31,4 @@ export function SearchErrorState({ error, onRetry }: SearchErrorStateProps) {
     </div>
   );
 }
+

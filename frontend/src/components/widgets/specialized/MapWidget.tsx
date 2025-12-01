@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * MapWidget Component
  * 
@@ -211,3 +213,4 @@ export function MapWidget({
     </Card>
   );
 }
+

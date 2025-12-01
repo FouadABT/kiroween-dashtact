@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Recent Blog Posts Component
  * 
@@ -165,3 +167,4 @@ export function RecentBlogPosts() {
     </section>
   );
 }
+

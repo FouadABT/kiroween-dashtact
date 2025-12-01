@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * SearchPagination Component
  * Pagination controls for search results
@@ -135,3 +137,4 @@ export function SearchPagination({
     </div>
   );
 }
+

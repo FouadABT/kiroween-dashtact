@@ -1,3 +1,5 @@
+'use client';
+
 "use client";
 
 import React, { Suspense, useState } from 'react';
@@ -332,3 +334,4 @@ export function WidgetRenderer({
  * Only re-renders when props change
  */
 export const MemoizedWidgetRenderer = React.memo(WidgetRenderer);
+

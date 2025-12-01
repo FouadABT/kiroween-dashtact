@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Two-Factor Authentication Settings Component
  * 
@@ -170,3 +172,4 @@ export function TwoFactorSettingsSkeleton() {
     </Card>
   );
 }
+

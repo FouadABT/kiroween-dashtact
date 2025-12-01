@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Specialized Widgets Examples
  * 
@@ -373,3 +375,4 @@ export function SpecializedWidgetsShowcase() {
     </div>
   );
 }
+

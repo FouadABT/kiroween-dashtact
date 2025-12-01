@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Hero Section Component
  * 
@@ -106,3 +108,4 @@ export function Hero() {
     </section>
   );
 }
+

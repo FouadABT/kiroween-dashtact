@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Password Change Form Component
  * 
@@ -319,3 +321,4 @@ export function PasswordChangeForm() {
     </div>
   );
 }
+

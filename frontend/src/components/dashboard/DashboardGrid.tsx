@@ -1,3 +1,5 @@
+'use client';
+
 "use client";
 
 import React, { useMemo } from 'react';
@@ -378,3 +380,4 @@ export function DashboardGrid({ pageId, className }: DashboardGridProps) {
  * Memoized DashboardGrid for performance optimization
  */
 export const MemoizedDashboardGrid = React.memo(DashboardGrid);
+

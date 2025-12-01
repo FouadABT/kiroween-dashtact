@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Public Navigation Component
  * 
@@ -95,3 +97,4 @@ export function PublicNavigation() {
     </nav>
   );
 }
+

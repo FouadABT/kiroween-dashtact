@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * UserCard Component
  * 
@@ -250,3 +252,4 @@ export function UserCard({
 
   return content;
 }
+

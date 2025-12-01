@@ -2,24 +2,24 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Next.js Middleware for Feature Flag-Based Route Handling
+ * Next.js Proxy for Feature Flag-Based Route Handling
  * 
- * This middleware handles routing based on feature flags:
+ * This proxy handles routing based on feature flags:
  * - Landing page: Controls root route (/) behavior
  * - Blog: Controls blog routes (/blog, /blog/*) accessibility
  * 
- * The middleware runs on every request matching the configured paths.
+ * The proxy runs on every request matching the configured paths.
  */
 
 /**
- * Middleware function
+ * Proxy function
  * 
  * Handles route protection and redirection based on feature flags.
  * 
  * @param request - The incoming Next.js request
  * @returns NextResponse with redirect or next()
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Check feature flags from environment variables
@@ -57,9 +57,9 @@ export function middleware(request: NextRequest) {
 }
 
 /**
- * Middleware configuration
+ * Proxy configuration
  * 
- * Specifies which routes the middleware should run on.
+ * Specifies which routes the proxy should run on.
  * Uses Next.js matcher syntax for path matching.
  * 
  * Matched routes:
