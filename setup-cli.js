@@ -423,6 +423,21 @@ async function selectFeatures() {
       },
     },
     {
+      name: 'fitness',
+      label: 'Fitness & Gym Management',
+      description: 'Member portal, class scheduling, coach management, progress tracking',
+      examples: 'Gym dashboard, fitness studio, personal training, yoga studio, sports club',
+      features: {
+        landing: true,
+        blog: true,
+        ecommerce: false,
+        calendar: true,
+        crm: true,
+        notifications: true,
+        customerAccount: true,
+      },
+    },
+    {
       name: 'crm',
       label: 'CRM & Business Management',
       description: 'Customer relationship management with calendar & notifications',
@@ -478,8 +493,8 @@ async function selectFeatures() {
   }
 
   let choice = '';
-  while (!['1', '2', '3', '4'].includes(choice)) {
-    choice = await question('\nSelect profile (1-4): ');
+  while (!['1', '2', '3', '4', '5'].includes(choice)) {
+    choice = await question('\nSelect profile (1-5): ');
   }
 
   const selectedProfile = profiles[parseInt(choice) - 1];
