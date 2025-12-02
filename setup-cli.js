@@ -117,6 +117,16 @@ BLACKLIST_CLEANUP_INTERVAL=86400000
 
 # Email System Configuration
 EMAIL_ENCRYPTION_KEY=CHANGE_THIS_EMAIL_ENCRYPTION_KEY_MIN_32_CHARS
+
+# Email SMTP (optional)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-email@example.com
+SMTP_PASSWORD=your-password
+SMTP_FROM=noreply@example.com
+
+# Frontend URL
+FRONTEND_URL=http://localhost:3000
 `;
       fs.writeFileSync(backendEnvPath, defaultBackendEnv);
       log('✅ Created backend/.env with default values', 'green');
