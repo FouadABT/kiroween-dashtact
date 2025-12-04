@@ -495,7 +495,9 @@ This is a demonstration project built for the Kiroween Hackathon. Feel free to:
 
 ## 📄 License
 
-[Add your license here]
+This project is licensed under the MIT License - see the [LICENSE](../../LICENSE) file for details.
+
+Copyright (c) 2024 Fouad ABATOUY
 
 ## 🙏 Acknowledgments
 
