@@ -407,7 +407,7 @@ This is a demonstration project built for the Kiroween Hackathon. Feel free to:
 
 This project is licensed under the MIT License - see the [LICENSE](../../LICENSE) file for details.
 
-Copyright (c) 2024 Fouad ABATOUY
+Copyright (c) 2025 Fouad ABATOUY
 
 ## 🙏 Acknowledgments
 
