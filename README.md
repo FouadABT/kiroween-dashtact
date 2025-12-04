@@ -99,7 +99,7 @@ The setup wizard will guide you through:
    - 🛍️ **E-commerce Store** - Products, orders, payments, shipping
    - 💪 **Fitness & Gym Management** - Members, classes, coaches, tracking
    - 📊 **CRM & Business** - Customer management, calendar, notifications
-   - 🚀 **Full-Stack Platform** - All features enabled
+   - 🚀 **Full-Stack Platform** - All features enabled ⭐ **Recommended for exploring all capabilities**
    - ⚡ **Minimal Dashboard** - Core features only
 4. **Theme Configuration** - System, Light, or Dark mode
 5. **Branding Setup** - Brand name, tagline, description
