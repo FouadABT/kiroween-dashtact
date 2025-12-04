@@ -361,4 +361,4 @@ MIT License - See root LICENSE file
 ---
 
 **Part of the Full-Stack Dashboard Skeleton Template**  
-Built with Kiro AI for Kiroween Hackathon 2024
+Built with Kiro AI for Kiroween Hackathon 2025
