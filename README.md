@@ -1,140 +1,673 @@
-# 🏗️ Full-Stack Skeleton/Template Dashboard
+# 🏗️ Full-Stack Dashboard Skeleton Template
 
-> **A professional application skeleton** - Your foundation for building custom full-stack applications
+> **Built for Kiroween Hackathon 2024** - Skeleton Crew Category  
+> *Powered by [Kiro AI](https://kiro.dev) - The AI Development Assistant*
 
-This is a **SKELETON/TEMPLATE** project, not a finished product. Think of it as the bones of your application - a solid, production-ready foundation that you build upon and customize for your specific needs.
+A professional, production-ready full-stack dashboard skeleton/template that serves as the foundation for building custom applications. This project demonstrates the versatility of a well-architected skeleton by showcasing **two distinct applications** built from the same foundation.
 
-## 🦴 What is a Skeleton/Template?
+## 🎯 What is This Project?
 
-A **skeleton** provides:
-- ✅ Complete architecture and structure (the bones)
-- ✅ Core systems already implemented (auth, database, API)
-- ✅ Best practices and patterns built-in
-- ✅ Ready to extend with your unique features
+This is a **SKELETON/TEMPLATE** - not a finished product, but a solid foundation you build upon. Think of it as the bones of your application, complete with:
 
-**You provide**:
-- 💪 Your business logic and workflows
-- 💪 Custom features specific to your use case
-- 💪 Your brand and design customization
-- 💪 Domain-specific functionality
+- ✅ **Complete Architecture** - Full-stack structure ready to extend
+- ✅ **Core Systems** - Authentication, database, API, real-time features
+- ✅ **Best Practices** - Security, scalability, maintainability built-in
+- ✅ **Modular Design** - Enable/disable features as needed
+- ✅ **Production Ready** - Deployment configs, Docker support, security hardened
 
-**Result**: A complete, custom application built on a solid foundation in a fraction of the time!
+### 🦴 Skeleton Crew Category
 
-## 🏗️ Project Structure
+This project demonstrates the **Skeleton Crew** category by:
+1. **Main Skeleton** - A comprehensive dashboard template with 30+ features
+2. **Application 1** - **Spooky Store** (E-commerce platform)
+3. **Application 2** - **CoachDashtact** (Coaching management system)
+
+Both applications are built from the same skeleton, showcasing its flexibility and extensibility.
+
+## 📁 Project Structure
 
 ```
-├── frontend/          # Next.js 14 + TypeScript + Tailwind CSS
-├── backend/           # NestJS + Prisma + PostgreSQL
-└── setup-workspace.js # Database setup tool
+skeleton-dashtact/
+├── backend/                    # NestJS Backend
+│   ├── src/                   # Source code
+│   │   ├── auth/             # JWT authentication
+│   │   ├── users/            # User management
+│   │   ├── permissions/      # Role-based access control
+│   │   ├── products/         # E-commerce products
+│   │   ├── orders/           # Order management
+│   │   ├── blog/             # Blog system
+│   │   ├── pages/            # Custom pages
+│   │   ├── calendar/         # Event scheduling
+│   │   ├── notifications/    # Real-time notifications
+│   │   ├── messaging/        # Direct messaging
+│   │   ├── members/          # Coaching members (CoachDashtact)
+│   │   └── ...               # 30+ feature modules
+│   ├── prisma/               # Database schema & migrations
+│   └── package.json
+├── frontend/                   # Next.js 14 Frontend
+│   ├── src/
+│   │   ├── app/              # Next.js App Router
+│   │   │   ├── dashboard/   # Admin dashboard
+│   │   │   ├── shop/        # E-commerce storefront
+│   │   │   ├── blog/        # Blog pages
+│   │   │   ├── account/     # Customer accounts
+│   │   │   └── ...
+│   │   ├── components/       # React components
+│   │   ├── lib/             # Utilities & API client
+│   │   └── types/           # TypeScript types
+│   └── package.json
+├── two-distinct-apps/          # Example Applications
+│   ├── Spooky-store/          # E-commerce Application
+│   └── coachdashtact/         # Coaching Platform
+├── .kiro/                      # Kiro AI Configuration
+│   ├── specs/                 # 30+ Feature specifications
+│   ├── hooks/                 # 8 Agent automation hooks
+│   ├── steering/              # 19 Development guidelines
+│   └── settings/              # MCP integrations
+├── setup-cli.js               # Interactive setup wizard
+└── README.md                  # This file
 ```
 
 ## 🚀 Quick Start
 
-### 1. Database Setup (Required First)
+### Prerequisites
 
-Run the interactive database setup tool:
+- **Node.js** v18+ ([Download](https://nodejs.org/))
+- **PostgreSQL** 14+ ([Download](https://www.postgresql.org/download/))
+- **npm** or **yarn**
+
+### Installation
+
+#### Step 1: Clone the Repository
 
 ```bash
-node setup-workspace.js
+git clone https://github.com/FouadABT/kiroween-dashtact.git
+cd kiroween-dashtact
 ```
 
-This tool will:
-- ✅ Test your PostgreSQL connection
-- ✅ Create the database if it doesn't exist
-- ✅ Generate and save connection strings
-- ✅ Configure environment variables for both frontend and backend
-
-### 2. Backend Setup
+#### Step 2: Run the Interactive Setup Wizard
 
 ```bash
+node setup-cli.js
+```
+
+The setup wizard will guide you through:
+
+1. **Environment Verification** - Checks Node.js, npm, PostgreSQL
+2. **Environment Selection** - Development or Production
+3. **Feature Selection** - Choose from 5 pre-configured profiles:
+   - 🛍️ **E-commerce Store** - Products, orders, payments, shipping
+   - 💪 **Fitness & Gym Management** - Members, classes, coaches, tracking
+   - 📊 **CRM & Business** - Customer management, calendar, notifications
+   - 🚀 **Full-Stack Platform** - All features enabled
+   - ⚡ **Minimal Dashboard** - Core features only
+4. **Theme Configuration** - System, Light, or Dark mode
+5. **Branding Setup** - Brand name, tagline, description
+6. **Database Configuration** - Connection setup and testing
+7. **Database Initialization** - Migrations and seeding
+8. **Dependency Installation** - Backend and frontend packages
+
+#### Step 3: Start the Application
+
+**Terminal 1 - Backend:**
+```bash
 cd backend
-npm install
-npm run prisma:generate
-npm run prisma:migrate
 npm run start:dev
 ```
 
-### 3. Frontend Setup
-
+**Terminal 2 - Frontend:**
 ```bash
 cd frontend
-npm install
 npm run dev
 ```
 
-## 🛠️ Tech Stack
+#### Step 4: Access the Application
 
-### Frontend
-- **Framework**: Next.js 14 (React + TypeScript)
-- **Styling**: Tailwind CSS
-- **Components**: shadcn/ui + Radix UI
-- **Icons**: Lucide React
-- **Animations**: Framer Motion
-- **Build Tool**: Vite (built into Next.js)
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001
+- **Prisma Studio**: `cd backend && npx prisma studio`
+
+**Default Admin Credentials:**
+- Email: `admin@dashtact.com`
+- Password: `dashtact`
+
+⚠️ **Change the default password immediately after first login!**
+
+## 🎨 Features
+
+### Core Features (Skeleton Foundation)
+
+#### 🔐 Authentication & Authorization
+- JWT-based authentication with refresh tokens
+- Role-based access control (RBAC)
+- Permission system with granular controls
+- Two-factor authentication (2FA)
+- Password reset via email
+- Session management
+- Account lockout protection
+- Audit logging
+
+#### 👥 User Management
+- User CRUD operations
+- Role assignment
+- Profile management
+- Avatar upload
+- Activity tracking
+- User search and filtering
+
+#### 🎨 Design System & Theming
+- OKLCH color system
+- Dark/Light/System modes
+- Dynamic theme switching
+- Customizable color palettes
+- Typography system
+- Responsive design
+- Accessibility (WCAG 2.1 AA)
+
+#### 📊 Dashboard System
+- Customizable widget system
+- Drag-and-drop layout
+- 20+ pre-built widgets
+- Real-time data updates
+- Role-based dashboards
+- Analytics and charts
+
+#### 📅 Calendar & Events
+- Event scheduling
+- Recurring events
+- Reminders and notifications
+- Category management
+- Attendee management
+- Calendar views (month, week, day, agenda)
+
+#### 💬 Messaging System
+- Direct messaging
+- Group conversations
+- Real-time updates (WebSocket)
+- Message notifications
+- Read receipts
+- File attachments
+
+#### 🔔 Notification System
+- Real-time notifications (WebSocket)
+- Email notifications
+- In-app notifications
+- Notification preferences
+- Notification history
+- Sound alerts
+
+#### 📧 Email System
+- SMTP integration
+- Email templates
+- Transactional emails
+- Email queue
+- Rate limiting
+- Email logs
+
+#### 🔍 Global Search
+- Search across all content types
+- Advanced filtering
+- Real-time search
+- Search history
+- Keyboard shortcuts (Cmd/Ctrl + K)
+
+#### 📝 Content Management
+- **Blog System**
+  - Rich text editor (markdown)
+  - Categories and tags
+  - Featured images
+  - SEO optimization
+  - Draft/publish workflow
+  - Scheduled publishing
+
+- **Custom Pages**
+  - Page builder
+  - Markdown support
+  - SEO settings
+  - Page hierarchy
+  - Custom slugs
+
+- **Landing Page Builder**
+  - Visual editor
+  - Pre-built sections
+  - Drag-and-drop
+  - Responsive preview
+  - Theme integration
+
+#### 🛍️ E-commerce Features
+- Product management
+- Inventory tracking
+- Order management
+- Customer accounts
+- Shopping cart
+- Checkout system
+- Payment integration (Cash on Delivery)
+- Shipping methods
+- Order tracking
+
+#### 📱 Additional Features
+- Media library
+- File upload system
+- Menu management
+- Legal pages (Terms, Privacy)
+- Branding management
+- Feature flags
+- Cron jobs
+- Activity logs
+- Audit trails
+
+### 🎯 Two Distinct Applications
+
+#### 1. 🎃 Spooky Store - E-commerce Platform
+
+A complete online store built from the skeleton template.
+
+**Key Features:**
+- Modern storefront with product catalog
+- Shopping cart and checkout
+- Customer accounts and order tracking
+- Wishlist functionality
+- Product variants (size, color, etc.)
+- Category and price filtering
+- Search functionality
+- Landing page builder
+- Blog for content marketing
+- Admin dashboard for store management
+
+**Use Cases:** Online shop, marketplace, retail platform, dropshipping store
+
+[View Spooky Store README →](./two-distinct-apps/Spooky-store/README.md)
+
+#### 2. 🎯 CoachDashtact - Coaching Platform
+
+A comprehensive coaching management system built from the skeleton template.
+
+**Key Features:**
+- Coach-member relationship management
+- Direct booking system with real-time availability
+- Session scheduling and management
+- Availability management with capacity limits
+- Session lifecycle (booking → completion → rating)
+- Integrated messaging
+- Progress tracking
+- Rating and feedback system
+- Member onboarding flow
+- Coach analytics dashboard
+
+**Use Cases:** Life coaching, business coaching, fitness training, tutoring, consulting, mentorship
+
+[View CoachDashtact README →](./two-distinct-apps/coachdashtact/README.md)
+
+## 🛠️ Tech Stack
 
 ### Backend
 - **Framework**: NestJS (Node.js + TypeScript)
-- **ORM**: Prisma
 - **Database**: PostgreSQL
-- **Config**: @nestjs/config
-- **HTTP Server**: Express (via NestJS)
+- **ORM**: Prisma
+- **Authentication**: JWT + bcrypt
+- **Real-time**: WebSocket (Socket.io)
+- **Email**: Nodemailer
+- **Validation**: class-validator
+- **File Upload**: Multer
+- **Caching**: In-memory + Redis (optional)
 
-## 📋 Prerequisites
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + OKLCH colors
+- **UI Components**: shadcn/ui + Radix UI
+- **Icons**: Lucide React
+- **Forms**: React Hook Form + Zod
+- **State**: React Context + Hooks
+- **Real-time**: WebSocket client
+- **HTTP Client**: Fetch API
 
-- Node.js (v18 or higher)
-- PostgreSQL (running and accessible)
-- npm or yarn
+### Development Tools
+- **AI Assistant**: Kiro AI
+- **Version Control**: Git
+- **Package Manager**: npm
+- **Code Quality**: ESLint, Prettier
+- **Testing**: Vitest, React Testing Library
+- **Database Tools**: Prisma Studio
 
-## 🔧 Manual Setup (Alternative)
+## 🤖 Kiro AI Integration
 
-If you prefer manual setup instead of using the setup tool:
+This project was built with extensive use of **Kiro AI**, demonstrating advanced AI-assisted development workflows.
 
-### Backend Environment
-Create `backend/.env`:
-```env
-DATABASE_URL="postgresql://username:password@localhost:5432/mydb?schema=public"
-PORT=3001
-NODE_ENV=development
-JWT_SECRET=your-secret-key-here
+### Kiro Features Used
+
+#### 📋 Specs (Spec-Driven Development)
+30+ feature specifications in `.kiro/specs/`:
+- `dashboard-starter-kit/` - Core dashboard foundation
+- `jwt-authentication-system/` - Authentication system
+- `ecommerce-system/` - E-commerce features
+- `coaching-platform/` - Coaching system (CoachDashtact)
+- `landing-page-cms/` - Landing page builder
+- `notification-system/` - Real-time notifications
+- `messaging-system/` - Direct messaging
+- `calendar-planning/` - Event scheduling
+- And 22 more feature specs...
+
+**How Specs Were Used:**
+- Defined requirements and acceptance criteria
+- Guided implementation with clear specifications
+- Ensured consistency across features
+- Documented design decisions
+- Enabled incremental development
+
+#### 🪝 Agent Hooks (Automation)
+8 automation hooks in `.kiro/hooks/`:
+- `prisma-sync-agent.kiro.hook` - Auto-sync database schema changes
+- `run-full-stack.kiro.hook` - Start both backend and frontend
+- `frontend-deploy-agent.kiro.hook` - Automated deployment
+- `pageheader-breadcrumb-auto.kiro.hook` - Auto-generate breadcrumbs
+- `widget-registry-integration.kiro.hook` - Widget system automation
+- `nextjs-page-header-agent.kiro.hook` - Page header generation
+- `manual-bug-fix.kiro.hook` - Assisted debugging
+- `manual-deploy-dashtact.kiro.hook` - Deployment automation
+
+**How Hooks Were Used:**
+- Automated repetitive tasks
+- Maintained code consistency
+- Reduced manual errors
+- Accelerated development
+- Improved code quality
+
+#### 🎯 Steering Docs (Development Guidelines)
+19 steering documents in `.kiro/steering/`:
+- `fullstack-structure.md` - Project organization
+- `coding-standards.md` - Code quality rules
+- `api-routing-system.md` - API conventions
+- `database-sync.md` - Prisma workflow
+- `nestjs-module-architecture.md` - Backend patterns
+- `toast-notification-system.md` - UI notifications
+- `mcp-tools-usage.md` - MCP integration guide
+- And 12 more guidelines...
+
+**How Steering Was Used:**
+- Enforced coding standards
+- Guided architectural decisions
+- Maintained consistency
+- Onboarded team members
+- Documented best practices
+
+#### 🔌 MCP (Model Context Protocol)
+6 MCP integrations in `.kiro/settings/mcp.json`:
+
+1. **Postgres MCP** - Database operations via AI
+   - Query and analyze database
+   - Schema insights
+   - Performance optimization
+   - Index recommendations
+
+2. **GitHub MCP** - Repository operations
+   - Search repositories
+   - Create issues and PRs
+   - Read/write files
+   - Manage branches
+
+3. **Fetch MCP** - Web scraping and API calls
+   - Fetch web content
+   - Parse HTML/JSON
+   - Make HTTP requests
+
+4. **Time MCP** - Timezone operations
+   - Convert timezones
+   - Get current time
+   - Schedule calculations
+
+5. **Next.js Devtools MCP** - Next.js optimization
+   - Runtime analysis
+   - Performance insights
+
+6. **Playwright MCP** - Browser automation
+   - E2E testing
+   - Screenshots
+   - Web scraping
+
+**How MCP Was Used:**
+- Direct database queries via AI
+- Automated GitHub operations
+- Fetched external data
+- Timezone calculations
+- Performance analysis
+
+### Kiro Development Workflow
+
 ```
-
-### Frontend Environment
-Create `frontend/.env.local`:
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NODE_ENV=development
+1. Define Feature (Spec)
+   ↓
+2. Kiro Generates Code
+   ↓
+3. Agent Hooks Auto-sync
+   ↓
+4. Steering Guides Quality
+   ↓
+5. MCP Provides Context
+   ↓
+6. Iterate and Refine
 ```
 
 ## 📚 Available Scripts
 
+### Root Level
+```bash
+node setup-cli.js              # Interactive setup wizard
+```
+
 ### Backend (`cd backend`)
-- `npm run start:dev` - Start development server
-- `npm run prisma:generate` - Generate Prisma client
-- `npm run prisma:migrate` - Run database migrations
-- `npm run prisma:studio` - Open Prisma Studio
-- `npm run db:setup` - Run database setup tool
+```bash
+npm run start:dev              # Start development server
+npm run start:prod             # Start production server
+npm run build                  # Build for production
+npm run prisma:generate        # Generate Prisma client
+npm run prisma:migrate         # Run migrations
+npm run prisma:seed            # Seed database
+npm run prisma:studio          # Open Prisma Studio
+npm test                       # Run tests
+npm run test:e2e               # Run E2E tests
+```
 
 ### Frontend (`cd frontend`)
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npx shadcn@latest add [component]` - Add UI components
+```bash
+npm run dev                    # Start development server
+npm run build                  # Build for production
+npm run start                  # Start production server
+npm run lint                   # Run ESLint
+npm run type-check             # TypeScript checking
+```
 
-## 🎯 Development Workflow
+## 🔧 Configuration
 
-1. Run the database setup tool: `node setup-workspace.js`
-2. Start backend: `cd backend && npm run start:dev`
-3. Start frontend: `cd frontend && npm run dev`
-4. Access your app at `http://localhost:3000`
-5. API available at `http://localhost:3001`
+### Environment Variables
 
-## 📖 Next Steps
+**Backend** (`backend/.env`):
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
 
-- Define your database schema in `backend/prisma/schema.prisma`
-- Add API endpoints in `backend/src/`
-- Build UI components in `frontend/src/`
-- Use `npx shadcn@latest add button` to add pre-built components
+# Application
+PORT=3001
+NODE_ENV=development
+APP_URL=http://localhost:3001
+
+# JWT
+JWT_SECRET=your-secret-key-min-64-chars
+JWT_ACCESS_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
+
+# Feature Flags
+ENABLE_LANDING=true
+ENABLE_BLOG=true
+ENABLE_ECOMMERCE=true
+ENABLE_CALENDAR=true
+ENABLE_CRM=true
+ENABLE_NOTIFICATIONS=true
+ENABLE_CUSTOMER_ACCOUNT=true
+
+# Email (optional)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-email@example.com
+SMTP_PASSWORD=your-password
+```
+
+**Frontend** (`frontend/.env.local`):
+```env
+# API
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Feature Flags
+NEXT_PUBLIC_ENABLE_LANDING=true
+NEXT_PUBLIC_ENABLE_BLOG=true
+NEXT_PUBLIC_ENABLE_ECOMMERCE=true
+NEXT_PUBLIC_ENABLE_CALENDAR=true
+NEXT_PUBLIC_ENABLE_CRM=true
+NEXT_PUBLIC_ENABLE_NOTIFICATIONS=true
+NEXT_PUBLIC_ENABLE_CUSTOMER_ACCOUNT=true
+```
+
+### Feature Flags
+
+Enable or disable features by setting environment variables:
+
+- `ENABLE_LANDING` - Landing page builder
+- `ENABLE_BLOG` - Blog system
+- `ENABLE_ECOMMERCE` - E-commerce features
+- `ENABLE_CALENDAR` - Calendar and events
+- `ENABLE_CRM` - Customer relationship management
+- `ENABLE_NOTIFICATIONS` - Notification system
+- `ENABLE_CUSTOMER_ACCOUNT` - Customer accounts
+
+## 🚢 Deployment
+
+### Production Build
+
+1. **Build Backend:**
+```bash
+cd backend
+npm run build
+```
+
+2. **Build Frontend:**
+```bash
+cd frontend
+npm run build
+```
+
+3. **Set Production Environment Variables**
+
+4. **Run Migrations:**
+```bash
+cd backend
+npx prisma migrate deploy
+```
+
+5. **Start Services:**
+```bash
+# Backend
+cd backend
+npm run start:prod
+
+# Frontend
+cd frontend
+npm run start
+```
+
+### Docker Deployment
+
+Docker configuration files are included for containerized deployment.
+
+```bash
+docker-compose up -d
+```
+
+## 📖 Documentation
+
+- **Root README** - This file (project overview)
+- **Spooky Store README** - [two-distinct-apps/Spooky-store/README.md](./two-distinct-apps/Spooky-store/README.md)
+- **CoachDashtact README** - [two-distinct-apps/coachdashtact/README.md](./two-distinct-apps/coachdashtact/README.md)
+- **Kiro Specs** - `.kiro/specs/` (30+ feature specifications)
+- **Steering Docs** - `.kiro/steering/` (19 development guidelines)
+- **Backend Docs** - `backend/README.md`
+- **Frontend Docs** - `frontend/README.md`
+
+## 🎓 Learning from This Project
+
+This skeleton template demonstrates:
+
+1. **Full-Stack Architecture** - Complete NestJS + Next.js setup
+2. **Modular Design** - Feature-based organization
+3. **Authentication & Authorization** - JWT + RBAC implementation
+4. **Real-time Features** - WebSocket integration
+5. **Database Design** - Prisma schema with 30+ models
+6. **API Design** - RESTful endpoints with validation
+7. **UI/UX Patterns** - Modern dashboard design
+8. **Testing Strategies** - Unit and E2E tests
+9. **Deployment** - Production-ready configuration
+10. **AI-Assisted Development** - Kiro AI workflow
+
+## 🏆 Kiroween Hackathon - Skeleton Crew Category
+
+This project was built for the **Kiroween Hackathon** by Kiro AI, demonstrating the **Skeleton Crew** category requirements:
+
+### ✅ Requirements Met
+
+- ✅ **Skeleton Template** - Comprehensive full-stack foundation
+- ✅ **Two Distinct Applications** - Spooky Store (E-commerce) + CoachDashtact (Coaching)
+- ✅ **Versatility** - Same skeleton, completely different use cases
+- ✅ **Kiro Usage** - Extensive use of specs, hooks, steering, and MCP
+- ✅ **Open Source** - MIT License, public repository
+- ✅ **Documentation** - Comprehensive READMEs and guides
+- ✅ **`.kiro` Directory** - Tracked and visible in repository
+
+### 🎯 Kiro Features Demonstrated
+
+- **Specs**: 30+ feature specifications for structured development
+- **Agent Hooks**: 8 automation hooks for workflow optimization
+- **Steering Docs**: 19 guidelines for code quality and consistency
+- **MCP Integration**: 6 MCP servers for extended capabilities
+- **Vibe Coding**: Natural language feature requests
+- **Spec-Driven Development**: Incremental feature implementation
+
+### 🌟 What Makes This Special
+
+1. **Production-Ready** - Not a toy project, but a real foundation
+2. **Comprehensive** - 30+ features, 50+ database models
+3. **Flexible** - Enable/disable features as needed
+4. **Well-Documented** - Extensive documentation and guides
+5. **AI-First** - Built with Kiro AI from the ground up
+6. **Proven Versatility** - Two completely different applications from one skeleton
+
+## 🤝 Contributing
+
+This is a demonstration project for the Kiroween Hackathon. Feel free to:
+- Fork and customize for your needs
+- Report issues
+- Suggest improvements
+- Share your implementations
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+Copyright (c) 2025 Fouad ABATOUY
+
+## 🙏 Acknowledgments
+
+- **Built with** [Kiro AI](https://kiro.dev) - AI-powered development assistant
+- **UI Components** from [shadcn/ui](https://ui.shadcn.com)
+- **Icons** from [Lucide](https://lucide.dev)
+- **Submitted to** [Kiroween Hackathon 2024](https://kiroween.devpost.com)
+
+## 📞 Contact
+
+- **Author**: Fouad ABATOUY
+- **GitHub**: [@FouadABT](https://github.com/FouadABT)
+- **Repository**: [kiroween-dashtact](https://github.com/FouadABT/kiroween-dashtact)
 
 ---
 
-🎉 **Your full-stack template is ready to use!**
+**Built for Kiroween Hackathon 2024** 🎃  
+*Demonstrating the power of skeleton templates with Kiro AI* 🤖
