@@ -14,6 +14,7 @@
  */
 
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { LandingThemeProvider } from '@/contexts/LandingThemeContext';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { MetadataProvider } from '@/contexts/MetadataContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
@@ -53,6 +54,7 @@ function ThemeProviderWithAuth({ children }: { children: React.ReactNode }) {
  * 
  * Order matters:
  * - QueryProvider should be outermost (provides React Query client)
+ * - LandingThemeProvider for public pages (no auth required, uses localStorage)
  * - AuthProvider must be next (provides user data)
  * - BrandingProvider is independent and provides global branding (placed early for metadata)
  * - ThemeProvider needs user ID from AuthProvider
@@ -64,22 +66,24 @@ function ThemeProviderWithAuth({ children }: { children: React.ReactNode }) {
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
-      <AuthProvider>
-        <CustomerAuthProvider>
-          <BrandingProvider>
-            <ThemeProviderWithAuth>
-              <WidgetProvider>
-                <MetadataProvider>
-                  <EcommerceSettingsProvider>
-                    <FaviconUpdater />
-                    {children}
-                  </EcommerceSettingsProvider>
-                </MetadataProvider>
-              </WidgetProvider>
-            </ThemeProviderWithAuth>
-          </BrandingProvider>
-        </CustomerAuthProvider>
-      </AuthProvider>
+      <LandingThemeProvider defaultMode="auto" enableToggle>
+        <AuthProvider>
+          <CustomerAuthProvider>
+            <BrandingProvider>
+              <ThemeProviderWithAuth>
+                <WidgetProvider>
+                  <MetadataProvider>
+                    <EcommerceSettingsProvider>
+                      <FaviconUpdater />
+                      {children}
+                    </EcommerceSettingsProvider>
+                  </MetadataProvider>
+                </WidgetProvider>
+              </ThemeProviderWithAuth>
+            </BrandingProvider>
+          </CustomerAuthProvider>
+        </AuthProvider>
+      </LandingThemeProvider>
     </QueryProvider>
   );
 }

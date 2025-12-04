@@ -24,7 +24,7 @@
         "--access-mode=unrestricted"
       ],
       "env": {
-        "DATABASE_URI": "postgresql://username:password@localhost:5432/dbname"
+        "DATABASE_URI": "postgresql://postgres:d1d1d1f1@localhost:5432/myapp?schema=public"
       },
       "disabled": false,
       "autoApprove": [

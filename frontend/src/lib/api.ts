@@ -639,14 +639,16 @@ export class PermissionApi {
    * Get all permissions
    */
   static async getAll(params?: import('@/types/permission').PermissionQueryParams): Promise<import('@/types/permission').Permission[]> {
-    return ApiClient.get<import('@/types/permission').Permission[]>('/permissions', params);
+    const response = await ApiClient.get<{ data?: import('@/types/permission').Permission[] } | import('@/types/permission').Permission[]>('/permissions', params);
+    return Array.isArray(response) ? response : (response.data || []);
   }
 
   /**
    * Get permission by ID
    */
   static async getById(id: string): Promise<import('@/types/permission').Permission> {
-    return ApiClient.get<import('@/types/permission').Permission>(`/permissions/${id}`);
+    const response = await ApiClient.get<{ data?: import('@/types/permission').Permission } | import('@/types/permission').Permission>(`/permissions/${id}`);
+    return ('data' in response && response.data) ? response.data : response as import('@/types/permission').Permission;
   }
 
   /**
@@ -694,7 +696,9 @@ export class PermissionApi {
    * Get all permissions for a role
    */
   static async getRolePermissions(roleId: string): Promise<import('@/types/permission').Permission[]> {
-    return ApiClient.get<import('@/types/permission').Permission[]>(`/permissions/role/${roleId}`);
+    const response = await ApiClient.get<{ data?: import('@/types/permission').Permission[] } | import('@/types/permission').Permission[]>(`/permissions/role/${roleId}`);
+    // Handle both wrapped and unwrapped responses
+    return Array.isArray(response) ? response : (response.data || []);
   }
 
   /**
@@ -3314,28 +3318,32 @@ export class RoleApi {
    * Get all roles
    */
   static async getAll(): Promise<UserRole[]> {
-    return ApiClient.get<UserRole[]>('/users/roles');
+    const response = await ApiClient.get<{ data: UserRole[] }>('/users/roles');
+    return response.data;
   }
 
   /**
    * Get role by ID
    */
   static async getById(id: string): Promise<UserRole> {
-    return ApiClient.get<UserRole>(`/users/roles/${id}`);
+    const response = await ApiClient.get<{ data?: UserRole } | UserRole>(`/users/roles/${id}`);
+    return ('data' in response && response.data) ? response.data : response as UserRole;
   }
 
   /**
    * Create new role (super admin only)
    */
   static async create(data: { name: string; description?: string; isActive?: boolean }): Promise<UserRole> {
-    return ApiClient.post<UserRole>('/users/roles', data);
+    const response = await ApiClient.post<{ data?: UserRole } | UserRole>('/users/roles', data);
+    return ('data' in response && response.data) ? response.data : response as UserRole;
   }
 
   /**
    * Update role (super admin only)
    */
   static async update(id: string, data: Partial<{ name: string; description?: string; isActive?: boolean }>): Promise<UserRole> {
-    return ApiClient.patch<UserRole>(`/users/roles/${id}`, data);
+    const response = await ApiClient.patch<{ data?: UserRole } | UserRole>(`/users/roles/${id}`, data);
+    return ('data' in response && response.data) ? response.data : response as UserRole;
   }
 
   /**
@@ -3682,7 +3690,7 @@ export class CustomerAccountApi {
    * @returns Updated payment method
    */
   static async setDefaultPaymentMethod(methodId: string): Promise<any> {
-    return ApiClient.patch<any>(`/customer-account/payment-methods/${methodId}/default`, {});
+    return ApiClient.patch<unknown>(`/customer-account/payment-methods/${methodId}/default`, {});
   }
 
   /**
@@ -3833,3 +3841,4 @@ export const addToCustomerWishlist = CustomerAccountApi.addToWishlist;
 export const removeFromCustomerWishlist = CustomerAccountApi.removeFromWishlist;
 export const isProductInCustomerWishlist = CustomerAccountApi.isInWishlist;
 export const deleteCustomerAccount = CustomerAccountApi.deleteAccount;
+

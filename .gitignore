@@ -75,3 +75,54 @@ next-env.d.ts
 TROUBLESHOOTING_*.md
 verify-sync.js
 test-role-migration.js
+
+# ========================================
+# Two Distinct Apps - Build Artifacts Only
+# ========================================
+# IMPORTANT: .kiro folders MUST remain visible for hackathon submission
+
+# Node modules in nested apps
+two-distinct-apps/*/backend/node_modules/
+two-distinct-apps/*/frontend/node_modules/
+
+# Build outputs in nested apps
+two-distinct-apps/*/backend/dist/
+two-distinct-apps/*/backend/generated/
+two-distinct-apps/*/frontend/.next/
+two-distinct-apps/*/frontend/build/
+two-distinct-apps/*/frontend/out/
+
+# Environment files in nested apps
+two-distinct-apps/*/backend/.env
+two-distinct-apps/*/backend/.env.local
+two-distinct-apps/*/backend/.env.development
+two-distinct-apps/*/backend/.env.production
+two-distinct-apps/*/frontend/.env
+two-distinct-apps/*/frontend/.env.local
+two-distinct-apps/*/frontend/.env.development
+two-distinct-apps/*/frontend/.env.production
+
+# Deployment artifacts in nested apps
+two-distinct-apps/*/frontend/*.zip
+two-distinct-apps/*/frontend/*.tar.gz
+two-distinct-apps/*/deployment/production.env.*
+
+# Build logs in nested apps
+two-distinct-apps/*/frontend/build-log.txt
+two-distinct-apps/*/frontend/build-output.txt
+
+# TypeScript build info in nested apps
+two-distinct-apps/*/frontend/tsconfig.tsbuildinfo
+two-distinct-apps/*/frontend/*.tsbuildinfo
+
+# Uploads in nested apps
+two-distinct-apps/*/backend/uploads/
+
+# Coverage in nested apps
+two-distinct-apps/*/backend/coverage/
+
+# CRITICAL: DO NOT IGNORE .kiro FOLDERS (Required for hackathon)
+# The following ensures .kiro folders are tracked:
+!.kiro/
+!two-distinct-apps/*/.kiro/
+!two-distinct-apps/*/.kiro/**

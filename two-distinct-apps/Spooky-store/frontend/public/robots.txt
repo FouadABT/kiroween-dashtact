@@ -1,0 +1,41 @@
+# robots.txt for Dashboard Application
+
+# Allow all crawlers
+User-agent: *
+
+# Allow crawling of public pages
+Allow: /
+Allow: /dashboard
+Allow: /dashboard/analytics
+Allow: /dashboard/data
+Allow: /dashboard/users
+Allow: /dashboard/permissions
+Allow: /dashboard/widgets
+Allow: /dashboard/design-system
+
+# Disallow crawling of authentication pages
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+
+# Disallow crawling of settings pages (user-specific)
+Disallow: /dashboard/settings
+
+# Disallow crawling of edit pages
+Disallow: /dashboard/users/*/edit
+Disallow: /dashboard/*/edit
+
+# Disallow crawling of error pages
+Disallow: /403
+Disallow: /404
+Disallow: /500
+
+# Disallow crawling of API routes
+Disallow: /api/
+
+# Sitemap location (update with your actual domain)
+# Sitemap: https://yourdomain.com/sitemap.xml
+
+# Crawl-delay for polite crawling (optional)
+# Crawl-delay: 1

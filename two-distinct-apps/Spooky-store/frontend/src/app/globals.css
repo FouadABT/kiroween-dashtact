@@ -1,0 +1,733 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Mobile Optimizations for E-Commerce Storefront */
+@layer utilities {
+  /* Touch-friendly interactions */
+  @media (max-width: 768px) {
+    .touch-manipulation {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+  }
+
+  /* Performance optimizations */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* Optimize image loading */
+  img {
+    content-visibility: auto;
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Improve scrolling performance */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Safe area insets for notched devices */
+  @supports (padding: max(0px)) {
+    .safe-area-top {
+      padding-top: max(1rem, env(safe-area-inset-top));
+    }
+
+    .safe-area-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+
+    .safe-area-left {
+      padding-left: max(1rem, env(safe-area-inset-left));
+    }
+
+    .safe-area-right {
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+  }
+
+  /* Improve focus visibility for keyboard navigation */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+}
+
+:root {
+  /* Default fallback values - will be overridden by ThemeProvider */
+  --radius: 0.625rem;
+  
+  /* Light mode colors in HSL format */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 240 5.9% 10%;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 240 5.9% 10%;
+  
+  /* Typography defaults - will be overridden by ThemeProvider */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: Georgia, Cambria, 'Times New Roman', serif;
+  --font-mono: ui-monospace, Consolas, Monaco, 'Courier New', monospace;
+  
+  /* Font size scale */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+  
+  /* Font weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  
+  /* Line heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  --line-height-loose: 2;
+  
+  /* Letter spacing */
+  --letter-spacing-tighter: -0.05em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+}
+
+.dark {
+  /* Dark mode colors in HSL format */
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+  --sidebar-background: 222.2 84% 4.9%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 217.2 91.2% 59.8%;
+  --sidebar-primary-foreground: 222.2 47.4% 11.2%;
+  --sidebar-accent: 217.2 32.6% 17.5%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 217.2 32.6% 17.5%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  
+  /* ========================================= */
+  /* FIX: Radix UI Scrollbar White Line Bug   */
+  /* ========================================= */
+  /* DEFINITIVE SOLUTION (Community-tested 2022-2025) */
+  
+  /* Step 1: Reserve scrollbar space to prevent layout shift */
+  html {
+    scrollbar-gutter: stable;
+    overflow-x: hidden;
+  }
+  
+  /* Step 2: Ensure html/body have background (prevents white strip) */
+  html,
+  body {
+    background: hsl(var(--background));
+  }
+  
+  /* Step 3: Body base styles */
+  body {
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+  
+  /* Step 4: CRITICAL - Cancel react-remove-scroll padding compensation */
+  /* When Radix opens dropdown, it adds padding-right to compensate for scrollbar */
+  /* We cancel it because scrollbar-gutter already reserves the space */
+  html body[data-scroll-locked] {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  /* Visible scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 0;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 6px;
+    min-height: 40px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
+  
+  /* Firefox scrollbar */
+  html {
+    scrollbar-color: hsl(var(--muted-foreground)) transparent;
+    scrollbar-width: thin;
+  }
+  
+  /* Enhanced focus indicators for accessibility */
+  *:focus {
+    outline: none;
+  }
+  
+  *:focus-visible {
+    outline-width: 2px;
+    outline-offset: 2px;
+    outline-color: var(--ring);
+  }
+  
+  /* Specific focus styles for interactive elements */
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible {
+    outline-width: 2px;
+    outline-offset: 2px;
+    outline-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(var(--ring), 0.2);
+  }
+  
+  /* Input focus styles */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline-width: 2px;
+    outline-offset: 0;
+    outline-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(var(--ring), 0.3);
+    border-color: var(--ring);
+  }
+  
+  /* Checkbox and radio focus styles */
+  input[type="checkbox"]:focus-visible,
+  input[type="radio"]:focus-visible {
+    outline-width: 2px;
+    outline-offset: 2px;
+    outline-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(var(--ring), 0.3);
+  }
+  
+  /* Card and interactive container focus styles */
+  [tabindex]:focus-visible {
+    outline-width: 2px;
+    outline-offset: 2px;
+    outline-color: var(--ring);
+  }
+  
+  /* Ensure focus is visible in dark mode */
+  .dark *:focus-visible {
+    outline-color: var(--ring);
+  }
+  
+  .dark button:focus-visible,
+  .dark a:focus-visible,
+  .dark [role="button"]:focus-visible {
+    outline-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(var(--ring), 0.3);
+  }
+  
+  .dark input:focus-visible,
+  .dark textarea:focus-visible,
+  .dark select:focus-visible {
+    outline-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(var(--ring), 0.4);
+    border-color: var(--ring);
+  }
+}
+
+@layer utilities {
+  /* Typography utility classes */
+  .font-display {
+    font-family: var(--font-serif);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+  
+  .font-body {
+    font-family: var(--font-sans);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-relaxed);
+  }
+  
+  .font-code {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+  
+  /* Heading styles with proper typography */
+  .heading-1 {
+    font-size: var(--font-size-5xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+  
+  .heading-2 {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+  
+  .heading-3 {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+  }
+  
+  .heading-4 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+  }
+  
+  .heading-5 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+  }
+  
+  .heading-6 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+  }
+  
+  /* Custom animations for enhanced UI */
+  .shake {
+    animation: shake 0.5s ease-in-out;
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  
+  .pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .bounce-subtle {
+    animation: bounce-subtle 2s infinite;
+  }
+  
+  @keyframes bounce-subtle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+  
+  .glow {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+  
+  .glow-green {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+  }
+  
+  .glow-red {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+  }
+}
+
+/* TipTap Editor Styles */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.ProseMirror img.uploading {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.ProseMirror .editor-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.ProseMirror > * + * {
+  margin-top: 0.75em;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding: 0 1rem;
+  margin: 1rem 0;
+}
+
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  line-height: 1.1;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.ProseMirror h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+}
+
+.ProseMirror h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+
+.ProseMirror h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.ProseMirror code {
+  background-color: rgba(97, 97, 97, 0.1);
+  color: #616161;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+
+.ProseMirror pre {
+  background: #0d0d0d;
+  color: #fff;
+  font-family: 'JetBrainsMono', monospace;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.ProseMirror pre code {
+  color: inherit;
+  padding: 0;
+  background: none;
+  font-size: 0.8rem;
+}
+
+.ProseMirror blockquote {
+  padding-left: 1rem;
+  border-left: 4px solid var(--primary);
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+.ProseMirror hr {
+  border: none;
+  border-top: 2px solid rgba(13, 13, 13, 0.1);
+  margin: 2rem 0;
+}
+
+/* TipTap Editor Image Styles with Drag-to-Resize */
+
+/* Base image styling */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+  cursor: default;
+  transition: all 0.2s ease;
+}
+
+/* Image wrapper for resize handles */
+.ProseMirror .image-resizer {
+  display: inline-block;
+  position: relative;
+  max-width: 100%;
+}
+
+/* Selected image */
+.ProseMirror img.ProseMirror-selectednode,
+.ProseMirror .image-resizer.selected img {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px hsla(var(--primary) / 0.1);
+}
+
+/* Hover effect */
+.ProseMirror img:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Resize handles */
+.ProseMirror .image-resizer .resize-trigger {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: hsl(var(--primary));
+  border: 2px solid white;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ProseMirror .image-resizer:hover .resize-trigger,
+.ProseMirror .image-resizer.selected .resize-trigger {
+  opacity: 1;
+}
+
+/* Corner resize handles */
+.ProseMirror .image-resizer .resize-trigger.top-left {
+  top: -6px;
+  left: -6px;
+  cursor: nw-resize;
+}
+
+.ProseMirror .image-resizer .resize-trigger.top-right {
+  top: -6px;
+  right: -6px;
+  cursor: ne-resize;
+}
+
+.ProseMirror .image-resizer .resize-trigger.bottom-left {
+  bottom: -6px;
+  left: -6px;
+  cursor: sw-resize;
+}
+
+.ProseMirror .image-resizer .resize-trigger.bottom-right {
+  bottom: -6px;
+  right: -6px;
+  cursor: se-resize;
+}
+
+/* Loading state */
+.ProseMirror img.uploading {
+  opacity: 0.5;
+  filter: grayscale(100%);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Responsive images */
+@media (max-width: 768px) {
+  .ProseMirror img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  .ProseMirror .image-resizer .resize-trigger {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Focus state for accessibility */
+.ProseMirror img:focus {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Grid pattern for hero section background */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+}
+
+/* Animation delays */
+.delay-1000 {
+  animation-delay: 1s;
+}
+
+/* Sonner Toast Theming */
+[data-sonner-toast] {
+  background-color: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--card-foreground)) !important;
+}
+
+[data-sonner-toast] [data-title] {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+[data-sonner-toast] [data-description] {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+[data-sonner-toast] [data-button] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+[data-sonner-toast] [data-cancel-button] {
+  background-color: hsl(var(--muted)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  background-color: transparent !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+/* Success toast icon color */
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: hsl(142 76% 36%) !important;
+}
+
+.dark [data-sonner-toast][data-type="success"] [data-icon] {
+  color: hsl(142 76% 46%) !important;
+}
+
+/* Error toast icon color */
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: hsl(var(--destructive)) !important;
+}
+
+/* Warning toast icon color */
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: hsl(38 92% 50%) !important;
+}
+
+.dark [data-sonner-toast][data-type="warning"] [data-icon] {
+  color: hsl(48 96% 53%) !important;
+}
+
+/* Info toast icon color */
+[data-sonner-toast][data-type="info"] [data-icon] {
+  color: hsl(var(--primary)) !important;
+}
+/* Au
+th Page Animations */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}

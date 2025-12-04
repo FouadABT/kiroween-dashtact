@@ -123,6 +123,21 @@ export class NotificationsController {
   }
 
   /**
+   * Clear all notifications
+   * IMPORTANT: This specific route MUST come before the dynamic :id routes
+   */
+  @Delete('clear-all')
+  @Permissions('notifications:read')
+  async clearAll(@CurrentUser() user: any) {
+    const count = await this.notificationsService.deleteAll(user.id);
+
+    // Note: Individual deleted events will be emitted by the service
+    // for each notification deleted
+
+    return { count };
+  }
+
+  /**
    * Delete a notification
    */
   @Delete(':id')
@@ -134,20 +149,6 @@ export class NotificationsController {
     this.websocketGateway.emitNotificationDeleted(user.id, id);
 
     return { message: 'Notification deleted successfully' };
-  }
-
-  /**
-   * Clear all notifications
-   */
-  @Delete('clear-all')
-  @Permissions('notifications:read')
-  async clearAll(@CurrentUser() user: any) {
-    const count = await this.notificationsService.deleteAll(user.id);
-
-    // Note: Individual deleted events will be emitted by the service
-    // for each notification deleted
-
-    return { count };
   }
 
   /**

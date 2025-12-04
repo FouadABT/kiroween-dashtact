@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, PageType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -76,7 +76,7 @@ export async function seedDashboardMenus(
         label: 'Settings',
         icon: 'Settings',
         route: '/dashboard/settings',
-        pageType: 'HARDCODED',
+        pageType: PageType.HARDCODED,
         order: 100,
         requiredPermissions: ['settings:read'],
         isActive: true,
@@ -96,6 +96,7 @@ export async function seedDashboardMenus(
       roles: [],
       description: 'Main dashboard overview',
       feature: null, // Always show
+      pageType: PageType.WIDGET_BASED, // Widget-based page
     },
     {
       key: 'analytics',
@@ -107,6 +108,7 @@ export async function seedDashboardMenus(
       roles: [],
       description: 'View analytics and reports',
       feature: null, // Always show
+      pageType: PageType.WIDGET_BASED, // Widget-based page
     },
     {
       key: 'activity',
@@ -186,22 +188,11 @@ export async function seedDashboardMenus(
       feature: null, // Always show
     },
     {
-      key: 'permissions',
-      label: 'Permissions',
-      icon: 'Lock',
-      route: '/dashboard/permissions',
-      order: 55,
-      permissions: ['permissions:read'],
-      roles: ['Admin', 'Super Admin'],
-      description: 'Manage permissions and roles',
-      feature: null, // Always show
-    },
-    {
       key: 'profile',
       label: 'Profile',
       icon: 'User',
       route: '/dashboard/profile',
-      order: 60,
+      order: 50,
       permissions: ['profile:read'],
       roles: [],
       description: 'View and edit your profile',
@@ -209,13 +200,13 @@ export async function seedDashboardMenus(
     },
     {
       key: 'roles',
-      label: 'Roles',
+      label: 'Roles & Permissions',
       icon: 'Shield',
       route: '/dashboard/roles',
-      order: 65,
+      order: 55,
       permissions: ['roles:read'],
       roles: ['Admin', 'Super Admin'],
-      description: 'Manage user roles',
+      description: 'Manage user roles and permissions',
       feature: null, // Always show
     },
     {
@@ -258,7 +249,7 @@ export async function seedDashboardMenus(
         label: item.label,
         icon: item.icon,
         route: item.route,
-        pageType: 'HARDCODED',
+        pageType: item.pageType || PageType.HARDCODED,
         order: item.order,
         requiredPermissions: item.permissions,
         requiredRoles: item.roles.length > 0 ? item.roles : undefined,
@@ -382,22 +373,11 @@ export async function seedDashboardMenus(
       feature: 'notifications',
     },
     {
-      key: 'settings-security',
-      label: 'Security',
-      icon: 'Shield',
-      route: '/dashboard/settings/security',
-      order: 11,
-      permissions: ['settings:write'],
-      roles: ['Admin', 'Super Admin'],
-      description: 'Manage security settings and authentication',
-      feature: null, // Always show
-    },
-    {
       key: 'settings-theme',
       label: 'Theme',
       icon: 'Palette',
       route: '/dashboard/settings/theme',
-      order: 12,
+      order: 11,
       permissions: ['settings:write'],
       roles: ['Admin', 'Super Admin'],
       description: 'Customize theme colors and appearance',
@@ -423,7 +403,7 @@ export async function seedDashboardMenus(
         label: item.label,
         icon: item.icon,
         route: item.route,
-        pageType: 'HARDCODED',
+        pageType: PageType.HARDCODED,
         order: item.order,
         parentId: settingsMenu.id,
         requiredPermissions: item.permissions,
@@ -528,7 +508,7 @@ export async function seedDashboardMenus(
           label: item.label,
           icon: item.icon,
           route: item.route,
-          pageType: 'HARDCODED',
+          pageType: PageType.HARDCODED,
           order: item.order,
           parentId: ecommerceMenu.id,
           requiredPermissions: item.permissions,

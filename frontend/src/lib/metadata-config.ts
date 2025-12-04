@@ -1525,6 +1525,28 @@ export const metadataConfig: Record<string, PageMetadata> = {
     },
   },
 
+  // Support & Documentation page
+  '/dashboard/support': {
+    title: 'Support & Documentation',
+    description: 'Complete overview of your dashboard application including features, architecture, and business logic',
+    keywords: ['support', 'documentation', 'help', 'guide', 'features', 'architecture'],
+    breadcrumb: { label: 'Support' },
+    openGraph: {
+      title: 'Support & Documentation',
+      description: 'Comprehensive documentation and support resources for your dashboard application',
+      type: 'website',
+    },
+    twitter: {
+      title: 'Support & Documentation',
+      description: 'Comprehensive documentation and support resources for your dashboard application',
+    },
+    robots: {
+      index: false,
+      follow: true,
+      noarchive: true,
+    },
+  },
+
   // Nested Custom Pages (dynamic routes - parent/child)
   '/:parentSlug/:slug': {
     title: '{pageTitle}',

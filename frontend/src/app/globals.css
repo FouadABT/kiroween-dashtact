@@ -185,20 +185,48 @@
     border-color: var(--border);
   }
   
-  /* Only show scrollbar when content overflows */
+  /* ========================================= */
+  /* FIX: Radix UI Scrollbar White Line Bug   */
+  /* ========================================= */
+  /* DEFINITIVE SOLUTION (Community-tested 2022-2025) */
+  
+  /* Step 1: Reserve scrollbar space to prevent layout shift */
   html {
-    overflow-y: auto;
+    scrollbar-gutter: stable;
+    overflow-x: hidden;
   }
   
+  /* Step 2: Ensure html/body have background (prevents white strip) */
+  html,
   body {
-    background-color: var(--background);
+    background: hsl(var(--background));
+  }
+  
+  /* Step 3: Body base styles */
+  body {
     color: var(--foreground);
-    overflow-x: hidden;
     font-family: var(--font-sans);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-normal);
     line-height: var(--line-height-normal);
     letter-spacing: var(--letter-spacing-normal);
+  }
+  
+  /* Step 4: CRITICAL - Cancel react-remove-scroll padding compensation */
+  /* When Radix opens dropdown, it adds padding-right to compensate for scrollbar */
+  /* We cancel it because scrollbar-gutter already reserves the space */
+  html body[data-scroll-locked] {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  /* Radix ScrollArea specific fixes */
+  [data-radix-scroll-area-viewport] {
+    scrollbar-gutter: stable;
+  }
+  
+  [data-radix-scroll-area-viewport]::-webkit-scrollbar-corner {
+    background-color: transparent;
   }
   
   /* Visible scrollbar styling */

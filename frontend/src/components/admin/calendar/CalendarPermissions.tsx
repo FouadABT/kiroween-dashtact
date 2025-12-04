@@ -62,14 +62,22 @@ export function CalendarPermissions() {
       
       // Fetch all roles
       const rolesData = await RoleApi.getAll();
-      setRoles(rolesData);
+      console.log('Roles data received:', rolesData);
+      
+      // Ensure rolesData is an array
+      const rolesArray = Array.isArray(rolesData) ? rolesData : [];
+      setRoles(rolesArray);
 
       // Fetch permissions for each role
       const permMap: RolePermissionMap = {};
       
-      for (const role of rolesData) {
+      for (const role of rolesArray) {
         const permissions = await PermissionApi.getRolePermissions(role.id);
-        permMap[role.id] = new Set(permissions.map(p => p.name));
+        console.log(`Permissions for role ${role.name}:`, permissions);
+        
+        // Ensure permissions is an array
+        const permissionsArray = Array.isArray(permissions) ? permissions : [];
+        permMap[role.id] = new Set(permissionsArray.map(p => p.name));
       }
       
       setRolePermissions(permMap);

@@ -20,6 +20,20 @@ export class FeatureGuard implements CanActivate {
       return true;
     }
 
+    // Get user from request
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
+
+    // Super admin bypasses feature flags
+    if (user?.role?.name === 'Super Admin') {
+      return true;
+    }
+
+    // Check if user has super admin permission (*:*)
+    if (user?.permissions?.includes('*:*')) {
+      return true;
+    }
+
     // Check if feature is enabled
     if (!isFeatureEnabled(requiredFeature)) {
       throw new ForbiddenException(

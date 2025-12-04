@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBranding } from '@/hooks/useBranding';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useLandingTheme } from '@/contexts/LandingThemeContext';
+import { ThemeToggle } from '@/components/landing/ThemeToggle';
 import { getDefaultLogoUrl } from '@/lib/constants/branding';
 
 /**
@@ -32,7 +33,7 @@ export function AuthLayout({
   linkHref,
   linkLabel,
 }: AuthLayoutProps) {
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme } = useLandingTheme();
   const { getLogoUrl, getBrandName, getTagline } = useBranding();
 
   // Get logo based on theme
@@ -44,6 +45,11 @@ export function AuthLayout({
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black p-3 sm:p-4 md:p-6 relative overflow-hidden">
+      {/* Theme Toggle - Fixed position */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle variant="outline" />
+      </div>
+
       {/* Light mode - Decorative Background Elements */}
       <div className="absolute inset-0 -z-10 dark:opacity-0">
         <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>

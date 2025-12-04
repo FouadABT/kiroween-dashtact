@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { BlogPost as BlogPostType } from '@/types/blog';
 import { Calendar, User, ArrowLeft, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Breadcrumb } from '@/components/navigation/Breadcrumb';
 import { getImageUrl } from '@/lib/image-proxy';
 
 /**
@@ -38,17 +37,6 @@ export function BlogPost({ post }: BlogPostProps) {
 
   return (
     <article className="pb-16">
-      {/* Header with Breadcrumb */}
-      <header className="border-b bg-muted/30">
-        <div className="container mx-auto px-4 py-6">
-          <Breadcrumb
-            dynamicValues={{
-              postTitle: post.title,
-            }}
-          />
-        </div>
-      </header>
-
       {/* Featured Image */}
       {post.featuredImage && (
         <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px]">

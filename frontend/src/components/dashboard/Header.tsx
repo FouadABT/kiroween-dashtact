@@ -265,12 +265,14 @@ export function Header() {
               </Link>
             </DropdownMenuItem>
             
-            <DropdownMenuItem role="menuitem" className="cursor-pointer py-2">
-              <HelpCircle className="mr-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">Support</span>
-                <span className="text-xs text-muted-foreground">Get help and support</span>
-              </div>
+            <DropdownMenuItem asChild role="menuitem" className="cursor-pointer">
+              <Link href="/dashboard/support" className="flex items-center py-2">
+                <HelpCircle className="mr-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Support</span>
+                  <span className="text-xs text-muted-foreground">Documentation & help</span>
+                </div>
+              </Link>
             </DropdownMenuItem>
             
             <DropdownMenuSeparator />
