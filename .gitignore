@@ -125,6 +125,10 @@ Spooky-store/frontend/*.zip
 Spooky-store/frontend/*.tar.gz
 Spooky-store/deployment/production.env.*
 
+# Deployment archives (root level)
+deployment/*.tar.gz
+deployment/*.zip
+
 # Build logs in apps
 coachdashtact/frontend/build-log.txt
 coachdashtact/frontend/build-output.txt
