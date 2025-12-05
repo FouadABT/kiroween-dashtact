@@ -1,6 +1,6 @@
 # 🏗️ Full-Stack Dashboard Skeleton Template
 
-> **Built for Kiroween Hackathon 2024** - Skeleton Crew Category  
+> **Built for Kiroween Hackathon 2025** - Skeleton Crew Category  
 > *Powered by [Kiro AI](https://kiro.dev) - The AI Development Assistant*
 
 A professional, production-ready full-stack dashboard skeleton/template that serves as the foundation for building custom applications. This project demonstrates the versatility of a well-architected skeleton by showcasing **two distinct applications** built from the same foundation.
@@ -737,7 +737,7 @@ Copyright (c) 2025 Fouad ABATOUY
 - **Built with** [Kiro AI](https://kiro.dev) - AI-powered development assistant
 - **UI Components** from [shadcn/ui](https://ui.shadcn.com)
 - **Icons** from [Lucide](https://lucide.dev)
-- **Submitted to** [Kiroween Hackathon 2024](https://kiroween.devpost.com)
+- **Submitted to** [Kiroween Hackathon 2025](https://kiroween.devpost.com)
 
 ## 📞 Contact
 
@@ -747,5 +747,5 @@ Copyright (c) 2025 Fouad ABATOUY
 
 ---
 
-**Built for Kiroween Hackathon 2024** 🎃  
+**Built for Kiroween Hackathon 2025** 🎃  
 *Demonstrating the power of skeleton templates with Kiro AI* 🤖
