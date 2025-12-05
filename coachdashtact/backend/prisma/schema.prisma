@@ -1,0 +1,1861 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                       String                    @id @default(cuid())
+  email                    String                    @unique
+  name                     String?
+  password                 String
+  avatarUrl                String?                   @map("avatar_url")
+  bio                      String?                   @db.Text
+  phone                    String?
+  location                 String?
+  website                  String?
+  isActive                 Boolean                   @default(true)
+  roleId                   String                    @map("role_id")
+  createdAt                DateTime                  @default(now()) @map("created_at")
+  updatedAt                DateTime                  @updatedAt @map("updated_at")
+  authProvider             String                    @default("local") @map("auth_provider")
+  emailVerified            Boolean                   @default(false) @map("email_verified")
+  twoFactorEnabled         Boolean                   @default(false) @map("two_factor_enabled")
+  twoFactorSecret          String?                   @map("two_factor_secret")
+  twoFactorVerifiedAt      DateTime?                 @map("two_factor_verified_at")
+  lastPasswordChange       DateTime?                 @map("last_password_change")
+  notificationPreferences  NotificationPreference[]
+  notifications            Notification[]
+  tokenBlacklist           TokenBlacklist[]
+  passwordResetTokens      PasswordResetToken[]
+  twoFactorCodes           TwoFactorCode[]
+  role                     UserRole                  @relation(fields: [roleId], references: [id])
+  webhookConfigs           WebhookConfig[]
+  blogPosts                BlogPost[]
+  dashboardLayouts         DashboardLayout[]
+  activityLogs             ActivityLog[]
+  uploads                  Upload[]
+  deletedUploads           Upload[]                  @relation("DeletedUploads")
+  createdConversations     Conversation[]            @relation("ConversationCreator")
+  conversationParticipants ConversationParticipant[]
+  sentMessages             Message[]                 @relation("MessageSender")
+  messageStatuses          MessageStatus[]
+  sectionTemplates         SectionTemplate[]
+  createdEvents            CalendarEvent[]           @relation("CreatedEvents")
+  eventAttendances         EventAttendee[]           @relation("EventAttendees")
+  eventReminders           EventReminder[]           @relation("EventReminders")
+  calendarSettings         CalendarSettings?
+  memberProfile            MemberProfile?            @relation("MemberProfile")
+  coachProfile             CoachProfile?             @relation("CoachProfile")
+  coachMembers             MemberProfile[]           @relation("CoachMembers")
+  coachAvailability        CoachAvailability[]       @relation("CoachAvailability")
+  coachSessions            Session[]                 @relation("CoachSessions")
+  coachBookings            SessionBooking[]          @relation("CoachBookings")
+
+  @@index([roleId])
+  @@index([email])
+  @@index([name])
+  @@map("users")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  isUsed    Boolean  @default(false) @map("is_used")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([expiresAt])
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model TwoFactorCode {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  code      String
+  expiresAt DateTime @map("expires_at")
+  verified  Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([code])
+  @@index([expiresAt])
+  @@map("two_factor_codes")
+}
+
+model UserRole {
+  id              String           @id @default(cuid())
+  name            String           @unique
+  description     String?
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  isSystemRole    Boolean          @default(false) @map("is_system_role")
+  rolePermissions RolePermission[]
+  users           User[]
+
+  @@map("user_roles")
+}
+
+model Permission {
+  id              String           @id @default(cuid())
+  name            String           @unique
+  description     String?
+  resource        String
+  action          String
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  rolePermissions RolePermission[]
+
+  @@index([resource])
+  @@index([action])
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String     @map("role_id")
+  permissionId String     @map("permission_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         UserRole   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model TokenBlacklist {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([expiresAt])
+  @@index([userId])
+  @@map("token_blacklist")
+}
+
+model Settings {
+  id           String   @id @default(cuid())
+  userId       String?  @unique @map("user_id")
+  scope        String   @default("global")
+  themeMode    String   @default("system") @map("theme_mode")
+  activeTheme  String   @default("default") @map("active_theme")
+  lightPalette Json     @map("light_palette")
+  darkPalette  Json     @map("dark_palette")
+  typography   Json
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([scope])
+  @@map("settings")
+}
+
+model Notification {
+  id                 String                    @id @default(cuid())
+  userId             String                    @map("user_id")
+  title              String
+  message            String
+  category           NotificationCategory
+  priority           NotificationPriority      @default(NORMAL)
+  metadata           Json?
+  actionUrl          String?                   @map("action_url")
+  actionLabel        String?                   @map("action_label")
+  imageUrl           String?                   @map("image_url")
+  channel            NotificationChannel       @default(IN_APP)
+  isRead             Boolean                   @default(false) @map("is_read")
+  readAt             DateTime?                 @map("read_at")
+  deletedAt          DateTime?                 @map("deleted_at")
+  requiredPermission String?                   @map("required_permission")
+  createdAt          DateTime                  @default(now()) @map("created_at")
+  updatedAt          DateTime                  @updatedAt @map("updated_at")
+  scheduledFor       DateTime?                 @map("scheduled_for")
+  actions            NotificationAction[]
+  deliveryLogs       NotificationDeliveryLog[]
+  user               User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([priority])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([scheduledFor])
+  @@index([userId, isRead, createdAt])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id           String               @id @default(cuid())
+  userId       String               @map("user_id")
+  category     NotificationCategory
+  enabled      Boolean              @default(true)
+  dndEnabled   Boolean              @default(false) @map("dnd_enabled")
+  dndStartTime String?              @map("dnd_start_time")
+  dndEndTime   String?              @map("dnd_end_time")
+  dndDays      Int[]                @default([]) @map("dnd_days")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+  @@index([userId])
+  @@map("notification_preferences")
+}
+
+model NotificationTemplate {
+  id              String                @id @default(cuid())
+  key             String                @unique
+  name            String
+  description     String?
+  category        NotificationCategory
+  title           String
+  message         String
+  variables       Json
+  defaultChannels NotificationChannel[] @default([IN_APP]) @map("default_channels")
+  defaultPriority NotificationPriority  @default(NORMAL) @map("default_priority")
+  version         Int                   @default(1)
+  isActive        Boolean               @default(true) @map("is_active")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+
+  @@index([key])
+  @@index([category])
+  @@map("notification_templates")
+}
+
+model NotificationDeliveryLog {
+  id             String              @id @default(cuid())
+  notificationId String              @map("notification_id")
+  channel        NotificationChannel
+  status         DeliveryStatus      @default(PENDING)
+  attempts       Int                 @default(0)
+  externalId     String?             @map("external_id")
+  errorMessage   String?             @map("error_message")
+  errorCode      String?             @map("error_code")
+  sentAt         DateTime?           @map("sent_at")
+  deliveredAt    DateTime?           @map("delivered_at")
+  failedAt       DateTime?           @map("failed_at")
+  openedAt       DateTime?           @map("opened_at")
+  clickedAt      DateTime?           @map("clicked_at")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  notification   Notification        @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@index([channel])
+  @@index([status])
+  @@map("notification_delivery_logs")
+}
+
+model NotificationAction {
+  id             String       @id @default(cuid())
+  notificationId String       @map("notification_id")
+  label          String
+  actionType     ActionType   @map("action_type")
+  actionUrl      String?      @map("action_url")
+  actionMethod   String?      @default("GET") @map("action_method")
+  actionPayload  Json?        @map("action_payload")
+  variant        String?      @default("default")
+  icon           String?
+  isExecuted     Boolean      @default(false) @map("is_executed")
+  executedAt     DateTime?    @map("executed_at")
+  executedBy     String?      @map("executed_by")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@map("notification_actions")
+}
+
+model WebhookConfig {
+  id              String                 @id @default(cuid())
+  userId          String?                @map("user_id")
+  name            String
+  url             String
+  secret          String?
+  categories      NotificationCategory[] @default([])
+  priorities      NotificationPriority[] @default([])
+  isActive        Boolean                @default(true) @map("is_active")
+  retryAttempts   Int                    @default(3) @map("retry_attempts")
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+  lastTriggeredAt DateTime?              @map("last_triggered_at")
+  user            User?                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("webhook_configs")
+}
+
+enum NotificationCategory {
+  SYSTEM
+  USER_ACTION
+  SECURITY
+  BILLING
+  CONTENT
+  WORKFLOW
+  SOCIAL
+  CUSTOM
+  CALENDAR
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum NotificationChannel {
+  IN_APP
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  OPENED
+  CLICKED
+}
+
+enum ActionType {
+  LINK
+  API_CALL
+  INLINE_FORM
+  DISMISS
+}
+
+model BlogPost {
+  id              String         @id @default(cuid())
+  title           String
+  slug            String         @unique
+  excerpt         String?
+  content         String         @db.Text
+  featuredImage   String?        @map("featured_image")
+  status          PostStatus     @default(DRAFT)
+  publishedAt     DateTime?      @map("published_at")
+  authorId        String?        @map("author_id")
+  authorName      String?        @map("author_name")
+  authorEmail     String?        @map("author_email")
+  metaTitle       String?        @map("meta_title")
+  metaDescription String?        @map("meta_description")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  author          User?          @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  categories      BlogCategory[]
+  tags            BlogTag[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([authorId])
+  @@index([title])
+  @@index([content])
+  @@index([status, createdAt])
+  @@map("blog_posts")
+}
+
+model BlogCategory {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  posts       BlogPost[]
+
+  @@index([slug])
+  @@map("blog_categories")
+}
+
+model BlogTag {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  createdAt DateTime   @default(now()) @map("created_at")
+  posts     BlogPost[]
+
+  @@index([slug])
+  @@map("blog_tags")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Landing Page CMS Models
+
+model HeaderConfig {
+  id           String               @id @default(cuid())
+  logoLight    String?              @map("logo_light")
+  logoDark     String?              @map("logo_dark")
+  logoSize     String               @default("md") @map("logo_size")
+  logoLink     String               @default("/") @map("logo_link")
+  navigation   Json // NavigationItem[]
+  ctas         Json // CTAButton[]
+  style        Json // HeaderStyle
+  mobileMenu   Json // MobileMenuConfig
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  landingPages LandingPageContent[]
+
+  @@map("header_configs")
+}
+
+model FooterConfig {
+  id           String               @id @default(cuid())
+  layout       String               @default("multi-column")
+  columns      Json // FooterColumn[]
+  social       Json // SocialLink[]
+  newsletter   Json // NewsletterConfig
+  copyright    String
+  legalLinks   Json // LegalLink[]
+  style        Json // FooterStyle
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  landingPages LandingPageContent[]
+
+  @@map("footer_configs")
+}
+
+model SectionTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String
+  thumbnail   String?
+  section     Json // LandingPageSection
+  isCustom    Boolean  @default(false) @map("is_custom")
+  isPublic    Boolean  @default(true) @map("is_public")
+  userId      String?  @map("user_id")
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([userId])
+  @@index([isCustom])
+  @@map("section_templates")
+}
+
+model LandingAnalytics {
+  id         String   @id @default(cuid())
+  pageId     String   @map("page_id")
+  eventType  String   @map("event_type") // 'view', 'cta_click', 'section_view'
+  eventData  Json     @map("event_data")
+  sessionId  String   @map("session_id")
+  userId     String?  @map("user_id")
+  deviceType String   @map("device_type")
+  browser    String
+  referrer   String?
+  timestamp  DateTime @default(now())
+
+  @@index([pageId, timestamp])
+  @@index([eventType])
+  @@index([sessionId])
+  @@map("landing_analytics")
+}
+
+model LandingPageContent {
+  id             String        @id @default(cuid())
+  sections       Json          @map("sections") // Array of section objects
+  settings       Json          @map("settings") // Global settings (theme, layout, SEO)
+  version        Int           @default(1)
+  isActive       Boolean       @default(true) @map("is_active")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  publishedAt    DateTime?     @map("published_at")
+  headerConfigId String?       @map("header_config_id")
+  footerConfigId String?       @map("footer_config_id")
+  themeMode      String        @default("auto") @map("theme_mode") // 'light', 'dark', 'auto', 'toggle'
+  headerConfig   HeaderConfig? @relation(fields: [headerConfigId], references: [id])
+  footerConfig   FooterConfig? @relation(fields: [footerConfigId], references: [id])
+
+  @@index([headerConfigId])
+  @@index([footerConfigId])
+  @@map("landing_page_content")
+}
+
+model CustomPage {
+  id               String         @id @default(cuid())
+  title            String
+  slug             String         @unique
+  content          String         @db.Text
+  excerpt          String?
+  featuredImage    String?        @map("featured_image")
+  status           PageStatus     @default(DRAFT)
+  visibility       PageVisibility @default(PUBLIC)
+  parentPageId     String?        @map("parent_page_id")
+  showInNavigation Boolean        @default(false) @map("show_in_navigation")
+  displayOrder     Int            @default(0) @map("display_order")
+  metaTitle        String?        @map("meta_title")
+  metaDescription  String?        @map("meta_description")
+  metaKeywords     String?        @map("meta_keywords")
+  customCssClass   String?        @map("custom_css_class")
+  templateKey      String?        @default("default") @map("template_key")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  publishedAt      DateTime?      @map("published_at")
+  parentPage       CustomPage?    @relation("PageHierarchy", fields: [parentPageId], references: [id], onDelete: SetNull)
+  childPages       CustomPage[]   @relation("PageHierarchy")
+  redirectsFrom    PageRedirect[] @relation("RedirectTo")
+
+  @@index([slug])
+  @@index([status])
+  @@index([visibility])
+  @@index([parentPageId])
+  @@index([showInNavigation, displayOrder])
+  @@index([publishedAt])
+  @@index([title])
+  @@map("custom_pages")
+}
+
+model PageRedirect {
+  id           String     @id @default(cuid())
+  fromSlug     String     @unique @map("from_slug")
+  toPageId     String     @map("to_page_id")
+  redirectType Int        @default(301) @map("redirect_type")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  toPage       CustomPage @relation("RedirectTo", fields: [toPageId], references: [id], onDelete: Cascade)
+
+  @@index([fromSlug])
+  @@index([toPageId])
+  @@map("page_redirects")
+}
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PageVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+// E-Commerce Models
+
+model Customer {
+  id              String                  @id @default(cuid())
+  email           String                  @unique
+  firstName       String                  @map("first_name")
+  lastName        String                  @map("last_name")
+  phone           String?
+  company         String?
+  shippingAddress Json?                   @map("shipping_address")
+  billingAddress  Json?                   @map("billing_address")
+  notes           String?                 @db.Text
+  tags            String[]                @default([])
+  portalToken     String?                 @unique @map("portal_token")
+  portalExpiresAt DateTime?               @map("portal_expires_at")
+  createdAt       DateTime                @default(now()) @map("created_at")
+  updatedAt       DateTime                @updatedAt @map("updated_at")
+  lastOrderAt     DateTime?               @map("last_order_at")
+  orders          Order[]
+  account         CustomerAccount?
+  addresses       Address[]
+  paymentMethods  CustomerPaymentMethod[]
+  settings        AccountSettings?
+
+  @@index([email])
+  @@index([portalToken])
+  @@index([createdAt])
+  @@index([firstName])
+  @@index([lastName])
+  @@map("customers")
+}
+
+model Product {
+  id               String            @id @default(cuid())
+  name             String
+  slug             String            @unique
+  description      String?           @db.Text
+  shortDescription String?           @map("short_description")
+  basePrice        Decimal           @map("base_price") @db.Decimal(10, 2)
+  compareAtPrice   Decimal?          @map("compare_at_price") @db.Decimal(10, 2)
+  cost             Decimal?          @db.Decimal(10, 2)
+  sku              String?           @unique
+  barcode          String?
+  featuredImage    String?           @map("featured_image")
+  images           String[]          @default([])
+  status           ProductStatus     @default(DRAFT)
+  isVisible        Boolean           @default(true) @map("is_visible")
+  isFeatured       Boolean           @default(false) @map("is_featured")
+  metaTitle        String?           @map("meta_title")
+  metaDescription  String?           @map("meta_description")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  publishedAt      DateTime?         @map("published_at")
+  categories       ProductCategory[]
+  tags             ProductTag[]
+  variants         ProductVariant[]
+  orderItems       OrderItem[]
+  cartItems        CartItem[]
+  wishlistItems    WishlistItem[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([name])
+  @@index([description])
+  @@map("products")
+}
+
+model ProductCategory {
+  id           String            @id @default(cuid())
+  name         String            @unique
+  slug         String            @unique
+  description  String?
+  parentId     String?           @map("parent_id")
+  displayOrder Int               @default(0) @map("display_order")
+  isVisible    Boolean           @default(true) @map("is_visible")
+  image        String?
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  parent       ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children     ProductCategory[] @relation("CategoryHierarchy")
+  products     Product[]
+
+  @@index([slug])
+  @@index([parentId])
+  @@map("product_categories")
+}
+
+model ProductTag {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  products  Product[]
+
+  @@index([slug])
+  @@map("product_tags")
+}
+
+model ProductVariant {
+  id             String         @id @default(cuid())
+  productId      String         @map("product_id")
+  name           String
+  sku            String?        @unique
+  barcode        String?
+  attributes     Json
+  price          Decimal?       @db.Decimal(10, 2)
+  compareAtPrice Decimal?       @map("compare_at_price") @db.Decimal(10, 2)
+  cost           Decimal?       @db.Decimal(10, 2)
+  image          String?
+  isActive       Boolean        @default(true) @map("is_active")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  inventory      Inventory?
+  orderItems     OrderItem[]
+  cartItems      CartItem[]
+  wishlistItems  WishlistItem[]
+
+  @@index([productId])
+  @@index([sku])
+  @@map("product_variants")
+}
+
+model Inventory {
+  id                String                @id @default(cuid())
+  productVariantId  String                @unique @map("product_variant_id")
+  quantity          Int                   @default(0)
+  reserved          Int                   @default(0)
+  available         Int                   @default(0)
+  lowStockThreshold Int                   @default(10) @map("low_stock_threshold")
+  trackInventory    Boolean               @default(true) @map("track_inventory")
+  allowBackorder    Boolean               @default(false) @map("allow_backorder")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+  lastRestockedAt   DateTime?             @map("last_restocked_at")
+  productVariant    ProductVariant        @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  adjustments       InventoryAdjustment[]
+
+  @@index([productVariantId])
+  @@index([quantity, lowStockThreshold])
+  @@map("inventory")
+}
+
+model InventoryAdjustment {
+  id             String    @id @default(cuid())
+  inventoryId    String    @map("inventory_id")
+  quantityChange Int       @map("quantity_change")
+  reason         String
+  notes          String?   @db.Text
+  userId         String?   @map("user_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  inventory      Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId])
+  @@index([createdAt])
+  @@map("inventory_adjustments")
+}
+
+model Order {
+  id                String               @id @default(cuid())
+  orderNumber       String               @unique @map("order_number")
+  customerId        String               @map("customer_id")
+  status            OrderStatus          @default(PENDING)
+  paymentStatus     PaymentStatus        @default(PENDING) @map("payment_status")
+  fulfillmentStatus FulfillmentStatus    @default(UNFULFILLED) @map("fulfillment_status")
+  subtotal          Decimal              @db.Decimal(10, 2)
+  tax               Decimal              @default(0) @db.Decimal(10, 2)
+  shipping          Decimal              @default(0) @db.Decimal(10, 2)
+  discount          Decimal              @default(0) @db.Decimal(10, 2)
+  total             Decimal              @db.Decimal(10, 2)
+  shippingAddress   Json                 @map("shipping_address")
+  billingAddress    Json                 @map("billing_address")
+  shippingMethodId  String?              @map("shipping_method_id")
+  trackingNumber    String?              @map("tracking_number")
+  customerEmail     String               @map("customer_email")
+  customerName      String               @map("customer_name")
+  customerPhone     String?              @map("customer_phone")
+  customerNotes     String?              @map("customer_notes") @db.Text
+  internalNotes     String?              @map("internal_notes") @db.Text
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  paidAt            DateTime?            @map("paid_at")
+  shippedAt         DateTime?            @map("shipped_at")
+  deliveredAt       DateTime?            @map("delivered_at")
+  cancelledAt       DateTime?            @map("cancelled_at")
+  customer          Customer             @relation(fields: [customerId], references: [id])
+  items             OrderItem[]
+  statusHistory     OrderStatusHistory[]
+  shippingMethod    ShippingMethod?      @relation(fields: [shippingMethodId], references: [id])
+
+  @@index([customerId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id               String          @id @default(cuid())
+  orderId          String          @map("order_id")
+  productId        String          @map("product_id")
+  productVariantId String?         @map("product_variant_id")
+  productName      String          @map("product_name")
+  variantName      String?         @map("variant_name")
+  sku              String?
+  quantity         Int
+  unitPrice        Decimal         @map("unit_price") @db.Decimal(10, 2)
+  totalPrice       Decimal         @map("total_price") @db.Decimal(10, 2)
+  createdAt        DateTime        @default(now()) @map("created_at")
+  order            Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product          Product         @relation(fields: [productId], references: [id])
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model OrderStatusHistory {
+  id         String       @id @default(cuid())
+  orderId    String       @map("order_id")
+  fromStatus OrderStatus? @map("from_status")
+  toStatus   OrderStatus  @map("to_status")
+  userId     String?      @map("user_id")
+  notes      String?      @db.Text
+  createdAt  DateTime     @default(now()) @map("created_at")
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([createdAt])
+  @@map("order_status_history")
+}
+
+model ShippingMethod {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  orders      Order[]
+
+  @@map("shipping_methods")
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum FulfillmentStatus {
+  UNFULFILLED
+  PARTIALLY_FULFILLED
+  FULFILLED
+}
+
+model EcommerceSettings {
+  id                       String   @id @default(cuid())
+  scope                    String   @default("global") // 'global' or 'user'
+  userId                   String?  @unique @map("user_id")
+  storeName                String   @default("My Store") @map("store_name")
+  storeDescription         String?  @map("store_description")
+  currency                 String   @default("USD")
+  currencySymbol           String   @default("$") @map("currency_symbol")
+  taxRate                  Decimal  @default(0) @db.Decimal(5, 2)
+  taxLabel                 String   @default("Tax") @map("tax_label")
+  shippingEnabled          Boolean  @default(true) @map("shipping_enabled")
+  portalEnabled            Boolean  @default(true) @map("portal_enabled")
+  allowGuestCheckout       Boolean  @default(false) @map("allow_guest_checkout")
+  trackInventory           Boolean  @default(true) @map("track_inventory")
+  lowStockThreshold        Int      @default(10) @map("low_stock_threshold")
+  autoGenerateOrderNumbers Boolean  @default(true) @map("auto_generate_order_numbers")
+  orderNumberPrefix        String   @default("ORD") @map("order_number_prefix")
+  codEnabled               Boolean  @default(true) @map("cod_enabled")
+  codFee                   Decimal  @default(0) @map("cod_fee") @db.Decimal(10, 2)
+  codMinOrderAmount        Decimal  @default(0) @map("cod_min_order_amount") @db.Decimal(10, 2)
+  codMaxOrderAmount        Decimal? @map("cod_max_order_amount") @db.Decimal(10, 2)
+  codAvailableCountries    String[] @default([]) @map("cod_available_countries")
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  @@index([scope])
+  @@index([userId])
+  @@map("ecommerce_settings")
+}
+
+// Storefront Models
+
+model Cart {
+  id              String           @id @default(cuid())
+  sessionId       String?          @unique @map("session_id") // For guest users
+  userId          String?          @map("user_id") // For logged-in users
+  expiresAt       DateTime         @map("expires_at") // Auto-cleanup abandoned carts
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  items           CartItem[]
+  customerAccount CustomerAccount? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("carts")
+}
+
+model CartItem {
+  id               String          @id @default(cuid())
+  cartId           String          @map("cart_id")
+  productId        String          @map("product_id")
+  productVariantId String?         @map("product_variant_id")
+  quantity         Int             @default(1)
+  priceSnapshot    Decimal         @map("price_snapshot") @db.Decimal(10, 2) // Price at time of adding to cart
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  cart             Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product          Product         @relation(fields: [productId], references: [id])
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id])
+
+  @@unique([cartId, productId, productVariantId])
+  @@index([cartId])
+  @@index([productId])
+  @@map("cart_items")
+}
+
+model Wishlist {
+  id              String          @id @default(cuid())
+  userId          String          @unique @map("user_id")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  items           WishlistItem[]
+  customerAccount CustomerAccount @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id               String          @id @default(cuid())
+  wishlistId       String          @map("wishlist_id")
+  productId        String          @map("product_id")
+  productVariantId String?         @map("product_variant_id")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  wishlist         Wishlist        @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  product          Product         @relation(fields: [productId], references: [id])
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id])
+
+  @@unique([wishlistId, productId, productVariantId])
+  @@index([wishlistId])
+  @@index([productId])
+  @@map("wishlist_items")
+}
+
+model CustomerAccount {
+  id            String    @id @default(cuid())
+  customerId    String    @unique @map("customer_id")
+  email         String    @unique
+  password      String
+  emailVerified Boolean   @default(false) @map("email_verified")
+  lastLogin     DateTime? @map("last_login")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  carts         Cart[]
+  wishlist      Wishlist?
+
+  @@index([email])
+  @@index([customerId])
+  @@map("customer_accounts")
+}
+
+model PaymentMethod {
+  id            String   @id @default(cuid())
+  name          String
+  type          String
+  description   String?
+  isActive      Boolean  @default(true) @map("is_active")
+  displayOrder  Int      @default(0) @map("display_order")
+  configuration Json?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("payment_methods")
+}
+
+// Dashboard Customization System Models
+
+model WidgetDefinition {
+  id               String           @id @default(cuid())
+  key              String           @unique
+  name             String
+  description      String
+  component        String
+  category         String
+  icon             String
+  defaultGridSpan  Int              @default(6) @map("default_grid_span")
+  minGridSpan      Int              @default(3) @map("min_grid_span")
+  maxGridSpan      Int              @default(12) @map("max_grid_span")
+  configSchema     Json             @map("config_schema")
+  dataRequirements Json             @map("data_requirements")
+  useCases         String[]         @default([]) @map("use_cases")
+  examples         Json[]           @default([])
+  tags             String[]         @default([])
+  isActive         Boolean          @default(true) @map("is_active")
+  isSystemWidget   Boolean          @default(false) @map("is_system_widget")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  widgetInstances  WidgetInstance[]
+
+  @@index([key])
+  @@index([category])
+  @@index([isActive])
+  @@map("widget_definitions")
+}
+
+model DashboardLayout {
+  id              String           @id @default(cuid())
+  pageId          String           @map("page_id")
+  userId          String?          @map("user_id")
+  scope           String           @default("global")
+  name            String
+  description     String?
+  isActive        Boolean          @default(true) @map("is_active")
+  isDefault       Boolean          @default(false) @map("is_default")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  user            User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  widgetInstances WidgetInstance[]
+
+  @@unique([pageId, userId])
+  @@index([pageId])
+  @@index([userId])
+  @@index([scope])
+  @@index([isDefault])
+  @@map("dashboard_layouts")
+}
+
+model WidgetInstance {
+  id               String           @id @default(cuid())
+  layoutId         String           @map("layout_id")
+  widgetKey        String           @map("widget_key")
+  position         Int
+  gridSpan         Int              @default(6) @map("grid_span")
+  gridRow          Int?             @map("grid_row")
+  config           Json
+  isVisible        Boolean          @default(true) @map("is_visible")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  layout           DashboardLayout  @relation(fields: [layoutId], references: [id], onDelete: Cascade)
+  widgetDefinition WidgetDefinition @relation(fields: [widgetKey], references: [key])
+
+  @@index([layoutId])
+  @@index([widgetKey])
+  @@index([position])
+  @@map("widget_instances")
+}
+
+// Dynamic Menu Management System Models
+
+model DashboardMenu {
+  id                  String          @id @default(cuid())
+  key                 String          @unique
+  label               String
+  icon                String
+  route               String
+  order               Int
+  parentId            String?         @map("parent_id")
+  pageType            PageType        @map("page_type")
+  pageIdentifier      String?         @map("page_identifier")
+  componentPath       String?         @map("component_path")
+  isActive            Boolean         @default(true) @map("is_active")
+  requiredPermissions String[]        @default([]) @map("required_permissions")
+  requiredRoles       String[]        @default([]) @map("required_roles")
+  featureFlag         String?         @map("feature_flag")
+  description         String?
+  badge               String?
+  availableWidgets    String[]        @default([]) @map("available_widgets")
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+  parent              DashboardMenu?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children            DashboardMenu[] @relation("MenuHierarchy")
+
+  @@index([key])
+  @@index([isActive])
+  @@index([order])
+  @@index([parentId])
+  @@map("dashboard_menus")
+}
+
+enum PageType {
+  WIDGET_BASED
+  HARDCODED
+  CUSTOM
+  EXTERNAL
+}
+
+// Activity Log / Audit Log System Models
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  action     String
+  userId     String?  @map("user_id")
+  actorName  String   @map("actor_name")
+  entityType String?  @map("entity_type")
+  entityId   String?  @map("entity_id")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// Media Library System Models
+
+model Upload {
+  id           String     @id @default(cuid())
+  filename     String     @unique
+  originalName String     @map("original_name")
+  mimeType     String     @map("mime_type")
+  size         Int
+  url          String
+  path         String
+  type         UploadType
+  category     String?
+  uploadedById String     @map("uploaded_by_id")
+  uploadedBy   User       @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  visibility   Visibility @default(PRIVATE)
+  allowedRoles String[]   @default([]) @map("allowed_roles")
+  usedIn       Json?      @map("used_in")
+  usageCount   Int        @default(0) @map("usage_count")
+  altText      String?    @map("alt_text")
+  title        String?
+  description  String?    @db.Text
+  tags         String[]   @default([])
+  width        Int?
+  height       Int?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  deletedAt    DateTime?  @map("deleted_at")
+  deletedById  String?    @map("deleted_by_id")
+  deletedBy    User?      @relation("DeletedUploads", fields: [deletedById], references: [id])
+
+  @@index([uploadedById])
+  @@index([type])
+  @@index([visibility])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("uploads")
+}
+
+enum UploadType {
+  IMAGE
+  DOCUMENT
+  AVATAR
+  EDITOR_IMAGE
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  ROLE_BASED
+}
+
+// Email System Models
+
+model EmailConfiguration {
+  id           String   @id @default(cuid())
+  smtpHost     String   @map("smtp_host")
+  smtpPort     Int      @map("smtp_port")
+  smtpSecure   Boolean  @default(true) @map("smtp_secure")
+  smtpUsername String   @map("smtp_username")
+  smtpPassword String   @map("smtp_password") // Encrypted
+  senderEmail  String   @map("sender_email")
+  senderName   String   @map("sender_name")
+  isEnabled    Boolean  @default(false) @map("is_enabled")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdBy    String   @map("created_by")
+  updatedBy    String   @map("updated_by")
+
+  @@map("email_configuration")
+}
+
+model EmailTemplate {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  subject   String
+  htmlBody  String     @map("html_body") @db.Text
+  textBody  String?    @map("text_body") @db.Text
+  variables Json
+  category  String     @default("SYSTEM")
+  isActive  Boolean    @default(true) @map("is_active")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  createdBy String     @map("created_by")
+  updatedBy String     @map("updated_by")
+  emailLogs EmailLog[]
+
+  @@index([slug])
+  @@index([category])
+  @@map("email_templates")
+}
+
+model EmailQueue {
+  id            String           @id @default(cuid())
+  recipient     String
+  subject       String
+  htmlBody      String?          @map("html_body") @db.Text
+  textBody      String?          @map("text_body") @db.Text
+  templateId    String?          @map("template_id")
+  templateData  Json?            @map("template_data")
+  status        EmailQueueStatus @default(PENDING)
+  priority      Int              @default(5)
+  attempts      Int              @default(0)
+  maxAttempts   Int              @default(3) @map("max_attempts")
+  lastAttemptAt DateTime?        @map("last_attempt_at")
+  nextAttemptAt DateTime?        @map("next_attempt_at")
+  error         String?          @db.Text
+  metadata      Json?
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  @@index([status, nextAttemptAt])
+  @@index([createdAt])
+  @@index([priority])
+  @@map("email_queue")
+}
+
+model EmailLog {
+  id         String         @id @default(cuid())
+  recipient  String
+  subject    String
+  templateId String?        @map("template_id")
+  template   EmailTemplate? @relation(fields: [templateId], references: [id])
+  status     EmailStatus
+  sentAt     DateTime?      @map("sent_at")
+  error      String?        @db.Text
+  metadata   Json?
+  userId     String?        @map("user_id")
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  @@index([recipient])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+  @@index([createdAt, status])
+  @@map("email_logs")
+}
+
+model EmailRateLimit {
+  id          String   @id @default(cuid())
+  windowType  String   @map("window_type") // 'hourly' or 'daily'
+  windowStart DateTime @map("window_start")
+  emailCount  Int      @default(0) @map("email_count")
+  maxEmails   Int      @map("max_emails")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([windowType, windowStart])
+  @@index([windowStart])
+  @@map("email_rate_limits")
+}
+
+enum EmailQueueStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum EmailStatus {
+  SENT
+  FAILED
+  BOUNCED
+  SKIPPED
+}
+
+// Legal Pages Management System Models
+
+model LegalPage {
+  id        String        @id @default(cuid())
+  pageType  LegalPageType @unique
+  content   String        @db.Text
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@index([pageType])
+  @@map("legal_pages")
+}
+
+enum LegalPageType {
+  TERMS
+  PRIVACY
+}
+
+// Messaging System Models
+
+model Conversation {
+  id              String           @id @default(cuid())
+  type            ConversationType @default(DIRECT)
+  name            String? // Required for group conversations
+  createdById     String           @map("created_by_id")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  lastMessageAt   DateTime?        @map("last_message_at")
+  lastMessageText String?          @map("last_message_text")
+  isActive        Boolean          @default(true) @map("is_active")
+
+  createdBy    User                      @relation("ConversationCreator", fields: [createdById], references: [id])
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([createdById])
+  @@index([lastMessageAt])
+  @@index([isActive])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id                String    @id @default(cuid())
+  conversationId    String    @map("conversation_id")
+  userId            String    @map("user_id")
+  joinedAt          DateTime  @default(now()) @map("joined_at")
+  lastReadAt        DateTime? @map("last_read_at")
+  lastReadMessageId String?   @map("last_read_message_id")
+  isActive          Boolean   @default(true) @map("is_active")
+  isMuted           Boolean   @default(false) @map("is_muted")
+  leftAt            DateTime? @map("left_at")
+
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadMessage Message?     @relation("LastReadMessage", fields: [lastReadMessageId], references: [id])
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+  @@index([isActive])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id              String      @id @default(cuid())
+  conversationId  String      @map("conversation_id")
+  senderId        String      @map("sender_id")
+  content         String      @db.Text
+  type            MessageType @default(TEXT)
+  metadata        Json? // For attachments, links, etc.
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  editedAt        DateTime?   @map("edited_at")
+  deletedAt       DateTime?   @map("deleted_at")
+  isSystemMessage Boolean     @default(false) @map("is_system_message")
+
+  conversation Conversation              @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User                      @relation("MessageSender", fields: [senderId], references: [id])
+  statuses     MessageStatus[]
+  lastReadBy   ConversationParticipant[] @relation("LastReadMessage")
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("messages")
+}
+
+model MessageStatus {
+  id        String            @id @default(cuid())
+  messageId String            @map("message_id")
+  userId    String            @map("user_id")
+  status    MessageStatusType @default(SENT)
+  timestamp DateTime          @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@index([status])
+  @@map("message_statuses")
+}
+
+model MessagingSettings {
+  id                     String   @id @default(cuid())
+  enabled                Boolean  @default(false)
+  maxMessageLength       Int      @default(2000) @map("max_message_length")
+  messageRetentionDays   Int      @default(90) @map("message_retention_days")
+  maxGroupParticipants   Int      @default(50) @map("max_group_participants")
+  allowFileAttachments   Boolean  @default(false) @map("allow_file_attachments")
+  maxFileSize            Int      @default(5242880) @map("max_file_size") // 5MB in bytes
+  allowedFileTypes       String[] @default(["image/jpeg", "image/png", "application/pdf"]) @map("allowed_file_types")
+  typingIndicatorTimeout Int      @default(3000) @map("typing_indicator_timeout") // milliseconds
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  @@map("messaging_settings")
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+}
+
+enum MessageType {
+  TEXT
+  SYSTEM
+}
+
+enum MessageStatusType {
+  SENT
+  DELIVERED
+  READ
+}
+
+// Branding Management System Models
+
+model BrandSettings {
+  id           String   @id @default(cuid())
+  brandName    String   @default("Dashboard") @map("brand_name")
+  tagline      String?
+  description  String?  @db.Text
+  logoUrl      String?  @map("logo_url")
+  logoDarkUrl  String?  @map("logo_dark_url")
+  faviconUrl   String?  @map("favicon_url")
+  websiteUrl   String?  @map("website_url")
+  supportEmail String?  @map("support_email")
+  socialLinks  Json?    @map("social_links") // { twitter, linkedin, facebook, instagram }
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("brand_settings")
+}
+
+// Cron Jobs Management System Models
+
+model CronJob {
+  id                  String    @id @default(cuid())
+  name                String    @unique
+  description         String?
+  schedule            String // Cron expression
+  handler             String // Service method identifier
+  isEnabled           Boolean   @default(true) @map("is_enabled")
+  isLocked            Boolean   @default(false) @map("is_locked") // Prevents UI schedule changes
+  lastRunAt           DateTime? @map("last_run_at")
+  nextRunAt           DateTime? @map("next_run_at")
+  successCount        Int       @default(0) @map("success_count")
+  failureCount        Int       @default(0) @map("failure_count")
+  consecutiveFailures Int       @default(0) @map("consecutive_failures")
+  averageDuration     Float?    @map("average_duration") // In milliseconds
+  notifyOnFailure     Boolean   @default(true) @map("notify_on_failure")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  logs CronLog[]
+
+  @@index([isEnabled])
+  @@index([nextRunAt])
+  @@map("cron_jobs")
+}
+
+model CronLog {
+  id          String        @id @default(cuid())
+  jobId       String        @map("job_id")
+  status      CronLogStatus
+  startedAt   DateTime      @default(now()) @map("started_at")
+  completedAt DateTime?     @map("completed_at")
+  duration    Int? // In milliseconds
+  error       String?       @db.Text
+  stackTrace  String?       @map("stack_trace") @db.Text
+  metadata    Json? // Additional context
+
+  job CronJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, startedAt])
+  @@index([status])
+  @@index([startedAt, status])
+  @@map("cron_logs")
+}
+
+enum CronLogStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+// Smart Calendar Planning System Models
+
+model CalendarEvent {
+  id               String          @id @default(cuid())
+  title            String
+  description      String?         @db.Text
+  startTime        DateTime        @map("start_time")
+  endTime          DateTime        @map("end_time")
+  allDay           Boolean         @default(false) @map("all_day")
+  location         String?
+  color            String? // Hex color code
+  categoryId       String          @map("category_id")
+  status           EventStatus     @default(SCHEDULED)
+  visibility       EventVisibility @default(PUBLIC)
+  creatorId        String          @map("creator_id")
+  recurrenceRuleId String?         @unique @map("recurrence_rule_id")
+  parentEventId    String?         @map("parent_event_id") // For recurring event instances
+  metadata         Json? // Extensible metadata
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  category       EventCategory     @relation(fields: [categoryId], references: [id])
+  creator        User              @relation("CreatedEvents", fields: [creatorId], references: [id])
+  recurrenceRule RecurrenceRule?   @relation("EventRecurrence", fields: [recurrenceRuleId], references: [id])
+  parentEvent    CalendarEvent?    @relation("RecurringInstances", fields: [parentEventId], references: [id])
+  instances      CalendarEvent[]   @relation("RecurringInstances")
+  attendees      EventAttendee[]
+  reminders      EventReminder[]
+  linkedEntities EventEntityLink[]
+  session        Session?          @relation("SessionCalendarEvent")
+
+  @@index([startTime, endTime])
+  @@index([categoryId])
+  @@index([creatorId])
+  @@index([status])
+  @@index([visibility])
+  @@index([parentEventId])
+  @@map("calendar_events")
+}
+
+model EventCategory {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  slug         String   @unique
+  description  String?
+  color        String // Hex color code
+  icon         String? // Icon name
+  isSystem     Boolean  @default(false) @map("is_system") // System categories can't be deleted
+  displayOrder Int      @default(0) @map("display_order")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  events CalendarEvent[]
+
+  @@index([slug])
+  @@index([displayOrder])
+  @@map("event_categories")
+}
+
+model RecurrenceRule {
+  id         String         @id @default(cuid())
+  frequency  RecurrenceFreq // DAILY, WEEKLY, MONTHLY, YEARLY
+  interval   Int            @default(1) // Every N days/weeks/months/years
+  byDay      Int[]          @default([]) @map("by_day") // Days of week (0=Sun, 6=Sat)
+  byMonthDay Int[]          @default([]) @map("by_month_day") // Days of month (1-31)
+  byMonth    Int[]          @default([]) @map("by_month") // Months (1-12)
+  count      Int? // Number of occurrences
+  until      DateTime? // End date
+  exceptions DateTime[]     @default([]) // Dates to skip
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
+
+  event CalendarEvent? @relation("EventRecurrence")
+
+  @@map("recurrence_rules")
+}
+
+model EventAttendee {
+  id             String         @id @default(cuid())
+  eventId        String         @map("event_id")
+  userId         String?        @map("user_id")
+  teamId         String?        @map("team_id") // For future team support
+  responseStatus AttendeeStatus @default(PENDING)
+  isOrganizer    Boolean        @default(false) @map("is_organizer")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  event CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User?         @relation("EventAttendees", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@map("event_attendees")
+}
+
+model EventReminder {
+  id            String    @id @default(cuid())
+  eventId       String    @map("event_id")
+  userId        String    @map("user_id")
+  minutesBefore Int       @map("minutes_before") // Minutes before event start
+  isSent        Boolean   @default(false) @map("is_sent")
+  sentAt        DateTime? @map("sent_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  event CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User          @relation("EventReminders", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([userId])
+  @@index([isSent, sentAt])
+  @@map("event_reminders")
+}
+
+model EventEntityLink {
+  id         String   @id @default(cuid())
+  eventId    String   @map("event_id")
+  entityType String   @map("entity_type") // 'order', 'customer', 'product', 'blog_post', etc.
+  entityId   String   @map("entity_id")
+  metadata   Json? // Additional link metadata
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  event CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, entityType, entityId])
+  @@index([eventId])
+  @@index([entityType, entityId])
+  @@map("event_entity_links")
+}
+
+model CalendarSettings {
+  id                String   @id @default(cuid())
+  userId            String?  @unique @map("user_id") // Null for global settings
+  defaultView       String   @default("month") @map("default_view") // month, week, day, agenda
+  weekStartsOn      Int      @default(0) @map("week_starts_on") // 0=Sunday, 1=Monday
+  workingHoursStart String   @default("09:00") @map("working_hours_start")
+  workingHoursEnd   String   @default("17:00") @map("working_hours_end")
+  workingDays       Int[]    @default([1, 2, 3, 4, 5]) @map("working_days") // 0=Sun, 6=Sat
+  timeZone          String   @default("UTC") @map("time_zone")
+  defaultReminders  Int[]    @default([15]) @map("default_reminders") // Minutes before
+  showWeekNumbers   Boolean  @default(false) @map("show_week_numbers")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("calendar_settings")
+}
+
+enum EventStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+enum EventVisibility {
+  PUBLIC // Everyone can see
+  PRIVATE // Only creator and attendees
+  TEAM_ONLY // Only team members
+}
+
+enum RecurrenceFreq {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum AttendeeStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  TENTATIVE
+}
+
+// Smart Calendar Planning System Models
+
+// Customer Account Management Models
+
+model Address {
+  id         String   @id @default(cuid())
+  customerId String   @map("customer_id")
+  type       String // 'shipping' or 'billing'
+  street     String
+  city       String
+  state      String
+  postalCode String   @map("postal_code")
+  country    String
+  phone      String?
+  apartment  String?
+  isDefault  Boolean  @default(false) @map("is_default")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([type])
+  @@map("addresses")
+}
+
+model CustomerPaymentMethod {
+  id               String   @id @default(cuid())
+  customerId       String   @map("customer_id")
+  paymentMethodId  String   @map("payment_method_id")
+  cardLast4        String?  @map("card_last4")
+  cardExpiry       String?  @map("card_expiry")
+  cardBrand        String?  @map("card_brand")
+  billingAddressId String?  @map("billing_address_id")
+  isDefault        Boolean  @default(false) @map("is_default")
+  encryptedData    String?  @map("encrypted_data") @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([isDefault])
+  @@map("customer_payment_methods")
+}
+
+model AccountSettings {
+  id                 String   @id @default(cuid())
+  customerId         String   @unique @map("customer_id")
+  emailNotifications Boolean  @default(true) @map("email_notifications")
+  smsNotifications   Boolean  @default(false) @map("sms_notifications")
+  marketingEmails    Boolean  @default(false) @map("marketing_emails")
+  orderUpdates       Boolean  @default(true) @map("order_updates")
+  twoFactorEnabled   Boolean  @default(false) @map("two_factor_enabled")
+  privacyLevel       String   @default("private") @map("privacy_level") // 'public', 'private', 'friends_only'
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@map("account_settings")
+}
+
+// Feature Flag Configuration System
+
+model FeatureFlag {
+  id              String   @id @default(cuid())
+  key             String   @unique // landing, blog, ecommerce, calendar, crm, notifications, customerAccount
+  name            String // Display name
+  description     String?  @db.Text
+  isEnabled       Boolean  @default(false) @map("is_enabled")
+  isSystem        Boolean  @default(true) @map("is_system") // System features can't be deleted
+  category        String   @default("general") // general, ecommerce, content, communication
+  requiredModules String[] @default([]) @map("required_modules") // Dependencies
+  relatedTables   String[] @default([]) @map("related_tables") // Tables to clean up when disabled
+  metadata        Json? // Additional configuration
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([isEnabled])
+  @@index([category])
+  @@map("feature_flags")
+}
+
+model FeatureAuditLog {
+  id            String   @id @default(cuid())
+  featureKey    String   @map("feature_key")
+  action        String // 'enabled', 'disabled', 'configured'
+  previousValue Json?    @map("previous_value")
+  newValue      Json?    @map("new_value")
+  changedBy     String?  @map("changed_by") // User ID who made the change
+  reason        String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([featureKey])
+  @@index([action])
+  @@index([createdAt])
+  @@map("feature_audit_logs")
+}
+
+// Coaching Platform Models
+
+model MemberProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique @map("user_id")
+  coachId          String?  @map("coach_id")
+  membershipStatus String   @default("active") // active, inactive, paused
+  onboardingStatus String   @default("pending") // pending, in_progress, completed
+  goals            String?  @db.Text
+  healthInfo       String?  @map("health_info") @db.Text
+  coachNotes       String?  @map("coach_notes") @db.Text
+  joinedAt         DateTime @default(now()) @map("joined_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user     User             @relation("MemberProfile", fields: [userId], references: [id], onDelete: Cascade)
+  coach    User?            @relation("CoachMembers", fields: [coachId], references: [id], onDelete: SetNull)
+  sessions Session[]
+  bookings SessionBooking[]
+
+  @@index([coachId])
+  @@index([membershipStatus])
+  @@index([userId])
+  @@map("member_profiles")
+}
+
+model CoachProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique @map("user_id")
+  specialization     String?
+  bio                String?  @db.Text
+  certifications     String?  @db.Text
+  maxMembers         Int      @default(20) @map("max_members")
+  isAcceptingMembers Boolean  @default(true) @map("is_accepting_members")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user User @relation("CoachProfile", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isAcceptingMembers])
+  @@index([userId])
+  @@map("coach_profiles")
+}
+
+model CoachAvailability {
+  id                 String   @id @default(cuid())
+  coachId            String   @map("coach_id")
+  dayOfWeek          Int // 0-6 (Sunday-Saturday)
+  startTime          String   @map("start_time") // HH:mm format
+  endTime            String   @map("end_time") // HH:mm format
+  maxSessionsPerSlot Int      @default(1) @map("max_sessions_per_slot")
+  bufferMinutes      Int      @default(15) @map("buffer_minutes")
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  coach User @relation("CoachAvailability", fields: [coachId], references: [id], onDelete: Cascade)
+
+  @@index([coachId])
+  @@index([dayOfWeek])
+  @@index([isActive])
+  @@map("coach_availability")
+}
+
+model Session {
+  id                 String    @id @default(cuid())
+  calendarEventId    String    @unique @map("calendar_event_id")
+  memberId           String    @map("member_id")
+  coachId            String    @map("coach_id")
+  type               String // initial, regular, followup
+  status             String    @default("scheduled") // scheduled, completed, cancelled
+  duration           Int // minutes
+  scheduledAt        DateTime  @map("scheduled_at")
+  coachNotes         String?   @map("coach_notes") @db.Text
+  memberNotes        String?   @map("member_notes") @db.Text
+  outcomes           String?   @db.Text
+  rating             Int? // 1-5
+  ratingFeedback     String?   @map("rating_feedback") @db.Text
+  completedAt        DateTime? @map("completed_at")
+  cancelledAt        DateTime? @map("cancelled_at")
+  cancellationReason String?   @map("cancellation_reason") @db.Text
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  calendarEvent CalendarEvent   @relation("SessionCalendarEvent", fields: [calendarEventId], references: [id], onDelete: Cascade)
+  member        MemberProfile   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  coach         User            @relation("CoachSessions", fields: [coachId], references: [id], onDelete: Cascade)
+  booking       SessionBooking?
+
+  @@index([memberId])
+  @@index([coachId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([calendarEventId])
+  @@map("sessions")
+}
+
+model SessionBooking {
+  id              String   @id @default(cuid())
+  memberId        String   @map("member_id")
+  coachId         String   @map("coach_id")
+  requestedDate   DateTime @map("requested_date")
+  requestedTime   String   @map("requested_time") // HH:mm format
+  duration        Int // minutes
+  status          String   @default("pending") // pending, confirmed, rejected, cancelled
+  memberNotes     String?  @map("member_notes") @db.Text
+  sessionId       String?  @unique @map("session_id")
+  rejectionReason String?  @map("rejection_reason")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  member  MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  coach   User          @relation("CoachBookings", fields: [coachId], references: [id], onDelete: Cascade)
+  session Session?      @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([memberId])
+  @@index([coachId])
+  @@index([status])
+  @@index([requestedDate])
+  @@map("session_bookings")
+}

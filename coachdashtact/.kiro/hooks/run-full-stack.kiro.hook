@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Run Full Stack",
+  "description": "Manually trigger to start both frontend (Next.js on :3000) and backend (NestJS on :3001) development servers concurrently",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Start the full-stack development environment by running both servers:\n\n1. Open a terminal in the backend directory and run: `npm run start:dev`\n2. Open a separate terminal in the frontend directory and run: `npm run dev`\n\nThe backend will start on http://localhost:3001 and the frontend on http://localhost:3000.\n\nProvide confirmation when both servers are running successfully."
+  }
+}
