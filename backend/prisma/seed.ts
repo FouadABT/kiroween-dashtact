@@ -408,7 +408,7 @@ async function main() {
                   icon: 'twitter',
                 },
               ],
-              copyright: '© 2024 Dashboard Application. All rights reserved.',
+              copyright: '© 2025 Dashboard Application. All rights reserved.',
               showNewsletter: false,
             },
           },
