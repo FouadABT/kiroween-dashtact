@@ -60,6 +60,8 @@ DATABASE_URL="postgresql://username:password@localhost:5432/dbname?schema=public
 PORT=3001
 NODE_ENV=development
 APP_URL=http://localhost:3001
+BACKEND_URL=http://localhost:3001
+FRONTEND_URL=http://localhost:3000
 
 # JWT Authentication Configuration
 JWT_SECRET=CHANGE_THIS_JWT_SECRET_MIN_64_CHARS
@@ -868,6 +870,9 @@ async function selectEnvironment() {
   }
 
   const isProduction = choice === '2';
+  let productionDomain = null;
+  let backendUrl = null;
+  let frontendUrl = null;
 
   if (isProduction) {
     log('\n⚠️  PRODUCTION MODE SELECTED', 'yellow');
@@ -877,9 +882,82 @@ async function selectEnvironment() {
     log('   • Set secure JWT secrets (min 64 characters)', 'dim');
     log('   • Configure proper CORS origins', 'dim');
     log('   • Review all security settings\n', 'dim');
+
+    // Ask for production domain
+    log('🌐 Production Domain Configuration', 'bright');
+    log('   Enter your production domain (e.g., https://www.example.com)', 'dim');
+    log('   This will be used for:', 'dim');
+    log('   • File upload URLs', 'dim');
+    log('   • CORS configuration', 'dim');
+    log('   • Email links', 'dim');
+    log('   • API endpoints\n', 'dim');
+
+    let domain = '';
+    while (!domain) {
+      domain = await question('Production Domain (with https://): ');
+      if (!domain) {
+        log('   ⚠️  Domain is required for production setup', 'yellow');
+      } else if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
+        log('   ⚠️  Domain must start with http:// or https://', 'yellow');
+        domain = '';
+      } else {
+        // Remove trailing slash
+        domain = domain.replace(/\/$/, '');
+      }
+    }
+
+    productionDomain = domain;
+    
+    // Ask if backend and frontend are on same domain
+    const sameDomain = await confirm('\nAre backend and frontend on the same domain?');
+    
+    if (sameDomain) {
+      backendUrl = productionDomain;
+      frontendUrl = productionDomain;
+      log(`\n✅ Using ${productionDomain} for both backend and frontend`, 'green');
+    } else {
+      log('\n📝 Enter separate URLs:', 'bright');
+      
+      let backendInput = '';
+      while (!backendInput) {
+        backendInput = await question('Backend URL (with https://): ');
+        if (!backendInput) {
+          log('   ⚠️  Backend URL is required', 'yellow');
+        } else if (!backendInput.startsWith('http://') && !backendInput.startsWith('https://')) {
+          log('   ⚠️  URL must start with http:// or https://', 'yellow');
+          backendInput = '';
+        } else {
+          backendInput = backendInput.replace(/\/$/, '');
+        }
+      }
+      
+      let frontendInput = '';
+      while (!frontendInput) {
+        frontendInput = await question('Frontend URL (with https://): ');
+        if (!frontendInput) {
+          log('   ⚠️  Frontend URL is required', 'yellow');
+        } else if (!frontendInput.startsWith('http://') && !frontendInput.startsWith('https://')) {
+          log('   ⚠️  URL must start with http:// or https://', 'yellow');
+          frontendInput = '';
+        } else {
+          frontendInput = frontendInput.replace(/\/$/, '');
+        }
+      }
+      
+      backendUrl = backendInput;
+      frontendUrl = frontendInput;
+      log(`\n✅ Backend: ${backendUrl}`, 'green');
+      log(`✅ Frontend: ${frontendUrl}`, 'green');
+    }
   }
 
-  return { isProduction, envFile: isProduction ? '.env.production' : '.env' };
+  return { 
+    isProduction, 
+    envFile: isProduction ? '.env.production' : '.env',
+    productionDomain,
+    backendUrl,
+    frontendUrl
+  };
 }
 
 async function verifyEnvironment() {
@@ -1129,6 +1207,83 @@ async function main() {
       fs.writeFileSync(envPath, envContent);
       log(`\n✅ Updated ${environment.envFile} with database connection`, 'green');
     }
+  }
+
+  // Update URL configuration for production
+  if (environment.isProduction && environment.backendUrl && environment.frontendUrl) {
+    log('\nUpdating production URLs...', 'bright');
+    
+    // Update backend .env.production
+    const backendEnvPath = path.join(__dirname, 'backend', environment.envFile);
+    if (fs.existsSync(backendEnvPath)) {
+      let envContent = fs.readFileSync(backendEnvPath, 'utf8');
+      
+      // Update or add APP_URL
+      if (envContent.includes('APP_URL=')) {
+        envContent = envContent.replace(/APP_URL=.*/g, `APP_URL=${environment.backendUrl}`);
+      } else {
+        envContent += `\n# Application URLs\nAPP_URL=${environment.backendUrl}\n`;
+      }
+      
+      // Update or add BACKEND_URL
+      if (envContent.includes('BACKEND_URL=')) {
+        envContent = envContent.replace(/BACKEND_URL=.*/g, `BACKEND_URL=${environment.backendUrl}`);
+      } else {
+        envContent += `BACKEND_URL=${environment.backendUrl}\n`;
+      }
+      
+      // Update or add FRONTEND_URL
+      if (envContent.includes('FRONTEND_URL=')) {
+        envContent = envContent.replace(/FRONTEND_URL=.*/g, `FRONTEND_URL=${environment.frontendUrl}`);
+      } else {
+        envContent += `FRONTEND_URL=${environment.frontendUrl}\n`;
+      }
+      
+      // Update CORS_ORIGIN
+      if (envContent.includes('CORS_ORIGIN=')) {
+        envContent = envContent.replace(/CORS_ORIGIN=.*/g, `CORS_ORIGIN=${environment.frontendUrl}`);
+      }
+      
+      fs.writeFileSync(backendEnvPath, envContent);
+      log(`✅ Updated backend URLs in ${environment.envFile}`, 'green');
+    }
+    
+    // Update frontend .env.production
+    const frontendEnvPath = path.join(__dirname, 'frontend', '.env.production');
+    if (fs.existsSync(frontendEnvPath)) {
+      let envContent = fs.readFileSync(frontendEnvPath, 'utf8');
+      
+      // Determine API URL (backend URL + /api if needed)
+      const apiUrl = environment.backendUrl.includes('/api') 
+        ? environment.backendUrl 
+        : `${environment.backendUrl}/api`;
+      
+      // Update or add NEXT_PUBLIC_API_URL
+      if (envContent.includes('NEXT_PUBLIC_API_URL=')) {
+        envContent = envContent.replace(/NEXT_PUBLIC_API_URL=.*/g, `NEXT_PUBLIC_API_URL=${apiUrl}`);
+      } else {
+        envContent += `\n# API Configuration\nNEXT_PUBLIC_API_URL=${apiUrl}\n`;
+      }
+      
+      // Update or add NEXT_PUBLIC_APP_URL
+      if (envContent.includes('NEXT_PUBLIC_APP_URL=')) {
+        envContent = envContent.replace(/NEXT_PUBLIC_APP_URL=.*/g, `NEXT_PUBLIC_APP_URL=${environment.frontendUrl}`);
+      } else {
+        envContent += `NEXT_PUBLIC_APP_URL=${environment.frontendUrl}\n`;
+      }
+      
+      fs.writeFileSync(frontendEnvPath, envContent);
+      log(`✅ Updated frontend URLs in .env.production`, 'green');
+    }
+    
+    log(`\n📝 Production URLs configured:`, 'bright');
+    log(`   Backend:  ${environment.backendUrl}`, 'cyan');
+    log(`   Frontend: ${environment.frontendUrl}`, 'cyan');
+    log(`   CORS:     ${environment.frontendUrl}`, 'cyan');
+  }
+
+  // Continue with database setup
+  if (!dbSetup.skip && dbSetup.databaseUrl) {
 
     // Update MCP configuration with new database connection
     const mcpConfigPath = path.join(__dirname, '.kiro', 'settings', 'mcp.json');

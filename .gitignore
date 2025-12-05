@@ -81,48 +81,74 @@ test-role-migration.js
 # ========================================
 # IMPORTANT: .kiro folders MUST remain visible for hackathon submission
 
-# Node modules in nested apps
-two-distinct-apps/*/backend/node_modules/
-two-distinct-apps/*/frontend/node_modules/
+# Node modules in apps
+coachdashtact/backend/node_modules/
+coachdashtact/frontend/node_modules/
+Spooky-store/backend/node_modules/
+Spooky-store/frontend/node_modules/
 
-# Build outputs in nested apps
-two-distinct-apps/*/backend/dist/
-two-distinct-apps/*/backend/generated/
-two-distinct-apps/*/frontend/.next/
-two-distinct-apps/*/frontend/build/
-two-distinct-apps/*/frontend/out/
+# Build outputs in apps
+coachdashtact/backend/dist/
+coachdashtact/backend/generated/
+coachdashtact/frontend/.next/
+coachdashtact/frontend/build/
+coachdashtact/frontend/out/
+Spooky-store/backend/dist/
+Spooky-store/backend/generated/
+Spooky-store/frontend/.next/
+Spooky-store/frontend/build/
+Spooky-store/frontend/out/
 
-# Environment files in nested apps
-two-distinct-apps/*/backend/.env
-two-distinct-apps/*/backend/.env.local
-two-distinct-apps/*/backend/.env.development
-two-distinct-apps/*/backend/.env.production
-two-distinct-apps/*/frontend/.env
-two-distinct-apps/*/frontend/.env.local
-two-distinct-apps/*/frontend/.env.development
-two-distinct-apps/*/frontend/.env.production
+# Environment files in apps
+coachdashtact/backend/.env
+coachdashtact/backend/.env.local
+coachdashtact/backend/.env.development
+coachdashtact/backend/.env.production
+coachdashtact/frontend/.env
+coachdashtact/frontend/.env.local
+coachdashtact/frontend/.env.development
+coachdashtact/frontend/.env.production
+Spooky-store/backend/.env
+Spooky-store/backend/.env.local
+Spooky-store/backend/.env.development
+Spooky-store/backend/.env.production
+Spooky-store/frontend/.env
+Spooky-store/frontend/.env.local
+Spooky-store/frontend/.env.development
+Spooky-store/frontend/.env.production
 
-# Deployment artifacts in nested apps
-two-distinct-apps/*/frontend/*.zip
-two-distinct-apps/*/frontend/*.tar.gz
-two-distinct-apps/*/deployment/production.env.*
+# Deployment artifacts in apps
+coachdashtact/frontend/*.zip
+coachdashtact/frontend/*.tar.gz
+coachdashtact/deployment/production.env.*
+Spooky-store/frontend/*.zip
+Spooky-store/frontend/*.tar.gz
+Spooky-store/deployment/production.env.*
 
-# Build logs in nested apps
-two-distinct-apps/*/frontend/build-log.txt
-two-distinct-apps/*/frontend/build-output.txt
+# Build logs in apps
+coachdashtact/frontend/build-log.txt
+coachdashtact/frontend/build-output.txt
+Spooky-store/frontend/build-log.txt
+Spooky-store/frontend/build-output.txt
 
-# TypeScript build info in nested apps
-two-distinct-apps/*/frontend/tsconfig.tsbuildinfo
-two-distinct-apps/*/frontend/*.tsbuildinfo
+# TypeScript build info in apps
+coachdashtact/frontend/tsconfig.tsbuildinfo
+coachdashtact/frontend/*.tsbuildinfo
+Spooky-store/frontend/tsconfig.tsbuildinfo
+Spooky-store/frontend/*.tsbuildinfo
 
-# Uploads in nested apps
-two-distinct-apps/*/backend/uploads/
+# Uploads in apps
+coachdashtact/backend/uploads/
+Spooky-store/backend/uploads/
 
-# Coverage in nested apps
-two-distinct-apps/*/backend/coverage/
+# Coverage in apps
+coachdashtact/backend/coverage/
+Spooky-store/backend/coverage/
 
 # CRITICAL: DO NOT IGNORE .kiro FOLDERS (Required for hackathon)
 # The following ensures .kiro folders are tracked:
 !.kiro/
-!two-distinct-apps/*/.kiro/
-!two-distinct-apps/*/.kiro/**
+!coachdashtact/.kiro/
+!coachdashtact/.kiro/**
+!Spooky-store/.kiro/
+!Spooky-store/.kiro/**

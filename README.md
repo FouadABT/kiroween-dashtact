@@ -28,7 +28,12 @@ Both applications are built from the same skeleton, showcasing its flexibility a
 
 ```
 skeleton-dashtact/
-├── backend/                    # NestJS Backend
+├── .kiro/                      # Kiro AI Configuration
+│   ├── specs/                 # 30+ Feature specifications
+│   ├── hooks/                 # 8 Agent automation hooks
+│   ├── steering/              # 19 Development guidelines
+│   └── settings/              # MCP integrations
+├── backend/                    # NestJS Backend (Skeleton Template)
 │   ├── src/                   # Source code
 │   │   ├── auth/             # JWT authentication
 │   │   ├── users/            # User management
@@ -40,11 +45,11 @@ skeleton-dashtact/
 │   │   ├── calendar/         # Event scheduling
 │   │   ├── notifications/    # Real-time notifications
 │   │   ├── messaging/        # Direct messaging
-│   │   ├── members/          # Coaching members (CoachDashtact)
+│   │   ├── members/          # Coaching members
 │   │   └── ...               # 30+ feature modules
 │   ├── prisma/               # Database schema & migrations
 │   └── package.json
-├── frontend/                   # Next.js 14 Frontend
+├── frontend/                   # Next.js 14 Frontend (Skeleton Template)
 │   ├── src/
 │   │   ├── app/              # Next.js App Router
 │   │   │   ├── dashboard/   # Admin dashboard
@@ -56,15 +61,20 @@ skeleton-dashtact/
 │   │   ├── lib/             # Utilities & API client
 │   │   └── types/           # TypeScript types
 │   └── package.json
-├── two-distinct-apps/          # Example Applications
-│   ├── Spooky-store/          # E-commerce Application
-│   └── coachdashtact/         # Coaching Platform
-├── .kiro/                      # Kiro AI Configuration
-│   ├── specs/                 # 30+ Feature specifications
-│   ├── hooks/                 # 8 Agent automation hooks
-│   ├── steering/              # 19 Development guidelines
-│   └── settings/              # MCP integrations
+├── Spooky-store/              # 🎃 Application 1: E-commerce Platform
+│   ├── .kiro/                # Kiro config for this app
+│   ├── backend/              # Full NestJS backend
+│   ├── frontend/             # Full Next.js frontend
+│   ├── deployment/           # Deployment configs
+│   └── README.md             # App-specific documentation
+├── coachdashtact/             # 🎯 Application 2: Coaching Platform
+│   ├── .kiro/                # Kiro config for this app
+│   ├── backend/              # Full NestJS backend
+│   ├── frontend/             # Full Next.js frontend
+│   ├── deployment/           # Deployment configs
+│   └── README.md             # App-specific documentation
 ├── setup-cli.js               # Interactive setup wizard
+├── LICENSE                    # MIT License
 └── README.md                  # This file
 ```
 
@@ -276,7 +286,7 @@ A complete online store built from the skeleton template.
 
 **Use Cases:** Online shop, marketplace, retail platform, dropshipping store
 
-[View Spooky Store README →](./two-distinct-apps/Spooky-store/README.md)
+[View Spooky Store README →](./Spooky-store/README.md)
 
 #### 2. 🎯 CoachDashtact - Coaching Platform
 
@@ -296,7 +306,7 @@ A comprehensive coaching management system built from the skeleton template.
 
 **Use Cases:** Life coaching, business coaching, fitness training, tutoring, consulting, mentorship
 
-[View CoachDashtact README →](./two-distinct-apps/coachdashtact/README.md)
+[View CoachDashtact README →](./coachdashtact/README.md)
 
 ## 🛠️ Tech Stack
 
@@ -586,8 +596,8 @@ docker-compose up -d
 ## 📖 Documentation
 
 - **Root README** - This file (project overview)
-- **Spooky Store README** - [two-distinct-apps/Spooky-store/README.md](./two-distinct-apps/Spooky-store/README.md)
-- **CoachDashtact README** - [two-distinct-apps/coachdashtact/README.md](./two-distinct-apps/coachdashtact/README.md)
+- **Spooky Store README** - [Spooky-store/README.md](./Spooky-store/README.md)
+- **CoachDashtact README** - [coachdashtact/README.md](./coachdashtact/README.md)
 - **Kiro Specs** - `.kiro/specs/` (30+ feature specifications)
 - **Steering Docs** - `.kiro/steering/` (19 development guidelines)
 - **Backend Docs** - `backend/README.md`
