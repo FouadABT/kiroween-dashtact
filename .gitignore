@@ -21,6 +21,10 @@ out/
 deployment/production.env.backend
 deployment/production.env.frontend
 
+# Allow .env.example files (safe templates)
+!.env.example
+!**/.env.example
+
 # Logs
 logs/
 *.log
