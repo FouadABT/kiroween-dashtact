@@ -557,24 +557,75 @@ npm run type-check             # TypeScript checking
 
 ## 🔧 Configuration
 
-### Environment Variables
+### Environment Variables Setup
 
-**Backend** (`backend/.env`):
+**Quick Setup:**
+1. Copy example files to create your environment files:
+   ```bash
+   # Backend
+   cp backend/.env.example backend/.env
+   
+   # Frontend
+   cp frontend/.env.example frontend/.env.local
+   ```
+
+2. Update the values in your new `.env` files with your actual configuration
+
+3. **Required for app to run:** Database URL and JWT Secret must be configured
+
+---
+
+### Backend Environment Variables
+
+**File:** `backend/.env`
+
+**Database Configuration (Required):**
 ```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/myapp?schema=public"
+```
+- Replace `postgres:password` with your PostgreSQL credentials
+- Replace `myapp` with your database name
+- Ensure PostgreSQL is running on port 5432
 
-# Application
+**Application Settings (Required):**
+```env
 PORT=3001
 NODE_ENV=development
 APP_URL=http://localhost:3001
+BACKEND_URL=http://localhost:3001
+FRONTEND_URL=http://localhost:3000
+```
 
-# JWT
-JWT_SECRET=your-secret-key-min-64-chars
+**JWT Authentication (Required):**
+```env
+JWT_SECRET=CHANGE_THIS_JWT_SECRET_MIN_64_CHARS
 JWT_ACCESS_EXPIRATION=15m
 JWT_REFRESH_EXPIRATION=7d
+JWT_ISSUER=dashboard-app
+JWT_AUDIENCE=dashboard-users
+```
+- **Important:** Change `JWT_SECRET` to a random 64+ character string
+- Generate with: `openssl rand -base64 64`
 
-# Feature Flags
+**Security Settings:**
+```env
+BCRYPT_ROUNDS=10
+RATE_LIMIT_TTL=900
+RATE_LIMIT_MAX=100
+ENABLE_AUDIT_LOGGING=true
+ACCOUNT_LOCKOUT_ENABLED=false
+ACCOUNT_LOCKOUT_MAX_ATTEMPTS=5
+ACCOUNT_LOCKOUT_DURATION=900
+```
+
+**Activity Logging:**
+```env
+ACTIVITY_LOG_ENABLED=true
+AUDIT_LOG_TOKEN_REFRESH=false  # Set to true only for debugging
+```
+
+**Feature Flags (Controls which features are available):**
+```env
 ENABLE_LANDING=true
 ENABLE_BLOG=true
 ENABLE_ECOMMERCE=true
@@ -582,21 +633,57 @@ ENABLE_CALENDAR=true
 ENABLE_CRM=true
 ENABLE_NOTIFICATIONS=true
 ENABLE_CUSTOMER_ACCOUNT=true
-
-# Email (optional)
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USER=your-email@example.com
-SMTP_PASSWORD=your-password
 ```
 
-**Frontend** (`frontend/.env.local`):
+**Setup Status:**
 ```env
-# API
+SETUP_COMPLETED=false  # Set to true after running setup
+```
+
+**Legacy Feature Flags:**
+```env
+FEATURE_EMAIL_VERIFICATION=false
+FEATURE_TWO_FACTOR_AUTH=false
+FEATURE_SOCIAL_AUTH=false
+FEATURE_REMEMBER_ME=true
+FEATURE_PASSWORD_RESET=true
+FEATURE_SESSION_MANAGEMENT=false
+```
+
+**Default Settings:**
+```env
+DEFAULT_USER_ROLE=USER
+CORS_ORIGIN=http://localhost:3000
+```
+
+**Token Cleanup:**
+```env
+BLACKLIST_CLEANUP_ENABLED=true
+BLACKLIST_CLEANUP_INTERVAL=86400000
+```
+
+**Email System (Optional):**
+```env
+EMAIL_ENCRYPTION_KEY=CHANGE_THIS_EMAIL_ENCRYPTION_KEY_MIN_32_CHARS
+```
+- Required only if using email features
+- Generate with: `openssl rand -base64 32`
+
+---
+
+### Frontend Environment Variables
+
+**File:** `frontend/.env.local`
+
+**API Configuration (Required):**
+```env
 NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NODE_ENV=development
+```
 
-# Feature Flags
+**Feature Flags (Must match backend):**
+```env
 NEXT_PUBLIC_ENABLE_LANDING=true
 NEXT_PUBLIC_ENABLE_BLOG=true
 NEXT_PUBLIC_ENABLE_ECOMMERCE=true
@@ -606,17 +693,69 @@ NEXT_PUBLIC_ENABLE_NOTIFICATIONS=true
 NEXT_PUBLIC_ENABLE_CUSTOMER_ACCOUNT=true
 ```
 
-### Feature Flags
+**Page Visibility:**
+```env
+NEXT_PUBLIC_SHOW_HOME_PAGE=true
+NEXT_PUBLIC_SHOW_SHOP_PAGE=true
+NEXT_PUBLIC_SHOW_BLOG_PAGE=true
+NEXT_PUBLIC_SHOW_ACCOUNT_PAGE=true
+```
 
-Enable or disable features by setting environment variables:
+**Setup Status:**
+```env
+NEXT_PUBLIC_SETUP_COMPLETED=false
+```
 
-- `ENABLE_LANDING` - Landing page builder
-- `ENABLE_BLOG` - Blog system
-- `ENABLE_ECOMMERCE` - E-commerce features
-- `ENABLE_CALENDAR` - Calendar and events
-- `ENABLE_CRM` - Customer relationship management
-- `ENABLE_NOTIFICATIONS` - Notification system
-- `ENABLE_CUSTOMER_ACCOUNT` - Customer accounts
+**Dynamic Header/Footer:**
+```env
+NEXT_PUBLIC_USE_DYNAMIC_HEADER_FOOTER=true
+```
+- `true`: Uses header/footer from CMS settings
+- `false`: Uses hardcoded components
+
+**Blog Configuration:**
+```env
+NEXT_PUBLIC_BLOG_POSTS_PER_PAGE=10
+NEXT_PUBLIC_BLOG_ENABLE_CATEGORIES=true
+NEXT_PUBLIC_BLOG_ENABLE_TAGS=true
+NEXT_PUBLIC_BLOG_REQUIRE_AUTHOR=false
+```
+
+---
+
+### Critical Configuration Checklist
+
+Before running the app, ensure these are configured:
+
+- [ ] **Database URL** - PostgreSQL connection string
+- [ ] **JWT Secret** - Random 64+ character string
+- [ ] **Ports** - Backend (3001), Frontend (3000)
+- [ ] **API URLs** - Frontend knows where backend is
+- [ ] **Feature Flags** - Match between frontend and backend
+- [ ] **Email Encryption Key** - If using email features
+
+**Common Issues:**
+
+- **"Cannot connect to database"** → Check `DATABASE_URL` and PostgreSQL is running
+- **"Invalid JWT token"** → Ensure `JWT_SECRET` is set and same across restarts
+- **"Feature not available"** → Check feature flags match in both frontend and backend
+- **"CORS error"** → Verify `CORS_ORIGIN` matches frontend URL
+
+---
+
+### Feature Flags Explained
+
+Enable or disable entire feature modules:
+
+- **`ENABLE_LANDING`** - Landing page builder with drag-and-drop sections
+- **`ENABLE_BLOG`** - Blog system with posts, categories, and tags
+- **`ENABLE_ECOMMERCE`** - Products, orders, cart, and checkout
+- **`ENABLE_CALENDAR`** - Event scheduling and calendar views
+- **`ENABLE_CRM`** - Customer relationship management
+- **`ENABLE_NOTIFICATIONS`** - Real-time notification system
+- **`ENABLE_CUSTOMER_ACCOUNT`** - Customer-facing account pages
+
+Set to `false` to completely disable a feature and hide related UI.
 
 ## 🚢 Deployment
 
