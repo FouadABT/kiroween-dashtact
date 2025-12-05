@@ -148,14 +148,62 @@ npm run dev
 ### Core Features (Skeleton Foundation)
 
 #### 🔐 Authentication & Authorization
-- JWT-based authentication with refresh tokens
-- Role-based access control (RBAC)
-- Permission system with granular controls
-- Two-factor authentication (2FA)
-- Password reset via email
-- Session management
-- Account lockout protection
-- Audit logging
+
+**JWT Token System:**
+- Access tokens (15 min) + Refresh tokens (7 days)
+- Automatic token refresh before expiration
+- Token blacklist for logout/revocation
+- Secure bcrypt password hashing (10 rounds)
+
+**Permission System:**
+
+The system uses a flexible `resource:action` permission format:
+
+```
+users:read    → View users
+users:write   → Create/edit users
+users:delete  → Delete users
+users:*       → All user operations
+*:*           → Super admin (all permissions)
+```
+
+**Default Roles:**
+- **Super Admin** - Full system access (`*:*`)
+- **Admin** - User management, settings, content
+- **Manager** - Limited user management, read-only settings
+- **User** - Basic access, profile management
+
+**Backend Protection:**
+```typescript
+@Controller('posts')
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+export class PostsController {
+  @Get()
+  @Permissions('posts:read')  // Requires permission
+  async findAll() { }
+}
+```
+
+**Frontend Protection:**
+```typescript
+// Protect entire page
+<PermissionGuard permission="posts:read">
+  <PostsList />
+</PermissionGuard>
+
+// Conditional UI
+const { hasPermission } = useAuth();
+{hasPermission('posts:write') && <EditButton />}
+```
+
+**Security Features:**
+- Two-factor authentication (2FA) via email
+- Password reset with secure tokens (1-hour expiration)
+- Rate limiting on auth endpoints (5 attempts/15 min)
+- Account lockout after failed attempts
+- Audit logging for all auth events
+- Session invalidation on password change
+- IP tracking for security alerts
 
 #### 👥 User Management
 - User CRUD operations
@@ -181,6 +229,26 @@ npm run dev
 - Real-time data updates
 - Role-based dashboards
 - Analytics and charts
+
+**Dashboard Layout Types:**
+
+The system supports two distinct page rendering approaches:
+
+1. **Widget-Based Dashboards** 🎨
+   - Fully customizable with drag-and-drop interface
+   - Users can add, remove, resize, and rearrange widgets
+   - Layout saved per user/role in database
+   - Perfect for: Analytics dashboards, reporting pages, personalized views
+   - Examples: Main Dashboard (`/dashboard`), Analytics (`/dashboard/analytics`)
+
+2. **Hardcoded Pages** 🔒
+   - Fixed React components with predefined layouts
+   - Consistent UI across all users
+   - Optimized for specific workflows
+   - Perfect for: CRUD operations, forms, data tables, settings
+   - Examples: Products, Orders, Users, Settings pages
+
+Both types support the same permission system, theming, and responsive design. Choose widget-based for flexibility or hardcoded for consistency.
 
 #### 📅 Calendar & Events
 - Event scheduling
