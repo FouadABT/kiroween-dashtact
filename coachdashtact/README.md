@@ -54,6 +54,8 @@ Extends the **Dashboard Skeleton Template** with:
 
 ### 1. Database Setup
 
+#### Option A: Fresh Setup (Recommended for First Time)
+
 ```bash
 node setup-workspace.js
 ```
@@ -63,6 +65,24 @@ This interactive tool will:
 - Create the database
 - Configure environment variables
 - Set up initial data with coach and member roles
+
+#### Option B: Restore from Backup (For Testing with Real Data)
+
+If you want to test with pre-populated data including coaches, members, and sessions, restore from the backup file:
+
+```bash
+# Make sure PostgreSQL is running
+# Create the database first
+createdb -U postgres coachgymdb
+
+# Restore from backup
+pg_restore -h localhost -U postgres -d coachgymdb -c backend/backup_coachgymdb_*.backup
+
+# Or using full path to pg_restore (Windows)
+"C:\Program Files\PostgreSQL\18\bin\pg_restore.exe" -h localhost -U postgres -d coachgymdb -c backend/backup_coachgymdb_*.backup
+```
+
+**Note**: The backup includes sample coaches, members, sessions, and availability data for testing purposes.
 
 ### 2. Backend Setup
 
