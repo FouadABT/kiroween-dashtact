@@ -39,21 +39,179 @@ async function confirm(prompt) {
   return answer.toLowerCase() === 'y';
 }
 
-// Create environment files if they don't exist
+// Validate and fix environment files - ensure all required parameters exist
+function validateAndFixEnvFile(filePath, isBackend = false) {
+  log(`\n🔍 Validating ${filePath}...`, 'blue');
+  
+  if (!fs.existsSync(filePath)) {
+    log(`  ⚠️  File does not exist: ${filePath}`, 'yellow');
+    return { valid: false, missing: [], added: [] };
+  }
+
+  let content = fs.readFileSync(filePath, 'utf8');
+  const missing = [];
+  const added = [];
+
+  // Helper to check if parameter exists
+  function hasParam(param) {
+    // Escape special regex characters in param name
+    const escapedParam = param.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`^${escapedParam}=`, 'm');
+    return pattern.test(content);
+  }
+
+  // Helper to add parameter with comment
+  function addParam(param, defaultValue, comment = '') {
+    const section = comment ? `\n# ${comment}\n` : '\n';
+    const line = `${param}=${defaultValue}`;
+    content += `${section}${line}\n`;
+    missing.push(param);
+    added.push({ param, value: defaultValue });
+  }
+
+  if (isBackend) {
+    // Backend required parameters
+    const requiredParams = {
+      // Note: DATABASE_URL is NOT validated here because it's configured during setup
+      // and should not be overwritten with template values
+      
+      // Application
+      'PORT': '3001',
+      'NODE_ENV': 'development',
+      'APP_URL': 'http://localhost:3001',
+      'BACKEND_URL': 'http://localhost:3001',
+      'FRONTEND_URL': 'http://localhost:3000',
+      
+      // JWT Authentication
+      'JWT_SECRET': 'CHANGE_THIS_JWT_SECRET_MIN_64_CHARS',
+      'JWT_ACCESS_EXPIRATION': '15m',
+      'JWT_REFRESH_EXPIRATION': '7d',
+      'JWT_ISSUER': 'dashboard-app',
+      'JWT_AUDIENCE': 'dashboard-users',
+      
+      // Password Security
+      'BCRYPT_ROUNDS': '10',
+      
+      // Rate Limiting
+      'RATE_LIMIT_TTL': '900',
+      'RATE_LIMIT_MAX': '100',
+      
+      // Security Features
+      'ENABLE_AUDIT_LOGGING': 'true',
+      'ACCOUNT_LOCKOUT_ENABLED': 'false',
+      'ACCOUNT_LOCKOUT_MAX_ATTEMPTS': '5',
+      'ACCOUNT_LOCKOUT_DURATION': '900',
+      
+      // Activity Logging
+      'ACTIVITY_LOG_ENABLED': 'true',
+      'AUDIT_LOG_TOKEN_REFRESH': 'false',
+      
+      // Feature Flags
+      'ENABLE_LANDING': 'true',
+      'ENABLE_BLOG': 'true',
+      'ENABLE_ECOMMERCE': 'true',
+      'ENABLE_CALENDAR': 'true',
+      'ENABLE_CRM': 'true',
+      'ENABLE_NOTIFICATIONS': 'true',
+      'ENABLE_CUSTOMER_ACCOUNT': 'true',
+      
+      // Setup Status
+      'SETUP_COMPLETED': 'false',
+      
+      // Legacy Feature Flags
+      'FEATURE_EMAIL_VERIFICATION': 'false',
+      'FEATURE_TWO_FACTOR_AUTH': 'false',
+      'FEATURE_SOCIAL_AUTH': 'false',
+      'FEATURE_REMEMBER_ME': 'true',
+      'FEATURE_PASSWORD_RESET': 'true',
+      'FEATURE_SESSION_MANAGEMENT': 'false',
+      
+      // Default Settings
+      'DEFAULT_USER_ROLE': 'USER',
+      
+      // CORS
+      'CORS_ORIGIN': 'http://localhost:3000',
+      
+      // Token Blacklist
+      'BLACKLIST_CLEANUP_ENABLED': 'true',
+      'BLACKLIST_CLEANUP_INTERVAL': '86400000',
+      
+      // Email System
+      'EMAIL_ENCRYPTION_KEY': 'CHANGE_THIS_EMAIL_ENCRYPTION_KEY_MIN_32_CHARS',
+    };
+
+    for (const [param, defaultValue] of Object.entries(requiredParams)) {
+      if (!hasParam(param)) {
+        addParam(param, defaultValue);
+      }
+    }
+  } else {
+    // Frontend required parameters
+    const requiredParams = {
+      // API Configuration
+      'NEXT_PUBLIC_API_URL': 'http://localhost:3001',
+      'NEXT_PUBLIC_APP_URL': 'http://localhost:3000',
+      
+      // Environment
+      'NODE_ENV': 'development',
+      
+      // Feature Flags
+      'NEXT_PUBLIC_ENABLE_LANDING': 'true',
+      'NEXT_PUBLIC_ENABLE_BLOG': 'true',
+      'NEXT_PUBLIC_ENABLE_ECOMMERCE': 'true',
+      'NEXT_PUBLIC_ENABLE_CALENDAR': 'true',
+      'NEXT_PUBLIC_ENABLE_CRM': 'true',
+      'NEXT_PUBLIC_ENABLE_NOTIFICATIONS': 'true',
+      'NEXT_PUBLIC_ENABLE_CUSTOMER_ACCOUNT': 'true',
+      
+      // Page Visibility
+      'NEXT_PUBLIC_SHOW_HOME_PAGE': 'true',
+      'NEXT_PUBLIC_SHOW_SHOP_PAGE': 'true',
+      'NEXT_PUBLIC_SHOW_BLOG_PAGE': 'true',
+      'NEXT_PUBLIC_SHOW_ACCOUNT_PAGE': 'true',
+      
+      // Setup Status
+      'NEXT_PUBLIC_SETUP_COMPLETED': 'false',
+      
+      // Dynamic Header/Footer
+      'NEXT_PUBLIC_USE_DYNAMIC_HEADER_FOOTER': 'true',
+      
+      // Blog Configuration
+      'NEXT_PUBLIC_BLOG_POSTS_PER_PAGE': '10',
+      'NEXT_PUBLIC_BLOG_ENABLE_CATEGORIES': 'true',
+      'NEXT_PUBLIC_BLOG_ENABLE_TAGS': 'true',
+      'NEXT_PUBLIC_BLOG_REQUIRE_AUTHOR': 'false',
+    };
+
+    for (const [param, defaultValue] of Object.entries(requiredParams)) {
+      if (!hasParam(param)) {
+        addParam(param, defaultValue);
+      }
+    }
+  }
+
+  // Write updated content if parameters were added
+  if (added.length > 0) {
+    fs.writeFileSync(filePath, content);
+    log(`  ✅ Added ${added.length} missing parameter(s):`, 'green');
+    added.forEach(({ param, value }) => {
+      log(`     + ${param}=${value}`, 'dim');
+    });
+  } else {
+    log(`  ✅ All required parameters present`, 'green');
+  }
+
+  return { valid: true, missing, added };
+}
+
+// Create or rewrite environment files with complete default structure
 function ensureEnvFiles() {
   const backendEnvPath = path.join(__dirname, 'backend', '.env');
-  const backendEnvExamplePath = path.join(__dirname, 'backend', '.env.example');
   const frontendEnvPath = path.join(__dirname, 'frontend', '.env.local');
   
-  // Create backend .env from .env.example if it doesn't exist
-  if (!fs.existsSync(backendEnvPath)) {
-    if (fs.existsSync(backendEnvExamplePath)) {
-      // Copy from .env.example
-      fs.copyFileSync(backendEnvExamplePath, backendEnvPath);
-      log('✅ Created backend/.env from .env.example', 'green');
-    } else {
-      // Create with all default values if .env.example doesn't exist
-      const defaultBackendEnv = `# Database
+  // Always create/rewrite backend .env with complete structure
+  // This ensures all parameters exist even if file was empty or corrupted
+  const defaultBackendEnv = `# Database
 DATABASE_URL="postgresql://username:password@localhost:5432/dbname?schema=public"
 
 # Application
@@ -130,14 +288,13 @@ SMTP_FROM=noreply@example.com
 # Frontend URL
 FRONTEND_URL=http://localhost:3000
 `;
-      fs.writeFileSync(backendEnvPath, defaultBackendEnv);
-      log('✅ Created backend/.env with default values', 'green');
-    }
-  }
   
-  // Create frontend .env.local with default values if it doesn't exist
-  if (!fs.existsSync(frontendEnvPath)) {
-    const defaultFrontendEnv = `# Development Environment - Local
+  // Write backend .env (always rewrite to ensure completeness)
+  fs.writeFileSync(backendEnvPath, defaultBackendEnv);
+  log('✅ Created/Updated backend/.env with complete structure', 'green');
+  
+  // Always create/rewrite frontend .env.local with complete structure
+  const defaultFrontendEnv = `# Development Environment - Local
 # DO NOT COMMIT THIS FILE TO GIT!
 
 # API Configuration
@@ -176,9 +333,13 @@ NEXT_PUBLIC_BLOG_ENABLE_CATEGORIES=true
 NEXT_PUBLIC_BLOG_ENABLE_TAGS=true
 NEXT_PUBLIC_BLOG_REQUIRE_AUTHOR=false
 `;
-    fs.writeFileSync(frontendEnvPath, defaultFrontendEnv);
-    log('✅ Created frontend/.env.local with default values', 'green');
-  }
+  
+  // Write frontend .env.local (always rewrite to ensure completeness)
+  fs.writeFileSync(frontendEnvPath, defaultFrontendEnv);
+  log('✅ Created/Updated frontend/.env.local with complete structure', 'green');
+  
+  log('\n✅ Environment files initialized with complete default structure', 'green');
+  log('   These will be updated with your selections during setup', 'dim');
 }
 
 // Database utility functions
@@ -523,8 +684,21 @@ function updateEnvFile(filePath, features, isBackend = false) {
       .replace(/^_/, '');                           // Remove leading underscore if any
   }
 
+  // Helper function to update or add environment variable
+  function updateOrAddEnvVar(content, key, value) {
+    const pattern = new RegExp(`^${key}=.*$`, 'gm');
+    const replacement = `${key}=${value}`;
+    
+    if (content.match(pattern)) {
+      return content.replace(pattern, replacement);
+    } else {
+      // Variable not found, add it at the end
+      return content + `\n${replacement}`;
+    }
+  }
+
   if (isBackend) {
-    // Update backend .env
+    // Update backend .env - Feature Flags
     for (const [key, value] of Object.entries(features)) {
       const envKey = `ENABLE_${toScreamingSnakeCase(key)}`;
       const pattern = new RegExp(`^${envKey}=.*$`, 'gm');
@@ -538,7 +712,7 @@ function updateEnvFile(filePath, features, isBackend = false) {
       }
     }
   } else {
-    // Update frontend .env.local
+    // Update frontend .env - Feature Flags
     for (const [key, value] of Object.entries(features)) {
       const envKey = `NEXT_PUBLIC_ENABLE_${toScreamingSnakeCase(key)}`;
       const pattern = new RegExp(`^${envKey}=.*$`, 'gm');
@@ -549,6 +723,31 @@ function updateEnvFile(filePath, features, isBackend = false) {
         log(`  Updated ${envKey}=${value ? 'true' : 'false'}`, 'dim');
       } else {
         log(`  ⚠️  ${envKey} not found in ${filePath}`, 'yellow');
+      }
+    }
+
+    // Update frontend .env - Page Visibility (sync with features)
+    const pageVisibilityMap = {
+      landing: 'NEXT_PUBLIC_SHOW_HOME_PAGE',
+      ecommerce: 'NEXT_PUBLIC_SHOW_SHOP_PAGE',
+      blog: 'NEXT_PUBLIC_SHOW_BLOG_PAGE',
+      customerAccount: 'NEXT_PUBLIC_SHOW_ACCOUNT_PAGE',
+    };
+
+    for (const [featureKey, pageKey] of Object.entries(pageVisibilityMap)) {
+      if (features.hasOwnProperty(featureKey)) {
+        const value = features[featureKey];
+        const pattern = new RegExp(`^${pageKey}=.*$`, 'gm');
+        const replacement = `${pageKey}=${value ? 'true' : 'false'}`;
+        
+        if (content.match(pattern)) {
+          content = content.replace(pattern, replacement);
+          log(`  Updated ${pageKey}=${value ? 'true' : 'false'}`, 'dim');
+        } else {
+          // Add the page visibility flag if it doesn't exist
+          content = updateOrAddEnvVar(content, pageKey, value ? 'true' : 'false');
+          log(`  Added ${pageKey}=${value ? 'true' : 'false'}`, 'dim');
+        }
       }
     }
   }
@@ -1156,11 +1355,43 @@ async function main() {
   log('─────────────────────────────────────────────────────────────\n', 'cyan');
 
   try {
+    // Update backend environment file
     updateEnvFile(`backend/${environment.envFile}`, features, true);
     log(`✅ Updated backend/${environment.envFile}`, 'green');
 
-    updateEnvFile('frontend/.env.local', features, false);
-    log('✅ Updated frontend/.env.local', 'green');
+    // Update frontend environment file (correct file based on environment)
+    const frontendEnvFile = environment.isProduction ? '.env.production' : '.env.local';
+    const frontendEnvPath = path.join(__dirname, 'frontend', frontendEnvFile);
+    
+    // Ensure frontend production file exists if needed
+    if (environment.isProduction && !fs.existsSync(frontendEnvPath)) {
+      // Create .env.production from .env.local template
+      const frontendLocalPath = path.join(__dirname, 'frontend', '.env.local');
+      if (fs.existsSync(frontendLocalPath)) {
+        let prodContent = fs.readFileSync(frontendLocalPath, 'utf8');
+        // Update NODE_ENV to production
+        prodContent = prodContent.replace(/NODE_ENV=development/g, 'NODE_ENV=production');
+        // Update comment
+        prodContent = prodContent.replace(/# Development Environment - Local/g, '# Production Environment');
+        fs.writeFileSync(frontendEnvPath, prodContent);
+        log(`✅ Created frontend/${frontendEnvFile}`, 'green');
+      }
+    }
+    
+    updateEnvFile(`frontend/${frontendEnvFile}`, features, false);
+    log(`✅ Updated frontend/${frontendEnvFile}`, 'green');
+
+    // Validate and fix environment files - ensure all parameters exist
+    log('\n🔍 Validating environment files for missing parameters...', 'bright');
+    
+    // Validate backend environment file
+    const backendEnvPath = path.join(__dirname, 'backend', environment.envFile);
+    validateAndFixEnvFile(backendEnvPath, true);
+    
+    // Validate frontend environment file
+    validateAndFixEnvFile(frontendEnvPath, false);
+    
+    log('\n✅ Environment files validated and updated', 'green');
   } catch (error) {
     log(`❌ Failed to update environment files: ${error.message}`, 'red');
     process.exit(1);
@@ -1196,17 +1427,39 @@ async function main() {
   const dbSetup = await configureDatabaseConnection();
 
   if (!dbSetup.skip && dbSetup.databaseUrl) {
-    // Update .env file with database URL
-    const envPath = path.join(__dirname, 'backend', environment.envFile);
-    if (fs.existsSync(envPath)) {
-      let envContent = fs.readFileSync(envPath, 'utf8');
-      envContent = envContent.replace(
-        /DATABASE_URL="[^"]*"/,
-        `DATABASE_URL="${dbSetup.databaseUrl}"`
-      );
-      fs.writeFileSync(envPath, envContent);
-      log(`\n✅ Updated ${environment.envFile} with database connection`, 'green');
+    // Update database URL in BOTH .env and .env.production
+    // This ensures Prisma can work regardless of NODE_ENV
+    const envFiles = [
+      { path: path.join(__dirname, 'backend', '.env'), name: '.env' },
+      { path: path.join(__dirname, 'backend', '.env.production'), name: '.env.production' }
+    ];
+    
+    log('\n🔄 Updating database connection in environment files...', 'blue');
+    
+    for (const envFile of envFiles) {
+      if (fs.existsSync(envFile.path)) {
+        let envContent = fs.readFileSync(envFile.path, 'utf8');
+        
+        // Check if DATABASE_URL exists (with or without quotes, with possible whitespace)
+        const dbUrlPattern = /^DATABASE_URL\s*=\s*"?[^"\n]*"?/m;
+        
+        if (dbUrlPattern.test(envContent)) {
+          // Replace existing DATABASE_URL
+          envContent = envContent.replace(
+            dbUrlPattern,
+            `DATABASE_URL="${dbSetup.databaseUrl}"`
+          );
+        } else {
+          // Add DATABASE_URL at the beginning if it doesn't exist
+          envContent = `# Database\nDATABASE_URL="${dbSetup.databaseUrl}"\n\n` + envContent;
+        }
+        
+        fs.writeFileSync(envFile.path, envContent);
+        log(`  ✅ Updated ${envFile.name}`, 'green');
+      }
     }
+    
+    log('✅ Database connection updated in all environment files', 'green');
   }
 
   // Update URL configuration for production
